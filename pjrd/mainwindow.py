@@ -20,7 +20,7 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
         self.setupUi()
-        
+
     def connectDB(self):
         try:
             db = mysql.connect(host='localhost',
@@ -33,12 +33,8 @@ class Ui_MainWindow(QMainWindow):
             QMessageBox.about(self, 'Connection', 'Database Connection Failed')
             print('It failed')
             #sys.exit(1)
-        
-
-
 
     def setupUi(self):
-        
         if not self.objectName():
             self.setObjectName(u"Ui_MainWindow")
         self.resize(1114, 985)
