@@ -15,10 +15,16 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QTabWidget, QFormLayout, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton
 
-class Ui_addIngredientDialog(object):
+class addIngredientDialog(QDialog):
+
+    def __init__(self):
+        super(addIngredientDialog, self).__init__()
+        self.setupUi(self)
+
     def setupUi(self, addIngredientDialog):
         if not addIngredientDialog.objectName():
             addIngredientDialog.setObjectName(u"addIngredientDialog")
+
         addIngredientDialog.resize(1067, 1037)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
@@ -27,16 +33,23 @@ class Ui_addIngredientDialog(object):
         addIngredientDialog.setSizePolicy(sizePolicy)
         addIngredientDialog.setWindowTitle(u"Add Ingredient")
         addIngredientDialog.setSizeGripEnabled(False)
+
         self.verticalLayout = QVBoxLayout(addIngredientDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
+
+    
         self.addIngredientTabWidget = QTabWidget(addIngredientDialog)
         self.addIngredientTabWidget.setObjectName(u"addIngredientTabWidget")
+
+        ######## Top Frame of General Tab of Add Ingredient Widget ###########
         self.genInfoTab = QWidget()
         self.genInfoTab.setObjectName(u"genInfoTab")
+
         self.verticalLayout_4 = QVBoxLayout(self.genInfoTab)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+
         self.generalFrame1 = QFrame(self.genInfoTab)
         self.generalFrame1.setObjectName(u"generalFrame1")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -47,35 +60,32 @@ class Ui_addIngredientDialog(object):
         self.generalFrame1.setAutoFillBackground(True)
         self.generalFrame1.setFrameShape(QFrame.StyledPanel)
         self.generalFrame1.setFrameShadow(QFrame.Sunken)
+
         self.formLayout = QFormLayout(self.generalFrame1)
         self.formLayout.setObjectName(u"formLayout")
         self.formLayout.setFormAlignment(Qt.AlignCenter)
+
         self.ingredientNameLabel = QLabel(self.generalFrame1)
         self.ingredientNameLabel.setObjectName(u"ingredientNameLabel")
-
         self.formLayout.setWidget(1, QFormLayout.LabelRole, self.ingredientNameLabel)
 
         self.ingredientNameLineEdit = QLineEdit(self.generalFrame1)
         self.ingredientNameLineEdit.setObjectName(u"ingredientNameLineEdit")
         self.ingredientNameLineEdit.setMinimumSize(QSize(300, 0))
         self.ingredientNameLineEdit.setPlaceholderText(u"ie. Pre-Hydrated\u00ae Ticalose\u00ae CMC 15 Powder")
-
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.ingredientNameLineEdit)
 
         self.commonNameLabel = QLabel(self.generalFrame1)
         self.commonNameLabel.setObjectName(u"commonNameLabel")
-
         self.formLayout.setWidget(2, QFormLayout.LabelRole, self.commonNameLabel)
 
         self.commonNameLineEdit = QLineEdit(self.generalFrame1)
         self.commonNameLineEdit.setObjectName(u"commonNameLineEdit")
         self.commonNameLineEdit.setMinimumSize(QSize(300, 0))
-
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.commonNameLineEdit)
 
         self.supplierLabel_2 = QLabel(self.generalFrame1)
         self.supplierLabel_2.setObjectName(u"supplierLabel_2")
-
         self.formLayout.setWidget(3, QFormLayout.LabelRole, self.supplierLabel_2)
 
         self.supplierComboBox = QComboBox(self.generalFrame1)
@@ -83,43 +93,36 @@ class Ui_addIngredientDialog(object):
         self.supplierComboBox.setMinimumSize(QSize(200, 0))
         self.supplierComboBox.setEditable(True)
         self.supplierComboBox.setCurrentText(u"")
-
         self.formLayout.setWidget(3, QFormLayout.FieldRole, self.supplierComboBox)
 
         self.supplierIngIDLabel = QLabel(self.generalFrame1)
         self.supplierIngIDLabel.setObjectName(u"supplierIngIDLabel")
-
         self.formLayout.setWidget(4, QFormLayout.LabelRole, self.supplierIngIDLabel)
 
         self.supplierIngredientNumberLineEdit = QLineEdit(self.generalFrame1)
         self.supplierIngredientNumberLineEdit.setObjectName(u"supplierIngredientNumberLineEdit")
         self.supplierIngredientNumberLineEdit.setMinimumSize(QSize(200, 0))
         self.supplierIngredientNumberLineEdit.setPlaceholderText(u"ie. CMC 15")
-
         self.formLayout.setWidget(4, QFormLayout.FieldRole, self.supplierIngredientNumberLineEdit)
 
         self.percentYieldIfApplicableLabel = QLabel(self.generalFrame1)
         self.percentYieldIfApplicableLabel.setObjectName(u"percentYieldIfApplicableLabel")
-
         self.formLayout.setWidget(5, QFormLayout.LabelRole, self.percentYieldIfApplicableLabel)
 
         self.percentYieldDoubleSpinBox = QDoubleSpinBox(self.generalFrame1)
         self.percentYieldDoubleSpinBox.setObjectName(u"percentYieldDoubleSpinBox")
         self.percentYieldDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.PlusMinus)
-
         self.formLayout.setWidget(5, QFormLayout.FieldRole, self.percentYieldDoubleSpinBox)
 
         self.supplierLabel = QLabel(self.generalFrame1)
         self.supplierLabel.setObjectName(u"supplierLabel")
-
         self.formLayout.setWidget(6, QFormLayout.LabelRole, self.supplierLabel)
-
 
         self.verticalLayout_4.addWidget(self.generalFrame1)
 
+        ######## Bottom Frame of General Tab of Add Ingredient Widget ###########
         self.optionalLabel = QLabel(self.genInfoTab)
         self.optionalLabel.setObjectName(u"optionalLabel")
-
         self.verticalLayout_4.addWidget(self.optionalLabel)
 
         self.generalFrame2 = QFrame(self.genInfoTab)
@@ -132,57 +135,52 @@ class Ui_addIngredientDialog(object):
         self.generalFrame2.setAutoFillBackground(True)
         self.generalFrame2.setFrameShape(QFrame.StyledPanel)
         self.generalFrame2.setFrameShadow(QFrame.Raised)
+
         self.gridLayout_3 = QGridLayout(self.generalFrame2)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
+
         self.allergenCheckBoxWidget = QWidget(self.generalFrame2)
         self.allergenCheckBoxWidget.setObjectName(u"allergenCheckBoxWidget")
         self.allergenCheckBoxWidget.setAutoFillBackground(True)
+
         self.formLayout_9 = QFormLayout(self.allergenCheckBoxWidget)
         self.formLayout_9.setObjectName(u"formLayout_9")
         self.formLayout_9.setLabelAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
         self.allergenLabel = QLabel(self.allergenCheckBoxWidget)
         self.allergenLabel.setObjectName(u"allergenLabel")
-
         self.formLayout_9.setWidget(0, QFormLayout.LabelRole, self.allergenLabel)
 
         self.dairyCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.dairyCheckbox.setObjectName(u"dairyCheckbox")
-
         self.formLayout_9.setWidget(1, QFormLayout.LabelRole, self.dairyCheckbox)
 
         self.eggCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.eggCheckbox.setObjectName(u"eggCheckbox")
-
         self.formLayout_9.setWidget(2, QFormLayout.LabelRole, self.eggCheckbox)
 
         self.fishCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.fishCheckbox.setObjectName(u"fishCheckbox")
-
         self.formLayout_9.setWidget(3, QFormLayout.LabelRole, self.fishCheckbox)
 
         self.shellfishCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.shellfishCheckbox.setObjectName(u"shellfishCheckbox")
-
         self.formLayout_9.setWidget(4, QFormLayout.LabelRole, self.shellfishCheckbox)
 
         self.treeNutsCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.treeNutsCheckbox.setObjectName(u"treeNutsCheckbox")
-
         self.formLayout_9.setWidget(5, QFormLayout.LabelRole, self.treeNutsCheckbox)
 
         self.peanutsCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.peanutsCheckbox.setObjectName(u"peanutsCheckbox")
-
         self.formLayout_9.setWidget(6, QFormLayout.LabelRole, self.peanutsCheckbox)
 
         self.wheatCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.wheatCheckbox.setObjectName(u"wheatCheckbox")
-
         self.formLayout_9.setWidget(7, QFormLayout.LabelRole, self.wheatCheckbox)
 
         self.soyCheckbox = QCheckBox(self.allergenCheckBoxWidget)
         self.soyCheckbox.setObjectName(u"soyCheckbox")
-
         self.formLayout_9.setWidget(8, QFormLayout.LabelRole, self.soyCheckbox)
 
         self.gridLayout_3.addWidget(self.allergenCheckBoxWidget, 0, 0, 1, 1)
@@ -190,59 +188,50 @@ class Ui_addIngredientDialog(object):
         self.claimsCheckBoxWidget = QWidget(self.generalFrame2)
         self.claimsCheckBoxWidget.setObjectName(u"claimsCheckBoxWidget")
         self.formLayout_10 = QFormLayout(self.claimsCheckBoxWidget)
+
         self.formLayout_10.setObjectName(u"formLayout_10")
         self.formLayout_10.setLabelAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
         self.veganCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.veganCheckbox.setObjectName(u"veganCheckbox")
-
         self.formLayout_10.setWidget(1, QFormLayout.LabelRole, self.veganCheckbox)
 
         self.organicCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.organicCheckbox.setObjectName(u"organicCheckbox")
-
         self.formLayout_10.setWidget(3, QFormLayout.LabelRole, self.organicCheckbox)
 
         self.ngmvCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.ngmvCheckbox.setObjectName(u"ngmvCheckbox")
-
         self.formLayout_10.setWidget(4, QFormLayout.LabelRole, self.ngmvCheckbox)
 
         self.kosherCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.kosherCheckbox.setObjectName(u"kosherCheckbox")
-
         self.formLayout_10.setWidget(5, QFormLayout.LabelRole, self.kosherCheckbox)
 
         self.ketoCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.ketoCheckbox.setObjectName(u"ketoCheckbox")
-
         self.formLayout_10.setWidget(6, QFormLayout.LabelRole, self.ketoCheckbox)
 
         self.wholeFoodsCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.wholeFoodsCheckbox.setObjectName(u"wholeFoodsCheckbox")
-
         self.formLayout_10.setWidget(7, QFormLayout.LabelRole, self.wholeFoodsCheckbox)
 
         self.nsaCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.nsaCheckbox.setObjectName(u"nsaCheckbox")
-
         self.formLayout_10.setWidget(8, QFormLayout.LabelRole, self.nsaCheckbox)
 
         self.claimsLabel = QLabel(self.claimsCheckBoxWidget)
         self.claimsLabel.setObjectName(u"claimsLabel")
-
         self.formLayout_10.setWidget(0, QFormLayout.SpanningRole, self.claimsLabel)
 
         self.halalCheckbox = QCheckBox(self.claimsCheckBoxWidget)
         self.halalCheckbox.setObjectName(u"halalCheckbox")
-
         self.formLayout_10.setWidget(2, QFormLayout.LabelRole, self.halalCheckbox)
-
 
         self.gridLayout_3.addWidget(self.claimsCheckBoxWidget, 0, 1, 1, 1)
 
         self.notesLabel = QLabel(self.generalFrame2)
         self.notesLabel.setObjectName(u"notesLabel")
-
         self.gridLayout_3.addWidget(self.notesLabel, 2, 0, 1, 1)
 
         self.notesLineEdit = QLineEdit(self.generalFrame2)
@@ -262,25 +251,31 @@ class Ui_addIngredientDialog(object):
 
         self.gridLayout_3.addWidget(self.ingredientStatementLabel, 1, 0, 1, 1)
 
-
         self.verticalLayout_4.addWidget(self.generalFrame2)
 
         self.widget = QWidget(self.genInfoTab)
         self.widget.setObjectName(u"widget")
-
         self.verticalLayout_4.addWidget(self.widget)
 
         self.addIngredientTabWidget.addTab(self.genInfoTab, "")
         self.addIngredientTabWidget.setTabText(self.addIngredientTabWidget.indexOf(self.genInfoTab), u"General")
+        
+
+        ######## Nutritionals Tab of Add Ingredient Widget ###########
+        # Top Widget 
         self.nutritionalsTab = QWidget()
         self.nutritionalsTab.setObjectName(u"nutritionalsTab")
+
         self.verticalLayout_3 = QVBoxLayout(self.nutritionalsTab)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+
         self.widget_2 = QWidget(self.nutritionalsTab)
         self.widget_2.setObjectName(u"widget_2")
         self.widget_2.setAutoFillBackground(True)
+
         self.horizontalLayout = QHBoxLayout(self.widget_2)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
+
         self.perLabel = QLabel(self.widget_2)
         self.perLabel.setObjectName(u"perLabel")
         self.perLabel.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
@@ -310,11 +305,12 @@ class Ui_addIngredientDialog(object):
 
         self.horizontalLayout.addWidget(self.generateNFPPushBtn)
 
-
         self.verticalLayout_3.addWidget(self.widget_2)
 
         self.gridLayout_2 = QGridLayout()
         self.gridLayout_2.setObjectName(u"gridLayout_2")
+
+        # Vitamins Frame
         self.vitaminsFrame = QFrame(self.nutritionalsTab)
         self.vitaminsFrame.setObjectName(u"vitaminsFrame")
         self.vitaminsFrame.setAutoFillBackground(True)
@@ -488,9 +484,10 @@ class Ui_addIngredientDialog(object):
 
         self.formLayout_7.setWidget(0, QFormLayout.SpanningRole, self.label_5)
 
-
         self.gridLayout_2.addWidget(self.vitaminsFrame, 1, 2, 1, 1)
 
+        
+        # Fats Frame 
         self.fatsFrame = QFrame(self.nutritionalsTab)
         self.fatsFrame.setObjectName(u"fatsFrame")
         self.fatsFrame.setAutoFillBackground(True)
@@ -751,6 +748,7 @@ class Ui_addIngredientDialog(object):
 
         self.gridLayout_2.addWidget(self.formFrame_4, 1, 1, 1, 1)
 
+        # Carbs Frame
         self.carbsFrame = QFrame(self.nutritionalsTab)
         self.carbsFrame.setObjectName(u"carbsFrame")
         self.carbsFrame.setAutoFillBackground(True)
@@ -843,9 +841,9 @@ class Ui_addIngredientDialog(object):
 
         self.formLayout_4.setWidget(0, QFormLayout.SpanningRole, self.carbsLabel)
 
-
         self.gridLayout_2.addWidget(self.carbsFrame, 0, 0, 1, 1)
 
+        # Proteins Frame
         self.proteinsFrame = QFrame(self.nutritionalsTab)
         self.proteinsFrame.setObjectName(u"proteinsFrame")
         self.proteinsFrame.setAutoFillBackground(True)
@@ -868,9 +866,9 @@ class Ui_addIngredientDialog(object):
 
         self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.totalProteinGLineEdit)
 
-
         self.gridLayout_2.addWidget(self.proteinsFrame, 0, 2, 1, 1)
 
+        # Other Nutrients Frame
         self.otherNutrientsFrame = QFrame(self.nutritionalsTab)
         self.otherNutrientsFrame.setObjectName(u"otherNutrientsFrame")
         self.otherNutrientsFrame.setAutoFillBackground(True)
@@ -933,13 +931,14 @@ class Ui_addIngredientDialog(object):
 
         self.formLayout_5.setWidget(5, QFormLayout.FieldRole, self.sugarAlcoholGLineEdit)
 
-
         self.gridLayout_2.addWidget(self.otherNutrientsFrame, 1, 0, 1, 1)
 
 
         self.verticalLayout_3.addLayout(self.gridLayout_2)
-
         self.addIngredientTabWidget.addTab(self.nutritionalsTab, "")
+
+
+        ######## Documentation Tab of Add Ingredient Widget ###########
         self.documentationTab = QWidget()
         self.documentationTab.setObjectName(u"documentationTab")
         self.verticalLayout_7 = QVBoxLayout(self.documentationTab)
@@ -950,6 +949,8 @@ class Ui_addIngredientDialog(object):
         self.verticalLayout_7.addWidget(self.documentationTabWidget)
 
         self.addIngredientTabWidget.addTab(self.documentationTab, "")
+
+        ######## Groups Tab of Add Ingredient Widget ###########
         self.groupsTab = QWidget()
         self.groupsTab.setObjectName(u"groupsTab")
         self.verticalLayout_6 = QVBoxLayout(self.groupsTab)
@@ -960,6 +961,8 @@ class Ui_addIngredientDialog(object):
         self.verticalLayout_6.addWidget(self.groupListWidget)
 
         self.addIngredientTabWidget.addTab(self.groupsTab, "")
+
+        ######## Cost Tab of Add Ingredient Widget ###########
         self.costTab = QWidget()
         self.costTab.setObjectName(u"costTab")
         self.verticalLayout_5 = QVBoxLayout(self.costTab)
@@ -973,8 +976,9 @@ class Ui_addIngredientDialog(object):
 
         self.gridLayout.addWidget(self.addIngredientTabWidget, 0, 1, 1, 1)
 
-
         self.verticalLayout.addLayout(self.gridLayout)
+
+        ######## Buttons widget of Add Ingredient Widget ###########
 
         self.buttonBox = QDialogButtonBox(addIngredientDialog)
         self.buttonBox.setObjectName(u"buttonBox")
@@ -988,19 +992,15 @@ class Ui_addIngredientDialog(object):
 
         self.verticalLayout.addWidget(self.buttonBox)
 
-
         self.retranslateUi(addIngredientDialog)
         self.buttonBox.accepted.connect(addIngredientDialog.accept)
         self.buttonBox.rejected.connect(addIngredientDialog.reject)
 
         self.addIngredientTabWidget.setCurrentIndex(1)
-
-
         QMetaObject.connectSlotsByName(addIngredientDialog)
     # setupUi
 
 
-'''
     def retranslateUi(self, addIngredientDialog):
         self.ingredientNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Specific Name", None))
         self.commonNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Common Name (if applicable)", None))
@@ -1098,6 +1098,12 @@ class Ui_addIngredientDialog(object):
         self.addIngredientTabWidget.setTabText(self.addIngredientTabWidget.indexOf(self.groupsTab), QCoreApplication.translate("addIngredientDialog", u"Groups", None))
         self.addIngredientTabWidget.setTabText(self.addIngredientTabWidget.indexOf(self.costTab), QCoreApplication.translate("addIngredientDialog", u"Cost", None))
         pass
-    '''
     # retranslateUi
 
+    
+
+
+app = QApplication(sys.argv)
+gui = addIngredientDialog()
+gui.show()
+sys.exit(app.exec_())

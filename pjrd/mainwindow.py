@@ -11,10 +11,8 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QCoreApplication, Qt, QMetaObject, QSize, QRect
-from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget
-# from PyQt5.QtCore import *
-# from PyQt5.QtGui import *
-# from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget, QMessageBox
+from MySQLdb import _mysql as mysql
 
 
 class Ui_MainWindow(QMainWindow):
@@ -22,8 +20,25 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
         self.setupUi()
+        
+    def connectDB(self):
+        try:
+            db = mysql.connect(host='localhost',
+                            user='root',
+                            passwd='Pj@bW1!G1-4'
+                            )
+            QMessageBox.about(self, 'Connection', 'Database Connection Successful')
+            print('It Worked!')  # verification
+        except: 
+            QMessageBox.about(self, 'Connection', 'Database Connection Failed')
+            print('It failed')
+            #sys.exit(1)
+        
+
+
 
     def setupUi(self):
+        
         if not self.objectName():
             self.setObjectName(u"Ui_MainWindow")
         self.resize(1114, 985)
@@ -235,8 +250,10 @@ class Ui_MainWindow(QMainWindow):
         self.menuView.setTitle(QCoreApplication.translate("Ui_MainWindow", u"View", None))
         self.menuDatabase.setTitle(QCoreApplication.translate("Ui_MainWindow", u"Database", None))
 
+        ###### call helper functions 
         self.retranslateUi()
         self.tabWidget.setCurrentIndex(1)
+        self.connectDB(Ui_MainWindow)
         QMetaObject.connectSlotsByName(self)
 
     def closeEvent(self, event):
@@ -252,8 +269,8 @@ class Ui_MainWindow(QMainWindow):
         else:
             pass
 
-
+'''
 app = QApplication(sys.argv)
 gui = Ui_MainWindow()
 gui.show()
-sys.exit(app.exec_())
+sys.exit(app.exec_())'''
