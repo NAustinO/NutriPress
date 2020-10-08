@@ -9,20 +9,21 @@
 ################################################################################
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import * 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtCore import QCoreApplication, Qt, QMetaObject, QSize, QRect
+from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import *
+# from PyQt5.QtWidgets import *
 
 
 class Ui_MainWindow(QMainWindow):
-    
-    def __init__(self): 
+
+    def __init__(self):
         super(Ui_MainWindow, self).__init__()
         self.setupUi()
-        
-        
-    def setupUi(self):
 
+    def setupUi(self):
         if not self.objectName():
             self.setObjectName(u"Ui_MainWindow")
         self.resize(1114, 985)
@@ -30,12 +31,10 @@ class Ui_MainWindow(QMainWindow):
         icon = QIcon()
         icon.addFile(u"pjrd/static/media/pjgraphiclogo.png", QSize(), QIcon.Normal, QIcon.On)
         self.setWindowIcon(icon)
-  
         # main window widget
 
         mainWindowWidget = QWidget(self)
         mainWindowWidget.setObjectName(u'mainWindowWidget')
-        
         mainWindowWidgetSizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         mainWindowWidgetSizePolicy.setHorizontalStretch(0)
         mainWindowWidgetSizePolicy.setVerticalStretch(0)
@@ -43,7 +42,7 @@ class Ui_MainWindow(QMainWindow):
         mainWindowWidget.setSizePolicy(mainWindowWidgetSizePolicy)
 
         self.gridLayout = QGridLayout(mainWindowWidget)
-        
+
         self.gridLayout.setObjectName(u"mainWindowGridLayout")
 
         mainTabWidget = QTabWidget(mainWindowWidget)
@@ -76,7 +75,7 @@ class Ui_MainWindow(QMainWindow):
         sizePolicy1.setHeightForWidth(homeNavBarWidget.sizePolicy().hasHeightForWidth())
 
         homeNavBarWidget.setSizePolicy(sizePolicy1)
-        
+
         homeNavBarWidget.setMaximumSize(QSize(200, 16777215))
 
         homeNavBarWidget.setLayoutDirection(Qt.LeftToRight)
@@ -105,12 +104,12 @@ class Ui_MainWindow(QMainWindow):
         loginHeader.setSizePolicy(loginHeaderSizePolicy)
         loginHeader.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
 
-        self.verticalLayout_3.addWidget(loginHeader) #?
+        self.verticalLayout_3.addWidget(loginHeader)
 
         quickSearchBtn = QLineEdit(homeNavBarWidget)
         quickSearchBtn.setObjectName(u'quickSearchBtn')
         quickSearchBtn.setPlaceholderText('Search')
-        
+
         self.verticalLayout_3.addWidget(quickSearchBtn)
 
         self.verticalSpacer_2 = QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -152,21 +151,20 @@ class Ui_MainWindow(QMainWindow):
         quickOpenHeader.setAlignment(Qt.AlignCenter)
         self.verticalLayout_3.addWidget(quickOpenHeader)
 
-
         quickFormulaAccess = QListView(homeNavBarWidget)
         quickFormulaAccess.setObjectName(u'quickFormulaAccess')
         quickFormulaAccess.setMouseTracking(True)
         self.verticalLayout_3.addWidget(quickFormulaAccess)
-        
-        self.gridLayout.addWidget(homeNavBarWidget, 0, 0, 2, 1)       
+
+        self.gridLayout.addWidget(homeNavBarWidget, 0, 0, 2, 1)
 
         self.setCentralWidget(mainWindowWidget)
-    
+
         # creates menubar object
         menuBar = self.menuBar()
         menuBar.setObjectName(u'menubar')
         menuBar.setGeometry(QRect(0, 0, 1114, 22))
-        
+
         # sets menuBar object to mainWindow class menubar attribute
         self.setMenuBar(menuBar)
 
@@ -192,8 +190,8 @@ class Ui_MainWindow(QMainWindow):
         fileMenu.addAction(exitAction)
         addFormulaAction = addMenu.addAction('&Add Formula')
         addIngredientAction = addMenu.addAction('&Add Ingredient')
-    
-        # adds shortcuts 
+
+        # adds shortcuts
         saveAction.setShortcut('Ctrl+S')
         openAction.setShortcut('Ctrl+O')
         exitAction.setShortcut('Ctrl+Q')
@@ -236,45 +234,11 @@ class Ui_MainWindow(QMainWindow):
         self.menuEdit.setTitle(QCoreApplication.translate("Ui_MainWindow", u"Edit", None))
         self.menuView.setTitle(QCoreApplication.translate("Ui_MainWindow", u"View", None))
         self.menuDatabase.setTitle(QCoreApplication.translate("Ui_MainWindow", u"Database", None))
-        
 
         self.retranslateUi()
         self.tabWidget.setCurrentIndex(1)
-        QMetaObject.connectSlotsByName(self) 
+        QMetaObject.connectSlotsByName(self)
 
-""""
-       
-    # setupUi
-
-    def retranslateUi(self):
-        self.setWindowTitle(QCoreApplication.translate("Ui_MainWindow", u"Pressed Juicery R&D", None))
-        self.actionExit.setText(QCoreApplication.translate("Ui_MainWindow", u"Quit", None))
-        # if QT_CONFIG(shortcut)
-        self.actionExit.setShortcut(QCoreApplication.translate("Ui_MainWindow", u"Meta+Q", None))
-        #endif // QT_CONFIG(shortcut)
-        self.actionAddRecipe.setText(QCoreApplication.translate("Ui_MainWindow", u"Recipe", None))
-        self.actionAddIngredient.setText(QCoreApplication.translate("Ui_MainWindow", u"Ingredient", None))
-        self.actionOpen.setText(QCoreApplication.translate("Ui_MainWindow", u"Open", None))
-        self.actionSave.setText(QCoreApplication.translate("Ui_MainWindow", u"Save", None))
-        self.actionLogout.setText(QCoreApplication.translate("Ui_MainWindow", u"Logout", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("Ui_MainWindow", u"Tab 1", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("Ui_MainWindow", u"Tab 2", None))
-        self.label.setText("")
-        self.loginStatus.setText(QCoreApplication.translate("Ui_MainWindow", u"You are logged in as: ______", None))
-        self.quickSearchBtn.setPlaceholderText(QCoreApplication.translate("Ui_MainWindow", u"Search", None))
-        self.quickAddLabel.setText(QCoreApplication.translate("Ui_MainWindow", u"Quick Add", None))
-        self.quickAddFormulaBtn.setText(QCoreApplication.translate("Ui_MainWindow", u"Formula", None))
-        self.quickAddIngrBtn.setText(QCoreApplication.translate("Ui_MainWindow", u"Ingredient", None))
-        self.quickAddDocBtn.setText(QCoreApplication.translate("Ui_MainWindow", u"Documentation", None))
-        self.pushButton_4.setText(QCoreApplication.translate("Ui_MainWindow", u"PushButton", None))
-        self.quickOpenLabel.setText(QCoreApplication.translate("Ui_MainWindow", u"Quick Open/Edit", None))
-        self.menuFile.setTitle(QCoreApplication.translate("Ui_MainWindow", u"File", None))
-        self.menuAdd.setTitle(QCoreApplication.translate("Ui_MainWindow", u"Add", None))
-        self.menuEdit.setTitle(QCoreApplication.translate("Ui_MainWindow", u"Edit", None))
-        self.menuView.setTitle(QCoreApplication.translate("Ui_MainWindow", u"View", None))
-        self.menuDatabase.setTitle(QCoreApplication.translate("Ui_MainWindow", u"Database", None))
-        # retranslateUi
- '''    
     def closeEvent(self, event):
         close = QtWidgets.QMessageBox.question(
                                                 self,
@@ -283,9 +247,9 @@ class Ui_MainWindow(QMainWindow):
                                                 QtWidgets.QMessageBox.Yes |
                                                 QtWidgets.QMessageBox.No
         )
-        if close == QtWidgets.QMessageBox.Yes: 
+        if close == QtWidgets.QMessageBox.Yes:
             event.accept()
-        else: 
+        else:
             pass
 
 
