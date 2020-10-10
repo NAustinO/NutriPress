@@ -35,10 +35,10 @@ class loginForm(QWidget):
         self.setLayout(layout)
 
     
-    def authenticate(email, password):
-        hashed = 
+    # def authenticate(email, password):
+     #  hashed = 
 
-def checkAuthenticated(): 
+#def checkAuthenticated(): 
     
 
 app = QApplication(sys.argv)

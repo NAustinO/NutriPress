@@ -20,7 +20,7 @@ class Ui_addIngredientDialog(object):
         
     def setupUi(self, addIngredientDialog):
         if not addIngredientDialog.objectName():
-            addIngredientDialog.setObjectName(u"addIngredientDialog")
+            addIngredientDialog.s`etObjectName(u"addIngredientDialog")
         addIngredientDialog.resize(1067, 1037)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)

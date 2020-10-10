@@ -996,10 +996,9 @@ class addIngredientDialog(QDialog):
         self.buttonBox.accepted.connect(addIngredientDialog.accept)
         self.buttonBox.rejected.connect(addIngredientDialog.reject)
 
-        self.addIngredientTabWidget.setCurrentIndex(1)
+        self.addIngredientTabWidget.setCurrentIndex(0)
         QMetaObject.connectSlotsByName(addIngredientDialog)
     # setupUi
-
 
     def retranslateUi(self, addIngredientDialog):
         self.ingredientNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Specific Name", None))
@@ -1100,10 +1099,9 @@ class addIngredientDialog(QDialog):
         pass
     # retranslateUi
 
-    
-
-
+'''
 app = QApplication(sys.argv)
 gui = addIngredientDialog()
-gui.show()
+
 sys.exit(app.exec_())
+'''
