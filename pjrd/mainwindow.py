@@ -13,18 +13,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QCoreApplication, Qt, QMetaObject, QSize, QRect
 from PyQt5.QtWidgets import QSizePolicy, QAction, QMenu, QMdiArea, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget, QMessageBox, QDialog, QMenuBar
-from MySQLdb import _mysql as mysql
 from addIngredient import addIngredientDialog
 from helpers import connectDB
-
-
 
 class Ui_MainWindow(QMainWindow):
 
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
         self.setupUi()
-        try: 
+        try:
             self.db = connectDB()
         except:
             QMessageBox.about(self, 'Connection', 'Database Connection Failed')
@@ -37,11 +34,13 @@ class Ui_MainWindow(QMainWindow):
         widget.exec_()
 
     def closeEvent(self, event):
-        close = QtWidgets.QMessageBox.question(self, 'Confirm Exit', 'Exit Program?', QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        if close == QtWidgets.QMessageBox.Yes:
+
+        toClose = QMessageBox.question(self, 'Confirm Exit', 'Exit Program?', QMessageBox.Yes | QMessageBox.No)
+        if toClose == QMessageBox.Yes:
+            print('Exited the program')
             event.accept()
         else:
-            pass
+            event.ignore()
 
     def setupUi(self):
         if not self.objectName():
@@ -269,18 +268,3 @@ class Ui_MainWindow(QMainWindow):
         self.menuDatabase.setTitle(QCoreApplication.translate("self", u"Database", None))
     # retranslateUi
 
-
-'''
-
-  def addIngEvent(self, addIngredientDialog):
-        dialog = addIngredientDialog(QDialog)
-        dialog.show()
-
-        '''
-
-''''
-app = QApplication(sys.argv)
-gui = Ui_MainWindow()
-gui.show()
-sys.exit(app.exec_())
-'''
