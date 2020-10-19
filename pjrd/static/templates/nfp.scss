@@ -1,0 +1,90 @@
+body {
+    background: #fff;
+    padding-top: 20px;
+  }
+  
+  /* ==========================================================================
+      Nutrition Label
+  ============================================================================= */
+  
+  $font-regular: Arial, Helvetica, sans-serif;
+  $font-black: "Arial Black", "Helvetica Black", "Arial-BoldMT";
+  
+  .nutrition-label {
+    font-family: $font-regular;
+    font-size: 12px;
+    border: 2px solid #000000;
+    padding: 5px;
+    line-height: 1.2;
+    width: 260px;
+    .nutrition-facts {
+      font-family: $font-black;
+      margin: 0 0 2px 0;
+      padding-bottom: 2px;
+      font-size: 28px;
+      line-height: 1;
+    }
+    .nutrition-header {
+      padding-bottom: 2px;
+      margin-bottom: 2px;
+    }
+    .nutrition-footer {
+      display: flex;
+      font-size: 10px;
+      margin-top: 5px;
+      .asteric {
+        width: 13px;
+      }
+    }
+    .nutrition-row {
+      display: flex;
+      padding: 2px 0;
+      >.nutrition-column {
+        flex-grow: 1;
+      }
+    }
+    .align-bottom {
+      align-self: flex-end;
+    }
+    .border-b-none {
+      border-bottom: 0;
+    }
+    .border-b {
+      border-bottom: 1px solid #000000;
+    }
+    .border-b-md {
+      border-bottom: 6px solid #000000;
+    }
+    .border-b-lg {
+      border-bottom: 10px solid #000000;
+    }
+    .border-t-sm {
+      border-top: 1px solid #000000;
+    }
+    .text-sm {
+      font-size: 10px;
+    }
+    .text-md {
+      font-size: 16px;
+    }
+    .text-bold {
+      font-family: $font-black;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .text-indent {
+      margin-left: 15px;
+    }
+    .text-indent-md {
+      margin-left: 30px;
+    }
+    .calories {
+      font-size: 25px;
+      line-height: 1;
+      font-family: $font-black;
+      &.amount {
+        font-size: 32px;
+      }
+    }
+  }

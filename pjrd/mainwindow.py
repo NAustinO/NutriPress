@@ -12,9 +12,16 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QCoreApplication, Qt, QMetaObject, QSize, QRect
-from PyQt5.QtWidgets import QSizePolicy, QAction, QMenu, QMdiArea, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget, QMessageBox, QDialog, QMenuBar
-from addIngredient import addIngredientDialog
+from PyQt5.QtWidgets import QSizePolicy, QAction, QMenu, QMdiArea, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget, QMessageBox, QDialog, QMenuBar, QComboBox
+
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+from PySide2.QtCore import *
+
+
+#from addIngredient import addIngredientDialog
 from helpers import connectDB
+from add_ingredient import addIngredientDialog
 
 class Ui_MainWindow(QMainWindow):
 
@@ -242,9 +249,9 @@ class Ui_MainWindow(QMainWindow):
     def retranslateUi(self):
         self.setWindowTitle(QCoreApplication.translate("self", u"Pressed Juicery R&D", None))
         self.actionExit.setText(QCoreApplication.translate("self", u"Quit", None))
-#if QT_CONFIG(shortcut)
+        #if QT_CONFIG(shortcut)
         self.actionExit.setShortcut(QCoreApplication.translate("self", u"Meta+Q", None))
-#endif // QT_CONFIG(shortcut)
+        #endif // QT_CONFIG(shortcut)
         self.actionAddRecipe.setText(QCoreApplication.translate("self", u"Recipe", None))
         self.actionAddIngredient.setText(QCoreApplication.translate("self", u"Ingredient", None))
         self.actionOpen.setText(QCoreApplication.translate("self", u"Open", None))
