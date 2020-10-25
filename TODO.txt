@@ -1,0 +1,5 @@
+What kind of functionality do you want it to have? 
+-allow input of ingredients into database with nutritionals 
+-allow input of formulas using user-inputted ingredients 
+-allow scoring to be attached to formulas 
+-display history of scoring for all formulas of same name

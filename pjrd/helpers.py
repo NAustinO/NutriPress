@@ -1,10 +1,9 @@
 import pymysql
 import sys
 
-
 from PyQt5.QtWidgets import QTextBrowser
 from PyQt5.QtCore import QUrl, QDir
-from PyQt5 import QtWebEngineWidgets
+from PyQt5 import QtWebEngineWidgets, QtWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 
@@ -27,11 +26,11 @@ def isUniqueQuery(query):
         return False
 
 def displayNFP():
-
     webEngineView = QWebEngineView()
-    filePath = 'pjrd/static/templates/nfp.html'
-    with open('pjrd/static/templates/nfp.html', 'r') as f:
-        html = f.read()
+    webEngineView.run
+    #filePath = 'pjrd/static/templates/nfp.html'
+    #with open('pjrd/static/templates/nfp.html', 'r') as f:
+     #   html = f.read()
     #url = QUrl.fromLocalFile(QUrl('pjrd/static/templates/nfp.html')
     #webEngineView.load(QUrl.fromLocalFile(filePath))
     html = "<h1>Hello, World</h1>"
