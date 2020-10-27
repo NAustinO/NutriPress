@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>879</width>
-    <height>723</height>
+    <width>737</width>
+    <height>794</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,7 +28,7 @@
      <item row="0" column="0">
       <widget class="QTabWidget" name="addIngredientTabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="genInfoTab">
         <attribute name="title">
@@ -151,6 +151,15 @@
               <property name="buttonSymbols">
                <enum>QAbstractSpinBox::PlusMinus</enum>
               </property>
+              <property name="maximum">
+               <double>1000.000000000000000</double>
+              </property>
+              <property name="singleStep">
+               <double>10.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>100.000000000000000</double>
+              </property>
              </widget>
             </item>
             <item row="6" column="0">
@@ -173,7 +182,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>805</width>
+              <width>663</width>
               <height>444</height>
              </rect>
             </property>
@@ -449,7 +458,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>805</width>
+              <width>663</width>
               <height>1525</height>
              </rect>
             </property>

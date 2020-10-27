@@ -8,12 +8,18 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
+import sys
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+from helpers import connectDB
 
+class confirmationDialog(object):
 
-class Ui_confirmationDialog(object):
+    def __init__(self):
+        super(confirmationDialog, self).__init__()
+        self.setupUi(self)
+
     def setupUi(self, confirmationDialog):
         if not confirmationDialog.objectName():
             confirmationDialog.setObjectName(u"confirmationDialog")

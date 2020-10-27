@@ -58,7 +58,8 @@ class formulaEditorDialog(QDialog):
        # Adds          
         
     def setupActions(self):
-        self.displayNFPBtn.clicked.connect(displayNFP())
+        # self.displayNFPBtn.clicked.connect(displayNFP())
+        
     
 
     def setupUi(self, Dialog):

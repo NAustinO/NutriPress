@@ -39,6 +39,15 @@ def displayNFP():
     return webEngineView
 
 
+
+# called to test if the window works
+def test(window):
+    app = QApplication(sys.argv)
+    gui = window()
+    gui.show()
+    sys.exit(app.exec_())
+
+
 '''
 def displayNFP():
     sourceHTML = QUrl('pjrd/static/templates/nfp.html')
