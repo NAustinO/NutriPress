@@ -38,6 +38,11 @@ def displayNFP():
     webEngineView.resize(800, 800)
     return webEngineView
 
+def connectionDB(database):
+    connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database)
+    return connection
+
+
 
 
 # called to test if the window works

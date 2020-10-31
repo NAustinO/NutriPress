@@ -11,14 +11,15 @@
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from helpers import test, connectDB
+from helpers import test, connectDB, connectionDB
 
 class searchResults(QDialog):
 
-    def __init__(self):
+    def __init__(self): # def __init__(self, searchQuery)
         super(searchResults, self).__init__()
         self.setupUi(self)
         self.setupSignals()
+        self.setupEvents()
 
     def setupUi(self, searchResults):
         if not searchResults.objectName():
@@ -35,7 +36,6 @@ class searchResults(QDialog):
 
         self.verticalLayout.addWidget(self.resultsLabel)
 
-
         self.verticalLayout_2.addWidget(self.widget)
 
         self.searchResultsTable = QTableWidget(searchResults)
@@ -51,6 +51,7 @@ class searchResults(QDialog):
         self.searchResultsTable.setHorizontalHeaderItem(3, __qtablewidgetitem3)
         __qtablewidgetitem4 = QTableWidgetItem()
         self.searchResultsTable.setHorizontalHeaderItem(4, __qtablewidgetitem4)
+
         self.searchResultsTable.setObjectName(u"searchResultsTable")
         self.searchResultsTable.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.searchResultsTable.setDragDropOverwriteMode(False)
@@ -58,7 +59,7 @@ class searchResults(QDialog):
         self.searchResultsTable.horizontalHeader().setDefaultSectionSize(175)
         self.searchResultsTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.searchResultsTable.setSelectionBehavior(QAbstractItemView.SelectRows)
-
+        self.searchResultsTable.setSortingEnabled(False)
 
         self.verticalLayout_2.addWidget(self.searchResultsTable)
 
@@ -90,25 +91,40 @@ class searchResults(QDialog):
 
         self.verticalLayout_2.addWidget(self.frame)
 
-        self.dialogButtonBox = QDialogButtonBox(searchResults)
-        self.dialogButtonBox.setObjectName(u"dialogButtonBox")
-        self.dialogButtonBox.setOrientation(Qt.Horizontal)
-        self.dialogButtonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.verticalLayout_2.addWidget(self.dialogButtonBox)
+        self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
+        self.cancelPushBtn = QPushButton(searchResults)
+        self.cancelPushBtn.setObjectName(u"cancelPushBtn")
+        self.cancelPushBtn.setText(u"Cancel")
+
+        self.horizontalLayout_2.addWidget(self.cancelPushBtn)
+
+        self.okPushBtn = QPushButton(searchResults)
+        self.okPushBtn.setObjectName(u"okPushBtn")
+        self.okPushBtn.setAutoDefault(False)
+        self.okPushBtn.setText(u"Ok")
+
+        self.horizontalLayout_2.addWidget(self.okPushBtn)
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
         self.retranslateUi(searchResults)
-        self.dialogButtonBox.accepted.connect(searchResults.accept)
-        self.dialogButtonBox.rejected.connect(searchResults.close)
-        self.goBtn.clicked.connect(self.searchResultsTable.update)
 
         QMetaObject.connectSlotsByName(searchResults)
+
+        #####--------------_#####
+        #self.setupSignals()
+        #self.setupEvents()
+        #####--------------_#####
     # setupUi
 
     def retranslateUi(self, searchResults):
         searchResults.setWindowTitle(QCoreApplication.translate("searchResults", u"Search Results", None))
-        self.resultsLabel.setText(QCoreApplication.translate("searchResults", u"Search returned # results. Double click to add to formula.", None))
+        self.resultsLabel.setText(QCoreApplication.translate("searchResults", u"Search results. Double click to add to formula or search again", None))
         ___qtablewidgetitem = self.searchResultsTable.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("searchResults", u"Name", None));
         ___qtablewidgetitem1 = self.searchResultsTable.horizontalHeaderItem(1)
@@ -119,39 +135,43 @@ class searchResults(QDialog):
         ___qtablewidgetitem3.setText(QCoreApplication.translate("searchResults", u"Supplier Code", None));
         ___qtablewidgetitem4 = self.searchResultsTable.horizontalHeaderItem(4)
         ___qtablewidgetitem4.setText(QCoreApplication.translate("searchResults", u"Ingredient Statement", None));
+
         self.label.setText("")
         self.label_2.setText(QCoreApplication.translate("searchResults", u"Search again", None))
         self.goBtn.setText(QCoreApplication.translate("searchResults", u"Go", None))
     # retranslateUi
 
+    #TODO on double click from table, send the data back to the confirmadd dialog. Bring up dialog TODO
+    # setupSignals
     def setupSignals(self):
         self.goBtn.clicked.connect(self.search)
-        self.searchResultsTable.cellDoubleClicked.connect(self.resultClicked(self.searchResultsTable.selectedItems))
-        #self.searchLineEdit.enterEvent.connect(self.search)
+        self.goBtn.clicked.connect(self.searchResultsTable.update)
         self.searchLineEdit.returnPressed.connect(self.search)
-        #TODO on double click from table, send the data back to the confirmadd dialog. Bring up dialog TODO
-       #self.connect(self.searchResultsTable, QAbstractItemView.DoubleClicked)
+        self.searchLineEdit.returnPressed.connect(self.searchResultsTable.update)
+        
+        #self.searchLineEdit.returnPressed.connect(lambda: self.search()) #(lambda: self.search(self.searchLineEdit.text()))
+    
+    def setupEvents(self):
+        self.searchResultsTable.viewport().installEventFilter(self)
 
-    def search(self):
+    def search(self): #def serach(self, searchQuery)
         searchQuery = self.searchLineEdit.text()
-        #searchQuery = 'Grape' #<--------------------------------------
-        with connectDB().cursor() as cursor:
+        connection = connectionDB('FormulaSchema') #<------------------------ needs error handling
+        cursor = connection.cursor()
+        rows = cursor.execute("SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id FROM ingredient INNER JOIN supplier ON supplier.supplier_id = ingredient.supplier_id WHERE ing_common_name LIKE %s OR ing_specific_name LIKE %s OR supplier_name LIKE %s OR ingredient_statement LIKE %s", ("%" + searchQuery + "%", "%" + searchQuery + "%", "%" + searchQuery + "%", "%" + searchQuery + "%",))
+        queryResults = cursor.fetchall()
+        self.refreshTable(queryResults)# <----removed
+        self.updateResultCount(rows)
+        cursor.close()
+        #return queryResults
+    # search
 
-            query = """SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement FROM ingredient INNER JOIN supplier ON supplier.supplier_id = ingredient.supplier_id WHERE ing_common_name LIKE '%"%s"%' OR ing_specific_name LIKE '%"%s"%' OR supplier_name LIKE '%"%s"%' OR ingredient_statement LIKE '%"%s"%'"""
-            
-            cursor.execute("SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id FROM ingredient INNER JOIN supplier ON supplier.supplier_id = ingredient.supplier_id WHERE ing_common_name LIKE %s OR ing_specific_name LIKE %s OR supplier_name LIKE %s OR ingredient_statement LIKE %s", ("%" + searchQuery + "%", "%" + searchQuery + "%", "%" + searchQuery + "%", "%" + searchQuery + "%",))
-            searchResults = cursor.fetchall()
-            print(searchResults)
-            self.refreshTable(searchResults)
-
-    # called in search() to refresh the table to reflect new results
+    # called during search() to refresh the table to reflect new results
     def refreshTable(self, searchResults):
     
         # search results are in list of tuples.
         # data comes in order of index ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id
-      
         self.searchResultsTable.setRowCount(0)
-
         for result in searchResults:
             if self.searchResultsTable.rowCount() == 0:
                 rowIndex = 0
@@ -163,27 +183,62 @@ class searchResults(QDialog):
 
             # sets common name. Assigns the ingredient id as data to this column
             widgetItem = QTableWidgetItem(result[0])
-            widgetItem.setData(0, result[5])
-            self.searchResultsTable.setItem(rowIndex, 0, widgetItem)
+            widgetItem.setData(Qt.UserRole, result[5])
+            widgetItem.setText(result[0])
 
+            self.searchResultsTable.setItem(rowIndex, 0, widgetItem)
+            #self.searchResultsTable.setItem(rowIndex, 0, QTableWidgetItem(result[0]))
             # sets specific name
             self.searchResultsTable.setItem(rowIndex, 1, QTableWidgetItem(result[1]))
-
             # sets supplier name
             self.searchResultsTable.setItem(rowIndex, 2, QTableWidgetItem(result[2]))
-
             # sets supplier item code 
             self.searchResultsTable.setItem(rowIndex, 3, QTableWidgetItem(result[3]))
-
             # sets ingredient statement 
             self.searchResultsTable.setItem(rowIndex, 4, QTableWidgetItem(result[4]))
+            self.searchResultsTable.update()
+    # refreshTable
+
+    # eventFilter, returns super(searchResults, self).eventFilter(source, event)
+    def eventFilter(self, source, event):
+        if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
+            item = self.searchResultsTable.itemAt(event.pos())
+            itemID = self.searchResultsTable.item(item.row(), 0).data(Qt.UserRole)
+            if item is not None: #<--------------------debug
+                print('You clicked', item.row(), item.column())
+                with connectionDB('FormulaSchema').cursor() as cursor: 
+                    cursor.execute('SELECT ing_common_name FROM ingredient WHERE ing_id = %s', (itemID,))
+                    itemName = cursor.fetchone()
+                    print('This item is: ', itemName[0])
+            return super(searchResults, self).eventFilter(source, event)
+    # eventFilter
+
+    def enterEventFilter(self, source, event):
+        if (event.type() == QEvent.KeyPress and source == self.searchLineEdit and event.key() == Qt.Key_Enter):
+            search = self.searchLineEdit.text()
+            if search is not None:
+                self.search()
+               #return super(searchResults, self).eventFilter(source, event)
+    # enterEventFilter
 
 
-    def resultClicked(self, selectedItems):
-        # debug
-        #for item in selectedItems:
-        #    print(item)
-        print(selectedItems)
-        print('it works')
+    # called during search()
+    def updateResultCount(self, count):
+        if count is 0:
+            self.resultsLabel.setText("Your search had no results. Please try another search to add to formula.")
+        elif count is 1:
+            self.resultsLabel.setText("Seach returned {count} result. Double click to add to formula.".format(count = count))
+        else:
+            self.resultsLabel.setText("Seach returned {count} results. Double click to add to formula.".format(count = count))
+
 
 test(searchResults)
+
+
+"""
+# called to test if the window works
+def test(window):
+    app = QApplication(sys.argv)
+    gui = window()
+    gui.show()
+    sys.exit(app.exec_())"""
