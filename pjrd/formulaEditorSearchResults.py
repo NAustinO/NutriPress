@@ -12,14 +12,21 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from helpers import test, connectDB, connectionDB
+import sys
+from confirmAddDialog import confirmationDialog
 
 class searchResults(QDialog):
 
-    def __init__(self): # def __init__(self, searchQuery)
+    # query: the search query passed in from the formulaEditor window
+    # updateRefs: a dictionary(not) that holds the references of QWidgets that are updated
+    def __init__(self, query, updateRefs=None):
         super(searchResults, self).__init__()
         self.setupUi(self)
+        self.searchEvent(query)
         self.setupSignals()
         self.setupEvents()
+        self.updateRefs = updateRefs
+        
 
     def setupUi(self, searchResults):
         if not searchResults.objectName():
@@ -117,14 +124,13 @@ class searchResults(QDialog):
         QMetaObject.connectSlotsByName(searchResults)
 
         #####--------------_#####
-        #self.setupSignals()
-        #self.setupEvents()
+        #self.searchEvent(query)
         #####--------------_#####
     # setupUi
 
     def retranslateUi(self, searchResults):
         searchResults.setWindowTitle(QCoreApplication.translate("searchResults", u"Search Results", None))
-        self.resultsLabel.setText(QCoreApplication.translate("searchResults", u"Search results. Double click to add to formula or search again", None))
+        self.resultsLabel.setText(QCoreApplication.translate("searchResults", u"Search results. Double click to add to formula or search again using searchbar", None))
         ___qtablewidgetitem = self.searchResultsTable.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("searchResults", u"Name", None));
         ___qtablewidgetitem1 = self.searchResultsTable.horizontalHeaderItem(1)
@@ -141,38 +147,46 @@ class searchResults(QDialog):
         self.goBtn.setText(QCoreApplication.translate("searchResults", u"Go", None))
     # retranslateUi
 
-    #TODO on double click from table, send the data back to the confirmadd dialog. Bring up dialog TODO
-    # setupSignals
+    def self(self):
+        return self
+         
+    #TODO on double click from table, send the data back to the confirmadd dialog. Bring up dialog 
+
     def setupSignals(self):
-        self.goBtn.clicked.connect(self.search)
-        self.goBtn.clicked.connect(self.searchResultsTable.update)
-        self.searchLineEdit.returnPressed.connect(self.search)
-        self.searchLineEdit.returnPressed.connect(self.searchResultsTable.update)
-        
-        #self.searchLineEdit.returnPressed.connect(lambda: self.search()) #(lambda: self.search(self.searchLineEdit.text()))
-    
+        self.goBtn.clicked.connect(self.searchEvent)
+        self.searchLineEdit.returnPressed.connect(self.searchEvent)
+        self.okPushBtn.clicked.connect(self.accept)
+        self.cancelPushBtn.clicked.connect(self.cancel)
+    #setupSignals
+
     def setupEvents(self):
         self.searchResultsTable.viewport().installEventFilter(self)
+    #setupEvents
 
-    def search(self): #def serach(self, searchQuery)
-        searchQuery = self.searchLineEdit.text()
+    # called by return/enter or pressing search button and on startup
+    def searchEvent(self, query=False): # TODO needs error handling
+        if query is False:
+            query = self.searchLineEdit.text()
+        if query is None:
+            query = ''
         connection = connectionDB('FormulaSchema') #<------------------------ needs error handling
         cursor = connection.cursor()
-        rows = cursor.execute("SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id FROM ingredient INNER JOIN supplier ON supplier.supplier_id = ingredient.supplier_id WHERE ing_common_name LIKE %s OR ing_specific_name LIKE %s OR supplier_name LIKE %s OR ingredient_statement LIKE %s", ("%" + searchQuery + "%", "%" + searchQuery + "%", "%" + searchQuery + "%", "%" + searchQuery + "%",))
+        rows = cursor.execute("SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id FROM ingredient INNER JOIN supplier ON supplier.supplier_id = ingredient.supplier_id WHERE ing_common_name LIKE %s OR ing_specific_name LIKE %s OR supplier_name LIKE %s OR ingredient_statement LIKE %s", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%",))
         queryResults = cursor.fetchall()
-        self.refreshTable(queryResults)# <----removed
-        self.updateResultCount(rows)
-        cursor.close()
-        #return queryResults
-    # search
-
-    # called during search() to refresh the table to reflect new results
-    def refreshTable(self, searchResults):
-    
-        # search results are in list of tuples.
         # data comes in order of index ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id
+        cursor.close()
+
+        # updates the header
+        if rows == 0:
+            self.resultsLabel.setText("Your search had no results. Please try another search to add to formula.")
+        elif rows == 1:
+            self.resultsLabel.setText("Seach returned {count} result. Double click to add to formula.".format(count = rows))
+        else:
+            self.resultsLabel.setText("Seach returned {count} results. Double click to add to formula.".format(count = rows))
+
+        # refreshes table with results 
         self.searchResultsTable.setRowCount(0)
-        for result in searchResults:
+        for result in queryResults:
             if self.searchResultsTable.rowCount() == 0:
                 rowIndex = 0
             else:
@@ -197,48 +211,64 @@ class searchResults(QDialog):
             # sets ingredient statement 
             self.searchResultsTable.setItem(rowIndex, 4, QTableWidgetItem(result[4]))
             self.searchResultsTable.update()
-    # refreshTable
 
-    # eventFilter, returns super(searchResults, self).eventFilter(source, event)
+    # double click event filter TODO call the confirmAddUI passing in thek
+    # called when user double clicks within table viewport to choose ingredient. Returns the ingredientID 
     def eventFilter(self, source, event):
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
-            item = self.searchResultsTable.itemAt(event.pos())
-            itemID = self.searchResultsTable.item(item.row(), 0).data(Qt.UserRole)
-            if item is not None: #<--------------------debug
-                print('You clicked', item.row(), item.column())
-                with connectionDB('FormulaSchema').cursor() as cursor: 
-                    cursor.execute('SELECT ing_common_name FROM ingredient WHERE ing_id = %s', (itemID,))
-                    itemName = cursor.fetchone()
-                    print('This item is: ', itemName[0])
-            return super(searchResults, self).eventFilter(source, event)
+            self.accept()
+            #item = self.searchResultsTable.itemAt(event.pos())
+            #itemID = self.searchResultsTable.item(item.row(), 0).data(Qt.UserRole)
+            #if item is not None: #<--------------------debug
+             #   print('You clicked', item.row(), item.column())
+              #  with connectionDB('FormulaSchema').cursor() as cursor: 
+               #     cursor.execute('SELECT ing_common_name FROM ingredient WHERE ing_id = %s', (itemID,))
+                #    itemName = cursor.fetchone()
+                #   print('This item is: ', itemName[0])
+            
+            return True
+        return super(searchResults, self).eventFilter(source, event)
     # eventFilter
 
     def enterEventFilter(self, source, event):
         if (event.type() == QEvent.KeyPress and source == self.searchLineEdit and event.key() == Qt.Key_Enter):
-            search = self.searchLineEdit.text()
-            if search is not None:
-                self.search()
-               #return super(searchResults, self).eventFilter(source, event)
+            query = self.searchLineEdit.text()
+            self.searchEvent(query)
+            return True
+        return super(searchResults, self).eventFilter(source, event)
     # enterEventFilter
 
-
-    # called during search()
-    def updateResultCount(self, count):
-        if count is 0:
-            self.resultsLabel.setText("Your search had no results. Please try another search to add to formula.")
-        elif count is 1:
-            self.resultsLabel.setText("Seach returned {count} result. Double click to add to formula.".format(count = count))
+    def accept(self, id=False):
+        chosen = self.searchResultsTable.selectedItems()
+        rows = int(len(chosen)/self.searchResultsTable.columnCount())
+        if not chosen:
+            msg = QMessageBox()
+            msg.setText('Please select an ingredient to add')
+            msg.exec_()
+        elif rows > 1:
+            msg = QMessageBox()
+            msg.setText('Choose only one ingredient')
+            msg.exec_()
         else:
-            self.resultsLabel.setText("Seach returned {count} results. Double click to add to formula.".format(count = count))
+            if id is False:
+                ingItem = self.searchResultsTable.selectedItems().pop()
+                ingRow = ingItem.row()
+                id = self.searchResultsTable.item(ingRow, 0).data(Qt.UserRole)
+                print(id)
+            #self.hide()
+            enterValue = confirmationDialog(self.updateRefs, id)
+            enterValue.setModal(False)
+            enterValue.exec_()
+            #self.close()
 
+    def cancel(self):
+        self.close()
 
-test(searchResults)
+#if __name__ == '__main__':
+#    searchResults()
 
-
-"""
-# called to test if the window works
-def test(window):
-    app = QApplication(sys.argv)
-    gui = window()
-    gui.show()
-    sys.exit(app.exec_())"""
+'''
+app = QApplication(sys.argv)
+gui = searchResults('grape')
+gui.show()
+sys.exit(app.exec_())'''

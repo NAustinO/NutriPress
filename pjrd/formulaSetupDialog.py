@@ -11,13 +11,19 @@
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+import sys
+import pymysql
+
+sys.path.append('../pjrd')
 from helpers import test
+from formulaEditor import formulaEditorDialog
 
 class formulaSetupDialog(QDialog):
 
     def __init__(self):
         super(formulaSetupDialog, self).__init__()
         self.setupUi(self)
+        self.setupSignals()
 
     def setupUi(self, formulaSetupDialog):
         if not formulaSetupDialog.objectName():
@@ -138,6 +144,8 @@ class formulaSetupDialog(QDialog):
 
         self.formulasToDateComboBox = QComboBox(self.revisionContainerFrame)
         self.formulasToDateComboBox.setObjectName(u"formulasToDateComboBox")
+        self.formulasToDateComboBox.setEditable(True)
+        self.formulasToDateComboBox.setMaxVisibleItems(50)
 
         self.gridLayout_2.addWidget(self.formulasToDateComboBox, 3, 0, 1, 1)
 
@@ -195,6 +203,75 @@ class formulaSetupDialog(QDialog):
         self.differencesPrompt.setText(QCoreApplication.translate("formulaSetupDialog", u"Differences from previous version (optional)", None))
         self.previousVersionPlaceholderLabel.setText("")
     # retranslateUi
+
+    def setupSignals(self):
+        self.formulasToDateComboBox.currentIndexChanged.connect()
+
+    def setupSuggestions(self):
+
+        completer = QCompleter()
+        model = QStandardItemModel(completer)
+        with pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database='FormulaSchema', cursorclass=pymysql.cursors.DictCursor) as cursor:
+            cursor.execute('SELECT formula_id, formula_name FROM formula ORDER BY formula_name ASC')
+            results = cursor.fetchall()
+            for result in results:
+                standardItem = QStandardItem()
+                standardItem.setText(result['formula_name'])
+                standardItem.setData(result['formula_id'], Qt.UserRole)
+                model.appendRow(standardItem)
+        completer.setModel(model)
+        self.formulasToDateComboBox.setCompleter(completer)
+        self.formulasToDateComboBox.setCurrentIndex(-1)
+        
+    def updateVersionLabel(self):
+        with pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database='FormulaSchema', cursorclass=pymysql.cursors.DictCursor) as cursor:
+            pass
+        
+
+    # overwrites QDialog accept method 
+    def accept(self):
+
+        # error checking
+        if self.revisionRadioBtn.isChecked() is False and self.newFormulaRadioBtn.isChecked() is False:
+            msg = QMessageBox()
+            msg.setText('Please indicate whether this formula is new or a revision/iteration')
+            msg.exec_()
+            return
+        else:
+            isRevision = self.revisionRadioBtn.isChecked()
+        
+            # if the formula is a new formula
+            if isRevision is False:
+                # if the name is empty
+                if self.formulaNameLineEdit.text() == '' or self.formulaNameLineEdit.text() is None:
+                    msg = QMessageBox()
+                    msg.setText('Input a formula name to continue')
+                    msg.exec_()
+                    return
+                # if everything goes right
+                else:
+                    name = self.formulaNameLineEdit.text()
+                    formulaEditor = formulaEditorDialog(isRevision, formulaName = name)
+                    formulaEditor.exec_()
+                    self.close()
+
+            # if the formula is a revision
+            else:
+                # if no revision was inputted
+                if self.formulasToDateComboBox.currentIndex() == -1:
+                    msg = QMessageBox()
+                    msg.setText('Select a previous formula that you are revising')
+                    msg.exec_()
+                    return
+                # if everything goes right
+                else:
+                    prevID = self.formulasToDateComboBox.currentData(Qt.UserRole)
+                    prevName = self.formulasToDateComboBox.currentText()
+                    formulaEditor = formulaEditorDialog(isRevision,formulaName = prevName, prevRevisionID = prevID)
+                    formulaEditor.exec_()
+                    self.close()
+
+
 
 
 

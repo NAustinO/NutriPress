@@ -1,5 +1,5 @@
 {
-    "python.linting.pylintEnabled": false,
+    "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "python.linting.pylintArgs": [
         "--extension-pkg-whitelist=PyQt5", 
@@ -7,8 +7,10 @@
         "--extension-pkg-whitelist=_QTwidgets.QMessageBox"
     ],
     "python.linting.pydocstyleEnabled": false,
-    "python.linting.flake8Enabled": false,
-    "python.pythonPath": "venv/bin/python"
+    "python.linting.flake8Enabled": true,
+    "python.pythonPath": "venv/bin/python",
+    "python.analysis.completeFunctionParens": true,
+    "python.formatting.provider": "black"
     
 
 }

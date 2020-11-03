@@ -44,7 +44,7 @@ class Ui_MainWindow(QMainWindow):
 
         toClose = QMessageBox.question(self, 'Confirm Exit', 'Exit Program?', QMessageBox.Yes | QMessageBox.No)
         if toClose == QMessageBox.Yes:
-            print('Exited the program')
+    #print('Exited the program')
             event.accept()
         else:
             event.ignore()

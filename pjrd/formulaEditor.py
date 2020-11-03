@@ -12,56 +12,22 @@ import sys
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from helpers import connectDB, displayNFP
+
+sys.path.append('../pjrd')
+from helpers import connectDB, displayNFP, test
+from formulaEditorSearchResults import searchResults
+#from import confirmAddDialog
 
 
 class formulaEditorDialog(QDialog):
     
-    def __init__(self):
+    def __init__(self, revision: bool, formulaName: str = None, prevRevisionID: int = None, differences: str = None):
         super(formulaEditorDialog, self).__init__()
         self.setupUi(self)
         self.setupSuggestions()
-        self.setupActions()
-    
-    def setupSuggestions(self):
+        self.setupSignals()
+        self.setupEvents()
         
-        # Adds all cateogories to category box
-        with connectDB().cursor() as cursor:
-            cursor.execute("SELECT category_id, category_name FROM formula_category")
-            allCategories = cursor.fetchall()
-            for category in allCategories:
-                name = category[1]
-                id = category[0]
-                index = self.categoryComboBox.currentIndex()
-                self.categoryComboBox.insertItem(index, name, id)
-            self.categoryComboBox.setCurrentText("")
-
-        # Adds completer to searchbar
-        with connectDB().cursor() as cursor:
-            cursor.execute(
-                'SELECT ing_common_name, ing_specific_name,             supplier_name, supplier_ing_item_code FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id'
-            )
-            ingredients = cursor.fetchall()
-            suggestions = []
-            for ingredient in ingredients:
-                if ingredient[2] is None:
-                    if ingredient[1] is None:
-                        suggestion = ingredient[0] + '(General)'
-                    else:
-                        suggestion = ingredient[0] + '(' + ingredient[1] + ')'
-                else:
-                    suggestion = ingredient[1] + '(' + ingredient[2] + ',' + ingredient[0] + ')'
-                suggestions.append(suggestion)
-            completer = QCompleter(suggestions)
-            self.formulaIngredientSearchLineEdit.setCompleter(completer)
-            
-       # Adds          
-        
-    def setupActions(self):
-        # self.displayNFPBtn.clicked.connect(displayNFP())
-        
-    
-
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
@@ -383,9 +349,9 @@ class formulaEditorDialog(QDialog):
 
         self.formulaIngredientSearchBtn = QPushButton(self.formulaIngredientHeaderWidget)
         self.formulaIngredientSearchBtn.setObjectName(u"formulaIngredientSearchBtn")
-
+        #self.formulaIngredientSearchBtn.clicked.connect(self.openSearchResultsDialog) #<---
+     
         self.horizontalLayout_10.addWidget(self.formulaIngredientSearchBtn)
-
 
         self.verticalLayout_11.addWidget(self.formulaIngredientHeaderWidget)
 
@@ -829,9 +795,62 @@ class formulaEditorDialog(QDialog):
 
         self.formulaEditorTabWidget.setCurrentIndex(0)
 
-
         QMetaObject.connectSlotsByName(Dialog)
     # setupUi
+
+    def self(self):
+        return self
+        self.ingTabfor
+
+    def setupSuggestions(self):
+        # Adds all cateogories to category box
+        with connectDB().cursor() as cursor:
+            cursor.execute("SELECT category_id, category_name FROM formula_category")
+            allCategories = cursor.fetchall()
+            for category in allCategories:
+                name = category[1]
+                id = category[0]
+                index = self.categoryComboBox.currentIndex()
+                self.categoryComboBox.insertItem(index, name, id)
+            self.categoryComboBox.setCurrentText("")
+
+        # Adds completer to searchbar
+        with connectDB().cursor() as cursor:
+            cursor.execute(
+                'SELECT ing_common_name, ing_specific_name,             supplier_name, supplier_ing_item_code FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id'
+            )
+            ingredients = cursor.fetchall()
+            suggestions = []
+            for ingredient in ingredients:
+                if ingredient[2] is None:
+                    if ingredient[1] is None:
+                        suggestion = ingredient[0] + '(General)'
+                    else:
+                        suggestion = ingredient[0] + '(' + ingredient[1] + ')'
+                else:
+                    suggestion = ingredient[1] + '(' + ingredient[2] + ',' + ingredient[0] + ')'
+                suggestions.append(suggestion)
+            completer = QCompleter(suggestions)
+            self.formulaIngredientSearchLineEdit.setCompleter(completer)
+            
+       # Adds          
+        
+    def setupSignals(self):
+        self.formulaIngredientSearchBtn.clicked.connect(self.openSearchResultsDialog)
+        # self.displayNFPBtn.clicked.connect(displayNFP())
+    
+    def setupEvents(self):
+        self.formulaIngredientSearchBtn.installEventFilter(self)
+    
+    
+    def openSearchResultsDialog(self):
+        query = self.formulaIngredientSearchLineEdit.text()
+        updateRefs = self.self()
+        dialog = searchResults(query, updateRefs)
+        dialog.setModal(True)
+        dialog.exec_()
+    
+
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Formula Editor", u"Formula Editor", None))
@@ -935,12 +954,8 @@ class formulaEditorDialog(QDialog):
         self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.labelTab), QCoreApplication.translate("Dialog", u"Label", None))
     # retranslateUi
 
-
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    gui = formulaEditorDialog()
-    gui.show()
-    sys.exit(app.exec_())
-    
+'''
+app = QApplication(sys.argv)
+gui = formulaEditorDialog()
+gui.show()
+sys.exit(app.exec_())'''
