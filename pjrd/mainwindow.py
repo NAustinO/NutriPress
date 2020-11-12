@@ -20,7 +20,7 @@ from PySide2.QtCore import *
 
 
 #from addIngredient import addIngredientDialog
-from helpers import connectDB
+from helpers import connectDB, dbConnection
 from add_ingredient import addIngredientDialog
 
 class Ui_MainWindow(QMainWindow):
@@ -29,7 +29,7 @@ class Ui_MainWindow(QMainWindow):
         super(Ui_MainWindow, self).__init__()
         self.setupUi()
         try:
-            self.db = connectDB()
+            self.db = dbConnection('FormulaSchema')
         except:
             QMessageBox.about(self, 'Connection', 'Database Connection Failed')
         else:

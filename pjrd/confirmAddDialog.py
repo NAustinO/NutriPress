@@ -13,19 +13,19 @@ import sys
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from helpers import connectionDB, test
+from helpers import test, dbConnection, TimedMessageBox
 
 class confirmationDialog(QDialog):
 
-    def __init__(self, updateRefs, ingID=None):
+    def __init__(self, root, ingID=None):
         if ingID is None:
             pass
         super(confirmationDialog, self).__init__()
-        self.updateRefs = updateRefs
+        self.root = root
         self.setupUi(self)
         self.setupFromSearchResultsDialog(ingID)
-        self.setupUiObjects()
-        self.setupSignals()
+        self.setupLogic()
+
        
     def setupUi(self, confirmationDialog):
         if not confirmationDialog.objectName():
@@ -180,83 +180,105 @@ class confirmationDialog(QDialog):
         self.okPushBtn.setText(QCoreApplication.translate("confirmationDialog", u"Ok", None))
     # retranslateUi
 
+    # sets up the logic for the class
+    def setupLogic(self):
+        # sets up signals
+        self.okPushBtn.clicked.connect(self.submit)
+        self.cancelPushBtn.clicked.connect(self.cancelEvent)
+
+        #sets up events
+        #self.keyPressEvent(QKeyEvent(QEvent.KeyPress, Qt.Key_Return)).connect(self.submit)
+        self.installEventFilter(self)
+
+        # setup unit of measure combobox completer and data
+        with dbConnection('FormulaSchema').cursor() as cursor:
+            completer = QCompleter()
+            model = QStandardItemModel()
+            cursor.execute('SELECT unit_id, unit_name, unit_symbol, si_unit_factor, conversion_offset FROM unit WHERE unit_class = "mass" ORDER BY si_unit_factor DESC')
+            uoms = cursor.fetchall()
+            for uom in uoms:
+                unitItem = QStandardItem()
+                unitItem.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
+                unitItem.setData(uom, Qt.UserRole)
+                model.appendRow(unitItem)
+            completer.setModel(model)
+            completer.setCompletionMode(QCompleter.InlineCompletion)
+            self.unitComboBox.setCompleter(completer)
+            self.unitComboBox.setModel(model)
+            self.unitComboBox.setCurrentIndex(-1)
+
     def setupFromSearchResultsDialog(self, ingID):
-        with connectionDB('FormulaSchema').cursor() as cursor:
+        with dbConnection('FormulaSchema').cursor() as cursor:
             try:
-                # (ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, is_standard)
-                cursor.execute('SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, is_standard FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id WHERE ing_id = %s',(ingID,))
+                # ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code
+                cursor.execute('SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id WHERE ing_id = %s',(ingID,))
             except Exception:
                 print('There was an error in the query')
                 exit(1)
-            ing = cursor.fetchone()
-
-            self.namePlaceholderLabel.setText(ing[0])
-            
-            # if no specific name is given
-            if ing[1] is None:
-                if ing[4] is True:
-                    self.specificNamePlaceholderLabel.setText('Standard Ingredient')
-                else:
-                    self.specificNamePlaceholderLabel.setText('N/A')
             else:
-                self.specificNamePlaceholderLabel.setText(ing[1])
+                ing = cursor.fetchone()
 
-            if ing[2] is None:
+            # ingredient name label
+            self.namePlaceholderLabel.setText(ing['ing_common_name'])   
+
+            # update specific name if exists
+            if ing['ing_specific_name'] is None:
+                self.specificNamePlaceholderLabel.setText('N/A')
+            else:
+                self.specificNamePlaceholderLabel.setText(ing['ing_specific_name'])
+
+            # update supplier name if exists
+            if ing['supplier_name'] is None:
                 self.supplierPlaceholderLabel.setText('N/A')
             else:
-                self.supplierPlaceholderLabel.setText(ing[2])
+                self.supplierPlaceholderLabel.setText(ing['supplier_name'])
 
-            if ing[3] is None:
+            # update supplier item code if exists
+            if ing['supplier_ing_item_code'] is None:
                 self.supplierCodePlaceholderLabel.setText('N/A')
             else:
-                self.supplierCodePlaceholderLabel.setText(ing[3])
-        
-    def setupUiObjects(self):
-        with connectionDB('FormulaSchema').cursor() as cursor:
-            cursor.execute('SELECT unit_id, unit_name, unit_symbol, base_unit_factor, conversion_offset FROM unit_conversion WHERE unit_class = "mass" ORDER BY base_unit_factor DESC')
-            uoms = cursor.fetchall()
-            completionList = []
-            for uom in uoms:
-                text = "{unitName} ({unitSymbol})".format(unitName=uom[1], unitSymbol = uom[2])
-                completionList.append(text)
-                self.unitComboBox.addItem(text, uom)
-            self.unitComboBox.setCurrentIndex(-1)
+                self.supplierCodePlaceholderLabel.setText(ing['supplier_ing_item_code'])
+   
+    # event filter to listen for return button 
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.KeyPress and source == self and event.key() == Qt.Key_Return: 
+            self.submit()
+            return True
+        return False
 
-        completer = QCompleter(completionList)
-        completer.setCompletionMode(QCompleter.InlineCompletion)
-        self.unitComboBox.setCompleter(completer)
-    
-    def setupSignals(self):
-        self.okPushBtn.clicked.connect(self.submit)
-        self.cancelPushBtn.clicked.connect(self.cancelEvent)
-    
-    def setupEvent(self):
-        self.keyPressEvent(Qt.Key_Enter).connect(self.submit)
-
+    # submits the form, adds the information back to the formula editor table
     def submit(self):
-        if self.validateUserInput() is False:
-            pass
+        # validates for float input and that is a unit from box is chosen
+        if self.validatedInput() is False:
+            return
         else:
-            rowCount = self.updateRefs.ingTabFormulaTableWidget.rowCount()
-            rowIndex = self.updateRefs.ingTabFormulaTableWidget.rowCount() - 1
+            # continues if the user input is valid
+            rowCount = self.root.ingTabFormulaTableWidget.rowCount()
+            rowIndex = self.root.ingTabFormulaTableWidget.rowCount() - 1
             if rowCount == 0:
                 rowIndex = 0
-
-            self.updateRefs.ingTabFormulaTableWidget.insertRow(rowIndex)
+            self.root.ingTabFormulaTableWidget.insertRow(rowIndex)
             ###just to see that it works. Need to fix
-            self.updateRefs.ingTabFormulaTableWidget.setItem(rowIndex,0,QTableWidgetItem(self.namePlaceholderLabel.text()))
-            self.updateRefs.ingTabFormulaTableWidget.setItem(rowIndex, 2,QTableWidgetItem(self.weightLineEdit.text()))
-            self.updateRefs.ingTabFormulaTableWidget.setItem(rowIndex, 3, QTableWidgetItem(self.unitComboBox.currentText()))
-            self.updateRefs.ingTabFormulaTableWidget.setItem(rowIndex, 4, QTableWidgetItem(self.supplierPlaceholderLabel.text()))
-            self.updateRefs.ingTabFormulaTableWidget.update()
-            self.updateRefs.update()
+            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 0, QTableWidgetItem(self.namePlaceholderLabel.text()))
+            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 2, QTableWidgetItem(self.weightLineEdit.text()))
+            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 3, QTableWidgetItem(self.unitComboBox.currentText()))
+            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 4, QTableWidgetItem(self.supplierPlaceholderLabel.text()))
+            self.root.ingTabFormulaTableWidget.update()
+            self.root.update()
+
             self.close()
+            msg = TimedMessageBox(timeout = 3)
+            msg.setText('Successfully added ingredient. You can add another or return to editor')
+            msg.setIcon(QMessageBox.Information)
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+            
             ##
 
-    def validateUserInput(self):
+    # returns true if the user input for this window is valid, otherwise returns false
+    def validatedInput(self):
         try:
             weight = float(self.weightLineEdit.text()) #TODO error handling
-            return True 
         except ValueError:
             msg = QMessageBox()
             msg.setText("Weight of ingredient must be a number")
@@ -268,6 +290,7 @@ class confirmationDialog(QDialog):
                 msg.setText("Must choose a unit")
                 msg.exec_()
                 return False
+            return True
     
     def cancelEvent(self):
         confirm = QMessageBox().question(self, 'Confirm cancellation', 'Are you sure you want to cancel?', QMessageBox.Yes|QMessageBox.No)

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>678</width>
+    <width>672</width>
     <height>419</height>
    </rect>
   </property>
@@ -101,8 +101,8 @@
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
         </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0" alignment="Qt::AlignTop">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
           <widget class="QLabel" name="formulaContainerLabel">
            <property name="text">
             <string>New Formula</string>
@@ -112,17 +112,31 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QLineEdit" name="formulaNameLineEdit"/>
-         </item>
-         <item row="1" column="0">
+         <item>
           <widget class="QLabel" name="formulaNamePromptLabel">
            <property name="text">
             <string>What is the new formula name?</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item>
+          <widget class="QLineEdit" name="formulaNameLineEdit"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Category</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="newCategoryComboBox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -135,6 +149,19 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
         </layout>
        </widget>
       </item>
@@ -143,15 +170,8 @@
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
         </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="4" column="0">
-          <widget class="QLabel" name="previousVersionLabel">
-           <property name="text">
-            <string>Previous Version</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
           <widget class="QLabel" name="revisionContainerLabel">
            <property name="text">
             <string>Revision</string>
@@ -161,32 +181,56 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Category</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="revisionCategoryComboBox">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="revisedFormulaPromptLabel">
            <property name="text">
             <string>Select formula to be revised</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item>
           <widget class="QComboBox" name="formulasToDateComboBox"/>
          </item>
-         <item row="7" column="0">
-          <widget class="QLabel" name="differencesPrompt">
+         <item>
+          <widget class="QLabel" name="previousVersionLabel">
            <property name="text">
-            <string>Differences from previous version (optional)</string>
+            <string>Previous Version</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
-          <widget class="QTextEdit" name="differencesTextEdit"/>
-         </item>
-         <item row="5" column="0">
+         <item>
           <widget class="QLabel" name="previousVersionPlaceholderLabel">
            <property name="text">
             <string/>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>

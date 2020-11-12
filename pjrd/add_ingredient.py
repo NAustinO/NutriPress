@@ -10,31 +10,37 @@
 
 ## TODO: ADD CALORIES
 import os
-from datetime import datetime
+from datetime import date, datetime
+from typing import NoReturn
+from pjrd.helpers import TimedMessageBox
 from PyQt5.QtCore import QSize, QObject, Qt, QCoreApplication, QMetaObject, QDir, QRect
 from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QTabWidget, QFormLayout, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QDialog, QCompleter, QComboBox, QDoubleSpinBox, QAbstractSpinBox, QHBoxLayout, QListWidget, QTableWidget, QDialogButtonBox, QFileDialog, QScrollArea, QSpacerItem, QTableWidgetItem, QAbstractItemView, QListWidgetItem, QMessageBox
+from PySide2.QtGui import QStandardItem, QStandardItemModel
 
-from helpers import connectDB, displayNFP
+from pymysql import Connection
+
+
+from helpers import displayNFP, dbConnection
 
 class addIngredientDialog(QDialog):
 
     def __init__(self):
         super(addIngredientDialog, self).__init__()
         self.setupUi(self)
-        self.db = connectDB()
-        self.addSignals()
-
+        self.setupLogic()
+         
+        # add to if needed 
+        #TODO move these to a function in helpers where they return a dictionary for maintainability 
         self.allergenMap = [
-            {'allergen': 'Dairy', 'object': self.dairyCheckbox},
-            {'allergen': 'Eggs', 'object': self.eggCheckbox},
-            {'allergen': 'Fish', 'object': self.fishCheckbox},
-            {'allergen': 'Shellfish', 'object': self.shellfishCheckbox},
-            {'allergen': 'Tree Nuts', 'object': self.treeNutsCheckbox},
-            {'allergen': 'Peanuts', 'object': self.peanutsCheckbox},
-            {'allergen': 'Wheat', 'object': self.wheatCheckbox},
-            {'allergen': 'Soy', 'object': self.soyCheckbox},
+            {'allergen': 'Dairy', 'id': 1, 'object': self.dairyCheckbox},
+            {'allergen': 'Eggs', 'id': 2, 'object': self.eggCheckbox},
+            {'allergen': 'Fish', 'id': 3, 'object': self.fishCheckbox},
+            {'allergen': 'Shellfish', 'id': 4, 'object': self.shellfishCheckbox},
+            {'allergen': 'Tree Nuts', 'id': 5, 'object': self.treeNutsCheckbox},
+            {'allergen': 'Peanuts', 'id': 6, 'object': self.peanutsCheckbox},
+            {'allergen': 'Wheat', 'id': 7, 'object': self.wheatCheckbox},
+            {'allergen': 'Soy', 'id': 8, 'object': self.soyCheckbox},
         ]
-
         self.claimMap = [
             {'claim': 'Vegan', 'object': self.veganCheckbox},
             {'claim': 'Halal', 'object': self.halalCheckbox},
@@ -45,345 +51,435 @@ class addIngredientDialog(QDialog):
             {'claim': 'Whole Foods Compliant', 'object': self.wholeFoodsCheckbox},
             {'claim': 'No Sugar Added', 'object': self.nsaCheckbox}
         ]
-
         self.nutrientMap = [
             {
                 "nutrient_name": "Added Sugars",
-                "nutrient_id": 42,
+                "nutrient_id": 659,
                 "value": self.addedSugarsGLineEdit.text(),
-                "weight_id": "Grams"
+                'factor': 1,
+                'unit_id': 1,
+                "weight_id": 'Gram'
             },
             {
                 "nutrient_name": "Alcohol",
-                "nutrient_id": 52,
+                "nutrient_id": 221,
                 "value": self.alcoholGLineEdit.text(),
-                "weight_id": "Grams"
+                'factor': 1,
+                'unit_id': 1,
+                "weight_id": 'Gram'
             },
             {
                 "nutrient_name": "Caffeine",
-                "nutrient_id": 50,
+                "nutrient_id": 262,
                 "value": self.caffeineMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Calcium",
-                "nutrient_id": 26,
+                "nutrient_id": 301,
                 "value": self.calciumMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Cholestrol",
-                "nutrient_id": 23,
+                "nutrient_id": 601, 
                 "value": self.cholestrolMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Choline",
-                "nutrient_id": 51,
+                "nutrient_id": 421,
                 "value": self.cholineMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2, 
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Chromium",
-                "nutrient_id": 27,
+                "nutrient_id": 654,
                 "value": self.chromiumMcgLineEdit.text(),
+                'factor': .000001,
+                'unit_id': 4, 
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Copper",
-                "nutrient_id": 28,
+                "nutrient_id": 312,
                 "value": self.copperMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2, 
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Disaccharides",
-                "nutrient_id": 46,
+                "nutrient_id": 649,
                 "value": self.disaccharidesGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Fluoride",
-                "nutrient_id": 29,
+                "nutrient_id": 652,
                 "value": self.fluorideMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2, 
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Folate",
-                "nutrient_id": 13,
+                "nutrient_id": 417,
                 "value": self.folateMcgLineEdit.text(),
+                'factor': .000001, 
+                'unit_id': 4, 
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Folate - DFE",
-                "nutrient_id": 14,
+                "nutrient_id": 435,
                 "value": self.folateDFEMcgDFELineEdit.text(),
+                'factor': .000001,
+                'unit_id': 4, 
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Iodine",
-                "nutrient_id": 30,
+                "nutrient_id": 655,
                 "value": self.iodineMcgLineEdit.text(),
+                'factor': .000001, 
+                'unit_id': 4, 
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Iron",
-                "nutrient_id": 31,
+                "nutrient_id": 303,
                 "value": self.ironMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,  
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Magnesium",
-                "nutrient_id": 32,
+                "nutrient_id": 651,
                 "value": self.magnesiumMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Manganese",
-                "nutrient_id": 33,
+                "nutrient_id": 656,
                 "value": self.manganeseMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2, 
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Moisture",
-                "nutrient_id": 49,
+                "nutrient_id": 255,
                 "value": self.moistureGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1, 
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Molybdenum",
-                "nutrient_id": 34,
+                "nutrient_id": 657,
                 "value": self.molybdenumMcgLineEdit.text(),
+                'factor': .000001, 
+                'unit_id': 4, 
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Monosaccharides",
-                "nutrient_id": 45,
+                "nutrient_id": 1,
                 "value": self.monosaccharidesGLineEdit.text(),
+                'factor': 1, 
+                'unit_id': 1, 
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Monounsaturated Fat",
-                "nutrient_id": 20,
+                "nutrient_id": 645,
                 "value": self.monounsaturatedFatGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1, 
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Omega-3 Fatty Acid",
-                "nutrient_id": 24,
+                "nutrient_id": 660,
                 "value": self.omega3FattyAcidGLineEdit.text(),
+                'factor': 1, 
+                'unit_id': 1, 
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Omega-6 Fatty Acid",
-                "nutrient_id": 25,
+                "nutrient_id": 661,
                 "value": self.omega6FattyAcidGLineEdit.text(),
+                'factor': 1, 
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Other Carbohydrates",
-                "nutrient_id": 47,
+                "nutrient_id": 662,
                 "value": self.otherCarbohydratesGLineEdit.text(),
+                'factor': 1, 
+                'unit_id': 1, 
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Panothenic Acid",
-                "nutrient_id": 16,
+                "nutrient_id": 658,
                 "value": self.panothenicAcidMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Phosphorus",
-                "nutrient_id": 35,
+                "nutrient_id": 305,
                 "value": self.phosphorusMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Polyunsaturated Fat",
-                "nutrient_id": 21,
+                "nutrient_id": 646,
                 "value": self.polyunsaturatedFatGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Potassium",
-                "nutrient_id": 36,
+                "nutrient_id": 306,
                 "value": self.potassiumMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Saturated Fat",
-                "nutrient_id": 18,
+                "nutrient_id": 606,
                 "value": self.saturatedFatGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Selenium",
-                "nutrient_id": 37,
+                "nutrient_id": 317,
                 "value": self.seleniumMcgLineEdit.text(),
+                'factor': .000001,
+                'unit_id': 4,
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Sodium",
-                "nutrient_id": 38,
+                "nutrient_id": 307,
                 "value": self.sodiumMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2, 
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Sugar Alcohol",
-                "nutrient_id": 53,
+                "nutrient_id": 647,
                 "value": self.sugarAlcoholGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Carbohydrates",
-                "nutrient_id": 40,
+                "nutrient_id": 205,
                 "value": self.totalCarbohydratesGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Dietary Fiber",
-                "nutrient_id": 43,
+                "nutrient_id": 291,
                 "value": self.totalDietaryFiberGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Fat",
-                "nutrient_id": 17,
+                "nutrient_id": 204,
                 "value": self.totalFatGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Protein",
-                "nutrient_id": 48,
+                "nutrient_id": 203,
                 "value": self.totalProteinGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Soluble Fiber",
-                "nutrient_id": 44,
+                "nutrient_id": 648,
                 "value": self.totalSolubleFiberGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Sugars",
-                "nutrient_id": 41,
+                "nutrient_id": 269,
                 "value": self.totalSugarsGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Total Unsaturated Fat",
-                "nutrient_id": 19,
+                "nutrient_id": 663,
                 "value": self.totalUnsaturatedFatGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
                 "nutrient_name": "Trans Fat",
-                "nutrient_id": 22,
+                "nutrient_id": 664,
                 "value": self.transFatGLineEdit.text(),
+                'factor': 1,
+                'unit_id': 1,
                 "weight_id": "Grams"
             },
             {
+                # retinol equivalents for factor NOT SURE ABOUT THIS ONE
                 "nutrient_name": "Vitamin A - IU",
-                "nutrient_id": 1,
+                "nutrient_id": 320,
                 "value": self.vitaminAIUIULineEdit.text(),
+                'factor': 0.3, 
+                'unit_id': 
                 "weight_id": "IU"
             },
             {
                 "nutrient_name": "Vitamin A - RAE",
-                "nutrient_id": 3,
+                "nutrient_id": 320,
                 "value": self.vitaminARAEMcgLineEdit.text(),
+                'factor': .000001,
+                'unit_id': 4,
                 "weight_id": "Micrograms"
             },
             {
+                # NOT SURE ABOUT THIS ONE EITHER
                 "nutrient_name": "Vitamin A - REM",
                 "nutrient_id": 2,
                 "value": self.vitaminAREMcgLineEdit.text(),
+                'factor': .000001,
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Vitamin B1/Thiamin",
-                "nutrient_id": 4,
+                "nutrient_id": 404,
                 "value": self.vitaminB1ThiaminMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Vitamin B12",
-                "nutrient_id": 9,
+                "nutrient_id": 418,
                 "value": self.vitaminB12McgLineEdit.text(),
+                'factor': .000001,
+                'unit_id': 4,
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Vitamin B2/Riboflavin",
-                "nutrient_id": 5,
+                "nutrient_id": 405,
                 "value": self.vitaminB2RiboflavinMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Vitamin B3/Niacin",
-                "nutrient_id": 6,
+                "nutrient_id": 406,
                 "value": self.vitaminB3NiacinMgLineEdit.text(),
-                "weight_id": "Milligrams"
-            },
-            {
-                "nutrient_name": "Vitamin B3/Niacin Equivalent",
-                "nutrient_id": 7,
-                "value": self.vitaminB3NiacinEquivMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Vitamin B6",
-                "nutrient_id": 8,
+                "nutrient_id": 415,
                 "value": self.vitaminB6MgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Vitamin C",
-                "nutrient_id": 10,
+                "nutrient_id": 401,
                 "value": self.vitaminCMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
-                "nutrient_name": "Vitamin D - IU",
-                "nutrient_id": 11,
+                # NOT SURE ABOUT THIS ONE
+                "nutrient_name": "Vitamin D",
+                "nutrient_id": 328,
                 "value": self.vitaminDIUIULineEdit.text(),
-                "weight_id": "IU"
+                'unit_id': 4,
+                "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Vitamin E/alpha-Tocopherol",
-                "nutrient_id": 12,
+                "nutrient_id": 323,
                 "value": self.vitaminEAlphaTocoMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
                 "nutrient_name": "Vitamin K",
-                "nutrient_id": 15,
+                "nutrient_id": 430,
                 "value": self.vitaminKMcgLineEdit.text(),
+                'factor': .000001,
+                'unit_id': 4,
                 "weight_id": "Micrograms"
             },
             {
                 "nutrient_name": "Zinc",
-                "nutrient_id": 39,
+                "nutrient_id": 309,
                 "value": self.zincMgLineEdit.text(),
+                'factor': .001,
+                'unit_id': 2,
                 "weight_id": "Milligrams"
             },
             {
+                # same as energy
                 "nutrient_name": "Calories",
-                "nutrient_id": 54,
+                "nutrient_id": 208,
                 "value": self.caloriesKCalLineEdit.text(),
-                "weight_id": "kCal"
-            },
-            {
-                "nutrient_name": "Calories from Fat",
-                "nutrient_id": 55,
-                "value": self.caloriesFromFatKCalLineEdit.text(),
-                "weight_id": "kCal"
-            },
-            {
-                "nutrient_name": "Calories from SatFat",
-                "nutrient_id": 56,
-                "value": self.caloriesFromSatFatKCalLineEdit.text(),
+                'factor': 1,
+                'unit_id': 3, 
                 "weight_id": "kCal"
             }
         ]
+
 
     def setupUi(self, addIngredientDialog):
         if not addIngredientDialog.objectName():
@@ -419,28 +515,29 @@ class addIngredientDialog(QDialog):
         self.formLayout = QFormLayout(self.generalFrame1)
         self.formLayout.setObjectName(u"formLayout")
         self.formLayout.setFormAlignment(Qt.AlignCenter)
-        self.ingredientNameLabel = QLabel(self.generalFrame1)
-        self.ingredientNameLabel.setObjectName(u"ingredientNameLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.ingredientNameLabel)
+        self.ingDescLabel = QLabel(self.generalFrame1)
+        self.ingDescLabel.setObjectName(u"ingDescLabel")
 
-        self.ingredientNameLineEdit = QLineEdit(self.generalFrame1)
-        self.ingredientNameLineEdit.setObjectName(u"ingredientNameLineEdit")
-        self.ingredientNameLineEdit.setMinimumSize(QSize(300, 0))
-        self.ingredientNameLineEdit.setPlaceholderText(u"ie. Pre-Hydrated\u00ae Ticalose\u00ae CMC 15 Powder")
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.ingDescLabel)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.ingredientNameLineEdit)
+        self.ingDescLineEdit = QLineEdit(self.generalFrame1)
+        self.ingDescLineEdit.setObjectName(u"ingDescLineEdit")
+        self.ingDescLineEdit.setMinimumSize(QSize(300, 0))
+        self.ingDescLineEdit.setPlaceholderText(u"ie. Pre-Hydrated\u00ae Ticalose\u00ae CMC 15 Powder")
 
-        self.commonNameLabel = QLabel(self.generalFrame1)
-        self.commonNameLabel.setObjectName(u"commonNameLabel")
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.ingDescLineEdit)
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.commonNameLabel)
+        self.ingNameLabel = QLabel(self.generalFrame1)
+        self.ingNameLabel.setObjectName(u"ingNameLabel")
 
-        self.commonNameLineEdit = QLineEdit(self.generalFrame1)
-        self.commonNameLineEdit.setObjectName(u"commonNameLineEdit")
-        self.commonNameLineEdit.setMinimumSize(QSize(300, 0))
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.ingNameLabel)
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.commonNameLineEdit)
+        self.ingNameLineEdit = QLineEdit(self.generalFrame1)
+        self.ingNameLineEdit.setObjectName(u"ingNameLineEdit")
+        self.ingNameLineEdit.setMinimumSize(QSize(300, 0))
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.ingNameLineEdit)
 
         self.supplierLabel_2 = QLabel(self.generalFrame1)
         self.supplierLabel_2.setObjectName(u"supplierLabel_2")
@@ -1254,87 +1351,66 @@ class addIngredientDialog(QDialog):
 
         self.formLayout_3.setWidget(1, QFormLayout.LabelRole, self.caloriesKCalLabel)
 
-        self.caloriesFromSatFatKCalLabel = QLabel(self.otherNutrientsFrame)
-        self.caloriesFromSatFatKCalLabel.setObjectName(u"caloriesFromSatFatKCalLabel")
-
-        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.caloriesFromSatFatKCalLabel)
-
-        self.caloriesFromFatKCalLabel = QLabel(self.otherNutrientsFrame)
-        self.caloriesFromFatKCalLabel.setObjectName(u"caloriesFromFatKCalLabel")
-
-        self.formLayout_3.setWidget(5, QFormLayout.LabelRole, self.caloriesFromFatKCalLabel)
-
         self.moistureGLabel = QLabel(self.otherNutrientsFrame)
         self.moistureGLabel.setObjectName(u"moistureGLabel")
 
-        self.formLayout_3.setWidget(7, QFormLayout.LabelRole, self.moistureGLabel)
+        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.moistureGLabel)
 
         self.caffeineMgLabel = QLabel(self.otherNutrientsFrame)
         self.caffeineMgLabel.setObjectName(u"caffeineMgLabel")
 
-        self.formLayout_3.setWidget(9, QFormLayout.LabelRole, self.caffeineMgLabel)
+        self.formLayout_3.setWidget(5, QFormLayout.LabelRole, self.caffeineMgLabel)
 
         self.cholineMgLabel = QLabel(self.otherNutrientsFrame)
         self.cholineMgLabel.setObjectName(u"cholineMgLabel")
 
-        self.formLayout_3.setWidget(11, QFormLayout.LabelRole, self.cholineMgLabel)
+        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.cholineMgLabel)
 
         self.alcoholGLabel = QLabel(self.otherNutrientsFrame)
         self.alcoholGLabel.setObjectName(u"alcoholGLabel")
 
-        self.formLayout_3.setWidget(13, QFormLayout.LabelRole, self.alcoholGLabel)
+        self.formLayout_3.setWidget(5, QFormLayout.LabelRole, self.alcoholGLabel)
 
         self.sugarAlcoholGLabel = QLabel(self.otherNutrientsFrame)
         self.sugarAlcoholGLabel.setObjectName(u"sugarAlcoholGLabel")
 
-        self.formLayout_3.setWidget(15, QFormLayout.LabelRole, self.sugarAlcoholGLabel)
+        self.formLayout_3.setWidget(7, QFormLayout.LabelRole, self.sugarAlcoholGLabel)
 
         self.caloriesKCalLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.caloriesKCalLineEdit.setObjectName(u"caloriesKCalLineEdit")
 
         self.formLayout_3.setWidget(1, QFormLayout.FieldRole, self.caloriesKCalLineEdit)
 
-        self.caloriesFromSatFatKCalLineEdit = QLineEdit(self.otherNutrientsFrame)
-        self.caloriesFromSatFatKCalLineEdit.setObjectName(u"caloriesFromSatFatKCalLineEdit")
-
-        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.caloriesFromSatFatKCalLineEdit)
-
-        self.caloriesFromFatKCalLineEdit = QLineEdit(self.otherNutrientsFrame)
-        self.caloriesFromFatKCalLineEdit.setObjectName(u"caloriesFromFatKCalLineEdit")
-
-        self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.caloriesFromFatKCalLineEdit)
-
         self.moistureGLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.moistureGLineEdit.setObjectName(u"moistureGLineEdit")
 
-        self.formLayout_3.setWidget(7, QFormLayout.FieldRole, self.moistureGLineEdit)
+        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.moistureGLineEdit)
 
         self.caffeineMgLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.caffeineMgLineEdit.setObjectName(u"caffeineMgLineEdit")
 
-        self.formLayout_3.setWidget(9, QFormLayout.FieldRole, self.caffeineMgLineEdit)
+        self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.caffeineMgLineEdit)
 
         self.cholineMgLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.cholineMgLineEdit.setObjectName(u"cholineMgLineEdit")
 
-        self.formLayout_3.setWidget(11, QFormLayout.FieldRole, self.cholineMgLineEdit)
+        self.formLayout_3.setWidget(7, QFormLayout.FieldRole, self.cholineMgLineEdit)
 
         self.alcoholGLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.alcoholGLineEdit.setObjectName(u"alcoholGLineEdit")
 
-        self.formLayout_3.setWidget(13, QFormLayout.FieldRole, self.alcoholGLineEdit)
+        self.formLayout_3.setWidget(9, QFormLayout.FieldRole, self.alcoholGLineEdit)
 
         self.sugarAlcoholGLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.sugarAlcoholGLineEdit.setObjectName(u"sugarAlcoholGLineEdit")
 
-        self.formLayout_3.setWidget(15, QFormLayout.FieldRole, self.sugarAlcoholGLineEdit)
+        self.formLayout_3.setWidget(11, QFormLayout.FieldRole, self.sugarAlcoholGLineEdit)
 
         self.label_6 = QLabel(self.otherNutrientsFrame)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setAlignment(Qt.AlignCenter)
 
         self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.label_6)
-
 
         self.gridLayout_4.addWidget(self.otherNutrientsFrame, 1, 0, 1, 1)
 
@@ -1463,53 +1539,71 @@ class addIngredientDialog(QDialog):
         ### CHANGES BEYOND QT ###############<--------------------------------------------
         self.addIngredientTabWidget.setCurrentIndex(0)
         # adds suggestions to input fields
-        self.addSuggestions()
         
         #self.buttonBox.accepted.connect(addIngredientDialog.accept)
     
         QMetaObject.connectSlotsByName(addIngredientDialog)
         # setupUi
     
-    def addSignals(self):
-        self.browseForFileBtn.clicked.connect(lambda: self.browseFiles())
-        self.clearAllFromTableBtn.clicked.connect(lambda: self.filesToBeUploadedTableWidget.setRowCount(0))
 
-    # clears all files from table
-    def clearContentsWrapper(self): 
-        self.filesToBeUploadedTableWidget.clearContents()
+    def setupLogic(self):
 
-    # called at the end of setupUi
-    def addSuggestions(self): 
-        # adds suggestions for suppliers to general tab supplier box
-        with connectDB().cursor() as cursor: 
-            cursor.execute("SELECT supplier_name FROM supplier")
-            allSuppliers = cursor.fetchall()
-            for supplierRow in allSuppliers:
-                self.supplierComboBox.addItem(supplierRow[0])
-            self.supplierComboBox.setCurrentText("")
-        
+        # sets up signals
+        self.browseForFileBtn.clicked.connect(lambda: self.browseFiles()) # lambda might not be right for this
+        self.clearAllFromTableBtn.clicked.connect(lambda: self.filesToBeUploadedTableWidget.setRowCount(0)) # lambda might not be right for this
+
+        # sets up autocompletion for user input 
+        # VV adds suggestions for suppliers to general tab supplier box VV 
+        with dbConnection('FormualSchema').cursor() as cursor:
+            cursor.execute('SELECT supplier_id, supplier_name FROM supplier')
+            suppliers = cursor.fetchall()
+            model = QStandardItemModel()
+            completer = QCompleter()
+            for supplier in suppliers:
+                supplierItem = QStandardItem()
+                name = str(supplier['supplier_name']).capitalize()
+                supplierItem.setData(supplier, Qt.UserRole)
+                supplierItem.setText(name)
+                model.appendRow(supplierItem)
+            completer.setModel(model)
+            self.supplierComboBox.setCompleter(completer)
+            self.supplierComboBox.setModel(model)
+            self.supplierComboBox.setCurrentIndex(-1)
+
         # adds suggestions/autocomplete to common name line input box 
-        with connectDB().cursor() as cursor:
-            cursor.execute("SELECT ing_common_name FROM ingredient")
-            cNameRows = [row[0] for row in cursor.fetchall()]
-            completer = QCompleter(cNameRows)
+        with dbConnection('FormulaSchema').cursor() as cursor:
+            cursor.execute('SELECT food_id, food_desc FROM food')
+            cNameRows = cursor.fetchall()
+            completer = QCompleter()
             completer.setCaseSensitivity(Qt.CaseInsensitive)
             completer.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
             completer.setMaxVisibleItems(10)
-            self.commonNameLineEdit.setCompleter(completer)
+            model = QStandardItemModel()
+            for cName in cNameRows:
+                cNameItem = QStandardItem()
+                cNameItem.setText(cName['food_desc'])
+                cNameItem.setData(cName, Qt.UserRole)
+                model.appendRow(cNameItem)
+            completer.setModel(model)
+            self.ingNameLineEdit.setCompleter(completer)
 
-        # adds items to category list widget
-        with connectDB().cursor() as cursor: 
+        # adds categories to categories list widgete
+        with dbConnection('FormulaSchema').cursor() as cursor:
             self.categories = [{}]
             cursor.execute("SELECT category_name, category_id FROM category")
             for row in cursor.fetchall(): 
-                category = str.title(row[0])
+                category = str.title(row['category_name'])
                 item = QListWidgetItem(category)
-                item.setData(1, row[1])
+                item.setData(1, row['category_id']) # < not sure about the role, want to change to qt user role but not sure hwo it affects dependencies
                 item.setFlags(item.flags()| Qt.ItemIsUserCheckable)
                 item.setCheckState(Qt.Unchecked)
                 self.groupListWidget.addItem(item)
             self.groupListWidget.sortItems(Qt.AscendingOrder)
+
+
+    # clears all files from table
+    def clearContentsWrapper(self): 
+        self.filesToBeUploadedTableWidget.clearContents()
 
     # called when OK button pushed
     def accepted(self):
@@ -1543,92 +1637,123 @@ class addIngredientDialog(QDialog):
                 self.filesToBeUploadedTableWidget.setItem(self.filesToBeUploadedTableWidget.rowCount() - 1, 1, QTableWidgetItem(str(date)))
         else:
             pass
-    
-    def formSubmit(self): # NEED TO FIX
-        db = connectDB()
-        try: 
-            # Adds information from general tab into database
-            with db.cursor() as cursor:   
-                    cName = self.commonNameLineEdit.text()
-                    supplier = self.supplierComboBox.currentText()
-                    sName = self.ingredientNameLineEdit.text()
-                    itemCode = self.supplierIngredientNumberLineEdit.text()
+
+    # called when submitting the form 
+    def formSubmit(self):
+        # validates successful connection with the database
+        try:
+            db = dbConnection('FormulaSchema')
+        except ConnectionError:
+            msg = QMessageBox()
+            msg.setText('Connection to database unsuccessful. Please try again')
+            msg.exec_()
+            return
+        else:
+            # if database connection is successful, ensures all queries are valid and that all information gets added to database at the same time
+            try: 
+                with db.cursor() as cursor:
+                    ingDesc = self.ingDescLineEdit.text()
+                    # validates that user puts an ingredient description 
+                    if not ingDesc:
+                        msg = QMessageBox()
+                        msg.setText('Must input an ingredient description on tab 1')
+                        msg.exec_()
+                        return
                     
-                    # inputs supplier into supplier table unless if it doesn't exist. Otherwise, gets the supplier id and saves in variable lastSupplierID
-                    sameSupplierCount = cursor.execute("SELECT supplier_id, supplier_name FROM supplier WHERE supplier_name = (%s)", (supplier,))
-                    if  sameSupplierCount == 0: 
-                        cursor.execute("INSERT IGNORE INTO supplier(supplier_name) VALUES (%s)", (supplier,))
-                        lastSupplierID  = db.insert_id()
-                    else: 
-                        lastSupplierID = cursor.fetchone()[0]
-                        cursor._clear_result()
+                    # SUPPLIER #####
+                    # validates that a supplier was inputted into combo box
+                    if self.supplierComboBox.currentText():
+                        supplierItem = self.supplierComboBox.currentData(Qt.UserRole)
+                        if not supplierItem:# < probably need to doublecheck this
+                            supplier = self.supplierComboBox.currentText()
+                            cursor.execute('INSERT IGNORE INTO supplier(supplier_name) VALUES (%s)', (supplier,))
+                            supplierID = db.insert_id()
+                        elif supplierItem:
+                            supplierID = supplierItem['supplier_id']
+                            supplier = supplierItem['supplier_name']
+                        
+                        foodName = self.ingNameLineEdit.text()
+                        itemCode = self.supplierIngredientNumberLineEdit.text()
+                        ingStatement = self.ingredientStatementLineEdit.text()
 
+                        cursor.execute('INSERT INTO supplier_food (food_id, specific_name, supplier_id, supplier_ing_item_code, ing_statement) VALUES (%s, %s, %s, %s, %s)', (foodID, foodName, itemCode, ingStatement))
+
+                    percentYield = self.percentYieldDoubleSpinBox.value()
+
+                    # FOOD GENERAL
                     # Adds the ingredient into database if the supplier_id and item code as a pair don't already exist in the database. If they do, finds the ingredient id and stores as lastIngID
-                    sameSpecificName = cursor.execute("SELECT * FROM ingredient WHERE supplier_id = (%s) AND supplier_ing_item_code = (%s)", (lastSupplierID, itemCode))
-                    if sameSpecificName == 0:
-                        cursor.execute("INSERT IGNORE INTO ingredient(ing_common_name, supplier_id, ing_specific_name, supplier_ing_item_code, ingredient_statement, notes) VALUES (%s, %s, %s, %s, %s, %s)", (cName, lastSupplierID, sName, itemCode, self.ingredientStatementLineEdit.text(), self.notesLineEdit.text()))
-                        lastIngID = db.insert_id()
+                    ingRepeats = cursor.execute('SELECT food.food_id, food.food_desc, food.food_notes, supplier.supplier_id, supplier.supplier_name FROM food INNER JOIN supplier_food ON supplier_food.food_id = food.food_id INNER JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food.food_desc = (%s) AND supplier.supplier_id = (%s)', (ingDesc, supplierID))
+                    repeatData = cursor.fetchall()
+
+                    # if unique food based on food_desc AND supplier_id
+                    if ingRepeats == 0:
+                        cursor.execute('INSERT IGNORE INTO food(food_desc, food_notes, user_inputted, input_date) VALUES (%s, %s, %s, %s)', (ingDesc, self.notesLineEdit.text(), 1, date.today()))
+                        foodID = db.insert_id()
                     else: 
-                        cursor.execute("SELECT * FROM ingredient WHERE ing_common_name = (%s) AND supplier_id = (%s)", (cName, lastSupplierID))
-                        lastIngID = cursor.fetchone()[0]
+                        foodID = repeatData[0]['food_id']
+                        # could make this fetch all instead and have popup window for user to choose
 
-                        # could make this fetch all instead and have popup window for user to choose 
-                        #lastIngID = cursor.fetchAll()
-                    #cursor.commit()
+                    # ALLERGENS inputs allergens  {'allergen': 'Dairy', 'id': 1, 'object': self.dairyCheckbox},
+                    for allergen in self.allergenMap:
+                        input = allergen['object']
+                        if input.isChecked(): 
+                            cursor.execute("INSERT INTO ing_allergens(ing_id, allergen) VALUES (%s, %s)", (foodID, allergen['allergen']))
+                    
+                    # CLAIMS inputs claims into database
+                    for claim in self.claimMap:
+                        box = claim['object']
+                        if box.isChecked():
+                            cursor.execute('INSERT INTO food_claim (food_id, claim) VALUES (%s, %s)', (foodID, claim['claim']))
 
-            # Adds information from nutrients tab into database
-            with db.cursor() as cursor:
-                perGrams = self.perGramsSpinBox.value()
-                for nutrient in nutrientMap: 
-                    if nutrient['value']: 
-                        cursor.execute("INSERT INTO ing_nutrient(ing_id, nutrient_id, nutrient_weight, per_weight) VALUES (%s, %s, %s, %s)", (lastIngID, nutrient['nutrient_id'], nutrient['value'], perGrams,))
-                #cursor.commit()
+                    # NUTRIENTS 
+                    for nutrient in self.nutrientMap:
+                        if nutrient['value']:
+                            try:
+                                value = float(nutrient['value'])
+                                nutrientID = nutrient['nutrient_id']
+                                factor = nutrient['factor']
+                            except:
+                                msg = QMessageBox()
+                                msg.setText('Value for {} on nutritional tab is not in numerical format'.format(nutrient['nutrient_name']))
+                                msg.exec_()
+                                return
+                            else:
+                                weight = value * factor
+                                cursor.execute('INSERT INTO food_nutrient (food_id, nutrient_id, nutrient_weight) VALUES (%s, %s, %s)', (foodID, nutrientID, weight))
 
-            # Adds allergens into database
-            with db.cursor() as cursor: 
-                for allergen in allergenMap:
-                    input = allergen['object']
-                    if input.isChecked(): 
-                        cursor.execute("INSERT INTO ing_allergens(ing_id, allergen) VALUES (%s, %s)", (lastIngID, allergen['allergen']))
-                #cursor.commit()  
 
-            # inserts claims into database
-            with db.cursor() as cursor: 
-                for claim in claimMap: 
-                    box = claim['object']
-                    if box.isChecked(): 
-                        cursor.execute("INSERT INTO ing_claims(ing_id, claim) VALUES (%s, %s)", (lastIngID, claim['claim']))
-
-                #cursor.commit()       
-            
-            # inserts ingredient documents into database
-            with db.cursor() as cursor:
-                for row in range(self.filesToBeUploadedTableWidget.rowCount()):
-                    fileName = self.filesToBeUploadedTableWidget.itemAt(row, 0).text()
-                    fileName
-                    date = self.filesToBeUploadedTableWidget.itemAt(row, 1).text()
-                    filePath = self.filesToBeUploadedTableWidget.itemAt(row, 2).text()
-                    cursor.execute("INSERT IGNORE INTO ing_docs(ing_id, doc_name, doc_file, upload_date) VALUES (%s, %s, %s, %s)", (lastIngID, fileName, filePath, date))
-
-            # inserts ingredient categores into database
-            with db.cursor() as cursor:
-                for row in range(self.groupListWidget.count()):
-                    item = self.groupListWidget.item(row)
-                    if item.checkState(Qt.Checked):
-                        catID = self.groupListWidget.item(row).data(1)
-                        cursor.execute("INSERT INTO ing_category(ing_id, category_id) VALUES (%s, %s)", (lastIngID, catID))
-                    else:
-                        pass
-
-            print('Everything went right')
-
-        except: 
-            print('something went wrong')
+                    # DOCUMENTS 
+                    # NOT SURE IF TODO
+                    '''for row in range(self.filesToBeUploadedTableWidget.rowCount()):
+                        fileName = self.filesToBeUploadedTableWidget.itemAt(row, 0).text()
+                        dateInputted = date.today()
+                        filePath = self.filesToBeUploadedTableWidget.itemAt(row, 2).text()
+                        cursor.execute('INSERT IGNORE INTO food_doc(food_id, doc_name, doc_file, upload_datetime) VALUES (%s, %s, %s, %s), (foodID, fileName, filePath, dateInputted))
+                        
+                    for row in range(self.groupListWidget.count()):
+                        item = self.groupListWidget.item(row)
+                        if item.checkState(Qt.Checked):
+                            catID = self.groupListWidget.item(row).data(1)
+                            cursor.execute('INSERT INTO food_category (food_id, category_id), (foodID, catID))'''
+                        
+            except ConnectionAbortedError:
+                msg = QMessageBox()
+                msg.setText('Something went wrong. Food ingredient was not added to database')
+                msg.exec_()
+                return
+            else:
+                # if data successfully inputted 
+                ############>>>> cursor.commit() #<<<------- uncomment to make official
+                msg = QMessageBox()
+                msg.setText('Successfully added food ingredient to database')
+                msg.exec_()
+                # return?
+    
 
     def retranslateUi(self, addIngredientDialog):
         self.ingredientNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Specific Name", None))
-        self.commonNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Common Name (if applicable)", None))
-        self.commonNameLineEdit.setPlaceholderText(QCoreApplication.translate("addIngredientDialog", u"ie. Cellulose Gum", None))
+        self.ingNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Common Name (if applicable)", None))
+        self.ingNameLineEdit.setPlaceholderText(QCoreApplication.translate("addIngredientDialog", u"ie. Cellulose Gum", None))
         self.supplierLabel_2.setText(QCoreApplication.translate("addIngredientDialog", u"Supplier (if applicable)", None))
         self.supplierIngIDLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Supplier Ingredient Number (if applicable)", None))
         self.percentYieldIfApplicableLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Percent Yield (if applicable)", None))
@@ -1708,12 +1833,10 @@ class addIngredientDialog(QDialog):
         self.folateMcgLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Folate (mcg)", None))
         self.folateDFEMcgDFELabel.setText(QCoreApplication.translate("addIngredientDialog", u"Folate, DFE (mcg DFE)", None))
         self.vitaminKMcgLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Vitamin K (mcg)", None))
-        self.panothenicAcidMgLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Panothenic Acid (mg)", None))
+        self.panothenicAcidMgLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Vitamin B5/Panothenic Acid (mg)", None))
         self.label_2.setText(QCoreApplication.translate("addIngredientDialog", u"Proteins", None))
         self.totalProteinGLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Total Protein (g)", None))
         self.caloriesKCalLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Calories (kCal)", None))
-        self.caloriesFromSatFatKCalLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Calories from SatFat (kCal)", None))
-        self.caloriesFromFatKCalLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Calories from Fat (kCal)", None))
         self.moistureGLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Moisture (g)", None))
         self.caffeineMgLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Caffeine (mg)", None))
         self.cholineMgLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Choline (mg)", None))

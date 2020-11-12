@@ -13,17 +13,10 @@ from PySide2.QtCore import *
 
 sys.path.append('/pjrd')
 
-# returns the connection only. Must use connection.cursor() to execute queries
-def connectDB():
-    connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database='sys')#cursorclass=pymysql.cursors.DictCursor)
-    return connection
 
-def isUniqueQuery(query):
-    db = connectDB()
-    cursor = db.cursor()
-    result = cursor.execute(query)
-    if result:
-        return False
+def dbConnection(database: str):
+    connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database, cursorclass=pymysql.cursors.DictCursor)
+    return connection
 
 def displayNFP():
     webEngineView = QWebEngineView()
@@ -38,12 +31,6 @@ def displayNFP():
     webEngineView.resize(800, 800)
     return webEngineView
 
-def connectionDB(database):
-    connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database)
-    return connection
-
-
-
 
 # called to test if the window works
 def test(window):
@@ -52,16 +39,35 @@ def test(window):
     gui.show()
     sys.exit(app.exec_())
 
-
-'''
+# TODO
+# creates window of nutrition facts panel when called
 def displayNFP():
-    sourceHTML = QUrl('pjrd/static/templates/nfp.html')
+    pass
+    '''sourceHTML = QUrl('pjrd/static/templates/nfp.html')
     
     textBrowser = QTextBrowser()
     textBrowser.setOpenExternalLinks(True)
     textBrowser.setSource(sourceHTML)
     #textBrowser.setStyleSheet(stylesheetURL)
     #textBrowser.setSearchPaths()
-    return textBrowser
+    return textBrowser'''
 
-'''
+class TimedMessageBox(QMessageBox):
+    
+    def __init__(self, autoClose=True, timeout=2):
+        ##### must call when inheriting a base class in order to gain access to everything
+        super(TimedMessageBox, self).__init__()
+        self.timeout = timeout
+        self.autoClose = autoClose
+        
+    def showEvent(self, showEvent):
+        self.currentTimer = 0
+        if self.autoClose:
+            self.startTimer(1000)
+    
+    def timerEvent(self, timerEvent):
+        self.currentTimer += 1
+        if self.currentTimer >= self.timeout:
+            self.done(0)
+
+            

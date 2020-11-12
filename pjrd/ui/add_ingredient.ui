@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>737</width>
-    <height>794</height>
+    <width>660</width>
+    <height>1711</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,7 +28,7 @@
      <item row="0" column="0">
       <widget class="QTabWidget" name="addIngredientTabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="genInfoTab">
         <attribute name="title">
@@ -56,54 +56,14 @@
             <property name="formAlignment">
              <set>Qt::AlignCenter</set>
             </property>
-            <item row="1" column="0">
-             <widget class="QLabel" name="ingredientNameLabel">
-              <property name="text">
-               <string>Specific Name</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="ingredientNameLineEdit">
-              <property name="minimumSize">
-               <size>
-                <width>300</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="placeholderText">
-               <string notr="true">ie. Pre-Hydrated® Ticalose® CMC 15 Powder</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="commonNameLabel">
-              <property name="text">
-               <string>Common Name (if applicable)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="commonNameLineEdit">
-              <property name="minimumSize">
-               <size>
-                <width>300</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="placeholderText">
-               <string>ie. Cellulose Gum</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
+            <item row="5" column="0">
              <widget class="QLabel" name="supplierLabel_2">
               <property name="text">
                <string>Supplier (if applicable)</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
+            <item row="5" column="1">
              <widget class="QComboBox" name="supplierComboBox">
               <property name="minimumSize">
                <size>
@@ -119,14 +79,14 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
+            <item row="6" column="0">
              <widget class="QLabel" name="supplierIngIDLabel">
               <property name="text">
                <string>Supplier Ingredient Number (if applicable)</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="1">
+            <item row="6" column="1">
              <widget class="QLineEdit" name="supplierIngredientNumberLineEdit">
               <property name="minimumSize">
                <size>
@@ -139,14 +99,14 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
+            <item row="7" column="0">
              <widget class="QLabel" name="percentYieldIfApplicableLabel">
               <property name="text">
                <string>Percent Yield (if applicable)</string>
               </property>
              </widget>
             </item>
-            <item row="5" column="1">
+            <item row="7" column="1">
              <widget class="QDoubleSpinBox" name="percentYieldDoubleSpinBox">
               <property name="buttonSymbols">
                <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -162,10 +122,50 @@
               </property>
              </widget>
             </item>
-            <item row="6" column="0">
+            <item row="8" column="0">
              <widget class="QLabel" name="supplierLabel">
               <property name="text">
                <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="ingredientNameLabel">
+              <property name="text">
+               <string>IIngredient Name (if applicable)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="ingredientNameLineEdit">
+              <property name="minimumSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="placeholderText">
+               <string notr="true">ie. Pre-Hydrated® Ticalose® CMC 15 Powder</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="ingDescriptionLabel">
+              <property name="text">
+               <string>Ingredient Description</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="ingredientDescLineEdit">
+              <property name="minimumSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="placeholderText">
+               <string>ie. Cellulose Gum</string>
               </property>
              </widget>
             </item>
@@ -182,8 +182,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>663</width>
-              <height>444</height>
+              <width>586</width>
+              <height>790</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_5">
@@ -288,10 +288,24 @@
                 <property name="labelAlignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                 </property>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QLabel" name="claimsLabel">
+                  <property name="text">
+                   <string>Claims</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="1" column="0">
                  <widget class="QCheckBox" name="veganCheckbox">
                   <property name="text">
                    <string>Vegan</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QCheckBox" name="halalCheckbox">
+                  <property name="text">
+                   <string>Halal</string>
                   </property>
                  </widget>
                 </item>
@@ -334,20 +348,6 @@
                  <widget class="QCheckBox" name="nsaCheckbox">
                   <property name="text">
                    <string>No Sugar Added</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0" colspan="2">
-                 <widget class="QLabel" name="claimsLabel">
-                  <property name="text">
-                   <string>Claims</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QCheckBox" name="halalCheckbox">
-                  <property name="text">
-                   <string>Halal</string>
                   </property>
                  </widget>
                 </item>
@@ -458,7 +458,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>663</width>
+              <width>586</width>
               <height>1525</height>
              </rect>
             </property>
@@ -634,86 +634,6 @@
                 <enum>QFrame::StyledPanel</enum>
                </property>
                <layout class="QFormLayout" name="formLayout_4">
-                <item row="2" column="0">
-                 <widget class="QLabel" name="totalCarbohydratesGLabel">
-                  <property name="text">
-                   <string>Total Carbohydrates (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="totalSugarsGramLabel">
-                  <property name="text">
-                   <string>Total Sugars (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="0">
-                 <widget class="QLabel" name="addedSugarsGramLabel">
-                  <property name="text">
-                   <string>Added Sugars (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="8" column="0">
-                 <widget class="QLabel" name="totalDietaryFiberGLabel">
-                  <property name="text">
-                   <string>Total Dietary Fiber (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="10" column="0">
-                 <widget class="QLabel" name="totalSolubleFiberGLabel">
-                  <property name="text">
-                   <string>Total Soluble Fiber (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="12" column="0">
-                 <widget class="QLabel" name="monosaccharidesGLabel">
-                  <property name="text">
-                   <string>Monosaccharides (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="14" column="0">
-                 <widget class="QLabel" name="disaccharidesGLabel">
-                  <property name="text">
-                   <string>Disaccharides (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="16" column="0">
-                 <widget class="QLabel" name="otherCarbohydratesGLabel">
-                  <property name="text">
-                   <string>Other Carbohydrates (g)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="16" column="1">
-                 <widget class="QLineEdit" name="otherCarbohydratesGLineEdit"/>
-                </item>
-                <item row="14" column="1">
-                 <widget class="QLineEdit" name="disaccharidesGLineEdit"/>
-                </item>
-                <item row="12" column="1">
-                 <widget class="QLineEdit" name="monosaccharidesGLineEdit"/>
-                </item>
-                <item row="10" column="1">
-                 <widget class="QLineEdit" name="totalSolubleFiberGLineEdit"/>
-                </item>
-                <item row="8" column="1">
-                 <widget class="QLineEdit" name="totalDietaryFiberGLineEdit"/>
-                </item>
-                <item row="6" column="1">
-                 <widget class="QLineEdit" name="addedSugarsGLineEdit"/>
-                </item>
-                <item row="4" column="1">
-                 <widget class="QLineEdit" name="totalSugarsGLineEdit"/>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QLineEdit" name="totalCarbohydratesGLineEdit"/>
-                </item>
                 <item row="0" column="0">
                  <widget class="QLabel" name="carbsLabel">
                   <property name="text">
@@ -723,6 +643,76 @@
                    <set>Qt::AlignCenter</set>
                   </property>
                  </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="totalCarbohydratesGLabel">
+                  <property name="text">
+                   <string>Total Carbohydrates (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="totalCarbohydratesGLineEdit"/>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="totalSugarsGramLabel">
+                  <property name="text">
+                   <string>Total Sugars (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QLineEdit" name="totalSugarsGLineEdit"/>
+                </item>
+                <item row="6" column="0">
+                 <widget class="QLabel" name="addedSugarsGramLabel">
+                  <property name="text">
+                   <string>Added Sugars (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="1">
+                 <widget class="QLineEdit" name="addedSugarsGLineEdit"/>
+                </item>
+                <item row="8" column="0">
+                 <widget class="QLabel" name="totalDietaryFiberGLabel">
+                  <property name="text">
+                   <string>Total Dietary Fiber (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="1">
+                 <widget class="QLineEdit" name="totalDietaryFiberGLineEdit"/>
+                </item>
+                <item row="10" column="0">
+                 <widget class="QLabel" name="totalSolubleFiberGLabel">
+                  <property name="text">
+                   <string>Total Soluble Fiber (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="10" column="1">
+                 <widget class="QLineEdit" name="totalSolubleFiberGLineEdit"/>
+                </item>
+                <item row="12" column="0">
+                 <widget class="QLabel" name="monosaccharidesGLabel">
+                  <property name="text">
+                   <string>Monosaccharides (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="12" column="1">
+                 <widget class="QLineEdit" name="monosaccharidesGLineEdit"/>
+                </item>
+                <item row="14" column="0">
+                 <widget class="QLabel" name="disaccharidesGLabel">
+                  <property name="text">
+                   <string>Disaccharides (g)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="14" column="1">
+                 <widget class="QLineEdit" name="disaccharidesGLineEdit"/>
                 </item>
                </layout>
               </widget>

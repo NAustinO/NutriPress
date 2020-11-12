@@ -14,19 +14,19 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 sys.path.append('../pjrd')
-from helpers import connectDB, displayNFP, test
+from helpers import displayNFP, test, dbConnection
 from formulaEditorSearchResults import searchResults
 #from import confirmAddDialog
 
 
 class formulaEditorDialog(QDialog):
     
-    def __init__(self, revision: bool, formulaName: str = None, prevRevisionID: int = None, differences: str = None):
+    def __init__(self, revision: bool = None, formulaName: str = None, prevRevisionID: int = None, differences: str = None):
         super(formulaEditorDialog, self).__init__()
         self.setupUi(self)
-        self.setupSuggestions()
-        self.setupSignals()
-        self.setupEvents()
+        self.fromSetupDialog(revision=revision, formulaName=formulaName, revisionID=prevRevisionID, differences=differences)
+        self.setupLogic()
+        
         
     def setupUi(self, Dialog):
         if not Dialog.objectName():
@@ -798,51 +798,83 @@ class formulaEditorDialog(QDialog):
         QMetaObject.connectSlotsByName(Dialog)
     # setupUi
 
-    def self(self):
-        return self
-        self.ingTabfor
+    def setupLogic(self):
 
-    def setupSuggestions(self):
-        # Adds all cateogories to category box
-        with connectDB().cursor() as cursor:
-            cursor.execute("SELECT category_id, category_name FROM formula_category")
-            allCategories = cursor.fetchall()
-            for category in allCategories:
-                name = category[1]
-                id = category[0]
-                index = self.categoryComboBox.currentIndex()
-                self.categoryComboBox.insertItem(index, name, id)
-            self.categoryComboBox.setCurrentText("")
-
-        # Adds completer to searchbar
-        with connectDB().cursor() as cursor:
-            cursor.execute(
-                'SELECT ing_common_name, ing_specific_name,             supplier_name, supplier_ing_item_code FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id'
-            )
-            ingredients = cursor.fetchall()
-            suggestions = []
-            for ingredient in ingredients:
-                if ingredient[2] is None:
-                    if ingredient[1] is None:
-                        suggestion = ingredient[0] + '(General)'
-                    else:
-                        suggestion = ingredient[0] + '(' + ingredient[1] + ')'
-                else:
-                    suggestion = ingredient[1] + '(' + ingredient[2] + ',' + ingredient[0] + ')'
-                suggestions.append(suggestion)
-            completer = QCompleter(suggestions)
-            self.formulaIngredientSearchLineEdit.setCompleter(completer)
-            
-       # Adds          
-        
-    def setupSignals(self):
+        # signal setup
         self.formulaIngredientSearchBtn.clicked.connect(self.openSearchResultsDialog)
-        # self.displayNFPBtn.clicked.connect(displayNFP())
-    
-    def setupEvents(self):
+        self.displayNFPBtn.clicked.connect(displayNFP())
+
+        # event setup
         self.formulaIngredientSearchBtn.installEventFilter(self)
+        #self.formulaIngredientSearchLineEdit.installEventFilter(self)
+
+        # categories completer and category_id added to the category box TODO add error handling
+        with dbConnection('FormulaSchema').cursor() as cursor:
+            cursor.execute('SELECT formula_category.category_id, category_name FROM formula_category INNER JOIN category ON formula_category.category_id = category.category_id')
+            categoriesDict = cursor.fetchall()
+            categoryCompleter = QCompleter()
+            categoryModel = QStandardItemModel()
+            for category in categoriesDict:
+                categoryItem = QStandardItem()
+                categoryItem.setText(category['category_name'])
+                categoryItem.setData(category, Qt.UserRole)
+                categoryItem.setData(category['category_name'], Qt.UserRole(2))
+                categoryItem.setData(category['category_id'], Qt.UserRole(1))
+                categoryModel.setItem(categoryItem)
+            categoryCompleter.setModel(categoryModel)
+            self.categoryComboBox.setCompleter(categoryCompleter)
+            self.categoryComboBox.setCurrentIndex(-1)
+        
+        # completer setup for ingredient searchbar  TODO add error handling
+        # DECIDE IF WANT TO KEEP TODO
+        '''with dbConnection('FormulaSchema').cursor() as cursor:
+            cursor.execute('SELECT ing_id, ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id')
+            ingredientsDict = cursor.fetchall()
+            ingCompleter = QCompleter()
+            ingModel = QStandardItemModel()
+            for ingredient in ingredientsDict:
+                ingItem = QStandardItem()
+                cName = ingredient['ing_common_name']
+                sName = ingredient['ing_specific_name']
+                supplier = ingredient['supplier_name']
+                if supplier is None:     
+                    # if not a specific ingredient (no supplier, no item code)
+                    if sName is None:
+                        suggestion = cName + '(general)'
+                    else:
+                        suggestion = cName + '(' + sName + ')'
+                else:
+                    suggestion = cName + '(' + supplier + ')'
     
-    
+                ingItem.setText(suggestion)
+                ingItem.setData(ingredient, Qt.UserRole)
+                ingModel.appendRow(ingItem)
+            ingCompleter.setModel(ingModel)
+            self.formulaIngredientSearchLineEdit.setCompleter(ingCompleter)'''
+
+    def refreshGenNFP(self):
+        pass
+
+    # enter event. called when enter is pressed
+    def enterEventFilter(self, source, event):
+        if (event.type() == QEvent.KeyPress and source == self.formulaIngredientSearchLineEdit and event.key() == Qt.Key_Enter):
+            self.openSearchResultsDialog()
+            return True
+        return super(searchResults, self).enterEventFilter(source, event)
+
+    # parameters taken from previous setup window to create the UI for this window
+    def fromSetupDialog(self, revision=None, formulaName=None, revisionID=None, differences=None):
+        self.formulaNameLineEdit.setText(formulaName)
+        self.formulaNameLineEdit.setReadOnly(True)
+        self.revisionNumberPlaceholder.setText(revisionID)
+        if revision is True:
+            self.revisionCheckBox.setChecked(True)
+        else:
+            self.notRevisionCheckBox.setChecked(True)
+        self.revisionCheckBox.setEnabled(False)
+        self.notRevisionCheckBox.setEnabled(False)
+
+    # opens the search results window with user query
     def openSearchResultsDialog(self):
         query = self.formulaIngredientSearchLineEdit.text()
         updateRefs = self.self()
@@ -850,8 +882,6 @@ class formulaEditorDialog(QDialog):
         dialog.setModal(True)
         dialog.exec_()
     
-
-
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Formula Editor", u"Formula Editor", None))
         self.formulaNameHeaderLabel.setText(QCoreApplication.translate("Dialog", u"Formula Name", None))
@@ -954,8 +984,11 @@ class formulaEditorDialog(QDialog):
         self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.labelTab), QCoreApplication.translate("Dialog", u"Label", None))
     # retranslateUi
 
-'''
 app = QApplication(sys.argv)
 gui = formulaEditorDialog()
 gui.show()
-sys.exit(app.exec_())'''
+sys.exit(app.exec_())
+
+
+
+     

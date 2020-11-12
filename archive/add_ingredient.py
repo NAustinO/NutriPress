@@ -1703,3 +1703,88 @@ class addIngredientDialog(QDialog):
         pass
     # retranslateUi
 
+
+
+'''
+    def formSubmit(self): # NEED TO FIX
+        db = connectDB()
+        try: 
+            # Adds information from general tab into database
+            with db.cursor() as cursor:   
+                    cName = self.ingNameLineEdit.text()
+                    supplier = self.supplierComboBox.currentText()
+                    sName = self.ingDescLineEdit.text()
+                    itemCode = self.supplierIngredientNumberLineEdit.text()
+                    
+                    # inputs supplier into supplier table unless if it doesn't exist. Otherwise, gets the supplier id and saves in variable lastSupplierID
+                    sameSupplierCount = cursor.execute("SELECT supplier_id, supplier_name FROM supplier WHERE supplier_name = (%s)", (supplier,))
+                    if  sameSupplierCount == 0: 
+                        cursor.execute("INSERT IGNORE INTO supplier(supplier_name) VALUES (%s)", (supplier,))
+                        lastSupplierID  = db.insert_id()
+                    else: 
+                        lastSupplierID = cursor.fetchone()[0]
+                        cursor._clear_result()
+
+                    # Adds the ingredient into database if the supplier_id and item code as a pair don't already exist in the database. If they do, finds the ingredient id and stores as lastIngID
+                    sameSpecificName = cursor.execute("SELECT * FROM ingredient WHERE supplier_id = (%s) AND supplier_ing_item_code = (%s)", (lastSupplierID, itemCode))
+                    if sameSpecificName == 0:
+                        cursor.execute("INSERT IGNORE INTO ingredient(ing_common_name, supplier_id, ing_specific_name, supplier_ing_item_code, ingredient_statement, notes) VALUES (%s, %s, %s, %s, %s, %s)", (cName, lastSupplierID, sName, itemCode, self.ingredientStatementLineEdit.text(), self.notesLineEdit.text()))
+                        lastIngID = db.insert_id()
+                    else: 
+                        cursor.execute("SELECT * FROM ingredient WHERE ing_common_name = (%s) AND supplier_id = (%s)", (cName, lastSupplierID))
+                        lastIngID = cursor.fetchone()[0]
+
+                        # could make this fetch all instead and have popup window for user to choose 
+                        #lastIngID = cursor.fetchAll()
+                    #cursor.commit()
+
+            # Adds information from nutrients tab into database
+            with db.cursor() as cursor:
+                perGrams = self.perGramsSpinBox.value()
+                for nutrient in nutrientMap: 
+                    if nutrient['value']: 
+                        cursor.execute("INSERT INTO ing_nutrient(ing_id, nutrient_id, nutrient_weight, per_weight) VALUES (%s, %s, %s, %s)", (lastIngID, nutrient['nutrient_id'], nutrient['value'], perGrams,))
+                #cursor.commit()
+
+            # Adds allergens into database
+            with db.cursor() as cursor: 
+                for allergen in allergenMap:
+                    input = allergen['object']
+                    if input.isChecked(): 
+                        cursor.execute("INSERT INTO ing_allergens(ing_id, allergen) VALUES (%s, %s)", (lastIngID, allergen['allergen']))
+                #cursor.commit()  
+
+            # inserts claims into database
+            with db.cursor() as cursor: 
+                for claim in claimMap: 
+                    box = claim['object']
+                    if box.isChecked(): 
+                        cursor.execute("INSERT INTO ing_claims(ing_id, claim) VALUES (%s, %s)", (lastIngID, claim['claim']))
+
+                #cursor.commit()       
+            
+            # inserts ingredient documents into database
+            with db.cursor() as cursor:
+                for row in range(self.filesToBeUploadedTableWidget.rowCount()):
+                    fileName = self.filesToBeUploadedTableWidget.itemAt(row, 0).text()
+                    fileName
+                    date = self.filesToBeUploadedTableWidget.itemAt(row, 1).text()
+                    filePath = self.filesToBeUploadedTableWidget.itemAt(row, 2).text()
+                    cursor.execute("INSERT IGNORE INTO ing_docs(ing_id, doc_name, doc_file, upload_date) VALUES (%s, %s, %s, %s)", (lastIngID, fileName, filePath, date))
+
+            # inserts ingredient categores into database
+            with db.cursor() as cursor:
+                for row in range(self.groupListWidget.count()):
+                    item = self.groupListWidget.item(row)
+                    if item.checkState(Qt.Checked):
+                        catID = self.groupListWidget.item(row).data(1)
+                        cursor.execute("INSERT INTO ing_category(ing_id, category_id) VALUES (%s, %s)", (lastIngID, catID))
+                    else:
+                        pass
+
+            print('Everything went right')
+
+        except: 
+            print('something went wrong')
+        else:
+            print('THIS DOESN"T NEED FIXING')'''
