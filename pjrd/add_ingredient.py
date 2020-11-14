@@ -9,17 +9,19 @@
 #########################################################################
 
 ## TODO: ADD CALORIES
-import os
+import os, sys
 from datetime import date, datetime
 from typing import NoReturn
-from pjrd.helpers import TimedMessageBox
+#from pjrd.helpers import TimedMessageBox
 from PyQt5.QtCore import QSize, QObject, Qt, QCoreApplication, QMetaObject, QDir, QRect
 from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QTabWidget, QFormLayout, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QDialog, QCompleter, QComboBox, QDoubleSpinBox, QAbstractSpinBox, QHBoxLayout, QListWidget, QTableWidget, QDialogButtonBox, QFileDialog, QScrollArea, QSpacerItem, QTableWidgetItem, QAbstractItemView, QListWidgetItem, QMessageBox
 from PySide2.QtGui import QStandardItem, QStandardItemModel
 
+from PySide2.QtCore import *
+from PySide2.QtGui import *
+from PySide2.QtWidgets import *
+
 from pymysql import Connection
-
-
 from helpers import displayNFP, dbConnection
 
 class addIngredientDialog(QDialog):
@@ -370,7 +372,7 @@ class addIngredientDialog(QDialog):
                 "nutrient_id": 320,
                 "value": self.vitaminAIUIULineEdit.text(),
                 'factor': 0.3, 
-                'unit_id': 
+                'unit_id': 10,
                 "weight_id": "IU"
             },
             {
@@ -752,8 +754,10 @@ class addIngredientDialog(QDialog):
         self.perGramsSpinBox.setObjectName(u"perGramsSpinBox")
         self.perGramsSpinBox.setAlignment(Qt.AlignCenter)
         self.perGramsSpinBox.setMaximum(1000)
-        self.perGramsSpinBox.setSingleStep(10)
+        #self.perGramsSpinBox.setSingleStep(10)
+        self.perGramsSpinBox.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
         self.perGramsSpinBox.setValue(100)
+        self.perGramsSpinBox.setFocusPolicy(Qt.NoFocus)
 
         self.horizontalLayout.addWidget(self.perGramsSpinBox)
 
@@ -861,71 +865,86 @@ class addIngredientDialog(QDialog):
 
         self.calciumMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.calciumMgLineEdit.setObjectName(u"calciumMgLineEdit")
+        self.calciumMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(2, QFormLayout.FieldRole, self.calciumMgLineEdit)
 
         self.chromiumMcgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.chromiumMcgLineEdit.setObjectName(u"chromiumMcgLineEdit")
+        self.chromiumMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(4, QFormLayout.FieldRole, self.chromiumMcgLineEdit)
 
         self.copperMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.copperMgLineEdit.setObjectName(u"copperMgLineEdit")
+        self.copperMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(6, QFormLayout.FieldRole, self.copperMgLineEdit)
 
         self.fluorideMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.fluorideMgLineEdit.setObjectName(u"fluorideMgLineEdit")
+        self.fluorideMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(8, QFormLayout.FieldRole, self.fluorideMgLineEdit)
 
         self.iodineMcgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.iodineMcgLineEdit.setObjectName(u"iodineMcgLineEdit")
+        self.iodineMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(10, QFormLayout.FieldRole, self.iodineMcgLineEdit)
 
         self.ironMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.ironMgLineEdit.setObjectName(u"ironMgLineEdit")
+        self.ironMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(12, QFormLayout.FieldRole, self.ironMgLineEdit)
 
         self.magnesiumMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.magnesiumMgLineEdit.setObjectName(u"magnesiumMgLineEdit")
+        self.magnesiumMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(14, QFormLayout.FieldRole, self.magnesiumMgLineEdit)
 
         self.manganeseMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.manganeseMgLineEdit.setObjectName(u"manganeseMgLineEdit")
+        self.manganeseMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(16, QFormLayout.FieldRole, self.manganeseMgLineEdit)
 
         self.molybdenumMcgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.molybdenumMcgLineEdit.setObjectName(u"molybdenumMcgLineEdit")
+        self.molybdenumMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(18, QFormLayout.FieldRole, self.molybdenumMcgLineEdit)
 
         self.phosphorusMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.phosphorusMgLineEdit.setObjectName(u"phosphorusMgLineEdit")
+        self.phosphorusMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(20, QFormLayout.FieldRole, self.phosphorusMgLineEdit)
 
         self.potassiumMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.potassiumMgLineEdit.setObjectName(u"potassiumMgLineEdit")
+        self.potassiumMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(22, QFormLayout.FieldRole, self.potassiumMgLineEdit)
 
         self.seleniumMcgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.seleniumMcgLineEdit.setObjectName(u"seleniumMcgLineEdit")
+        self.seleniumMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(24, QFormLayout.FieldRole, self.seleniumMcgLineEdit)
 
         self.sodiumMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.sodiumMgLineEdit.setObjectName(u"sodiumMgLineEdit")
+        self.sodiumMgLineEdit.setPlaceholderText('Recommended')
+        self.sodiumMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(26, QFormLayout.FieldRole, self.sodiumMgLineEdit)
 
         self.zincMgLineEdit = QLineEdit(self.mineralsFrame_2)
         self.zincMgLineEdit.setObjectName(u"zincMgLineEdit")
+        self.zincMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_6.setWidget(28, QFormLayout.FieldRole, self.zincMgLineEdit)
 
@@ -986,41 +1005,54 @@ class addIngredientDialog(QDialog):
 
         self.otherCarbohydratesGLineEdit = QLineEdit(self.carbsFrame)
         self.otherCarbohydratesGLineEdit.setObjectName(u"otherCarbohydratesGLineEdit")
+        self.otherCarbohydratesGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_4.setWidget(16, QFormLayout.FieldRole, self.otherCarbohydratesGLineEdit)
 
         self.disaccharidesGLineEdit = QLineEdit(self.carbsFrame)
         self.disaccharidesGLineEdit.setObjectName(u"disaccharidesGLineEdit")
+        self.disaccharidesGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_4.setWidget(14, QFormLayout.FieldRole, self.disaccharidesGLineEdit)
 
         self.monosaccharidesGLineEdit = QLineEdit(self.carbsFrame)
         self.monosaccharidesGLineEdit.setObjectName(u"monosaccharidesGLineEdit")
+        self.monosaccharidesGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_4.setWidget(12, QFormLayout.FieldRole, self.monosaccharidesGLineEdit)
 
         self.totalSolubleFiberGLineEdit = QLineEdit(self.carbsFrame)
         self.totalSolubleFiberGLineEdit.setObjectName(u"totalSolubleFiberGLineEdit")
+        self.totalSolubleFiberGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.totalSolubleFiberGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_4.setWidget(10, QFormLayout.FieldRole, self.totalSolubleFiberGLineEdit)
 
         self.totalDietaryFiberGLineEdit = QLineEdit(self.carbsFrame)
         self.totalDietaryFiberGLineEdit.setObjectName(u"totalDietaryFiberGLineEdit")
+        self.totalDietaryFiberGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.totalDietaryFiberGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_4.setWidget(8, QFormLayout.FieldRole, self.totalDietaryFiberGLineEdit)
 
         self.addedSugarsGLineEdit = QLineEdit(self.carbsFrame)
         self.addedSugarsGLineEdit.setObjectName(u"addedSugarsGLineEdit")
+        self.addedSugarsGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.addedSugarsGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_4.setWidget(6, QFormLayout.FieldRole, self.addedSugarsGLineEdit)
 
         self.totalSugarsGLineEdit = QLineEdit(self.carbsFrame)
         self.totalSugarsGLineEdit.setObjectName(u"totalSugarsGLineEdit")
+        self.totalSugarsGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.totalSugarsGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_4.setWidget(4, QFormLayout.FieldRole, self.totalSugarsGLineEdit)
 
         self.totalCarbohydratesGLineEdit = QLineEdit(self.carbsFrame)
         self.totalCarbohydratesGLineEdit.setObjectName(u"totalCarbohydratesGLineEdit")
+        self.totalCarbohydratesGLineEdit.setPlaceholderText('Required')
+        self.totalCarbohydratesGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_4.setWidget(2, QFormLayout.FieldRole, self.totalCarbohydratesGLineEdit)
 
@@ -1092,46 +1124,60 @@ class addIngredientDialog(QDialog):
 
         self.totalFatGLineEdit = QLineEdit(self.fatsFrame)
         self.totalFatGLineEdit.setObjectName(u"totalFatGLineEdit")
+        self.totalFatGLineEdit.setPlaceholderText('Required')
+        self.totalFatGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_5.setWidget(2, QFormLayout.FieldRole, self.totalFatGLineEdit)
 
         self.saturatedFatGLineEdit = QLineEdit(self.fatsFrame)
         self.saturatedFatGLineEdit.setObjectName(u"saturatedFatGLineEdit")
+        self.saturatedFatGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.saturatedFatGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_5.setWidget(4, QFormLayout.FieldRole, self.saturatedFatGLineEdit)
 
         self.totalUnsaturatedFatGLineEdit = QLineEdit(self.fatsFrame)
         self.totalUnsaturatedFatGLineEdit.setObjectName(u"totalUnsaturatedFatGLineEdit")
+        self.totalUnsaturatedFatGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.totalUnsaturatedFatGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_5.setWidget(6, QFormLayout.FieldRole, self.totalUnsaturatedFatGLineEdit)
 
         self.monounsaturatedFatGLineEdit = QLineEdit(self.fatsFrame)
         self.monounsaturatedFatGLineEdit.setObjectName(u"monounsaturatedFatGLineEdit")
+        self.monounsaturatedFatGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_5.setWidget(8, QFormLayout.FieldRole, self.monounsaturatedFatGLineEdit)
 
         self.polyunsaturatedFatGLineEdit = QLineEdit(self.fatsFrame)
         self.polyunsaturatedFatGLineEdit.setObjectName(u"polyunsaturatedFatGLineEdit")
+        self.polyunsaturatedFatGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_5.setWidget(10, QFormLayout.FieldRole, self.polyunsaturatedFatGLineEdit)
 
         self.transFatGLineEdit = QLineEdit(self.fatsFrame)
         self.transFatGLineEdit.setObjectName(u"transFatGLineEdit")
+        self.transFatGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
+        self.transFatGLineEdit.setPlaceholderText('Recommended')
 
         self.formLayout_5.setWidget(12, QFormLayout.FieldRole, self.transFatGLineEdit)
 
         self.cholestrolMgLineEdit = QLineEdit(self.fatsFrame)
         self.cholestrolMgLineEdit.setObjectName(u"cholestrolMgLineEdit")
+        self.cholestrolMgLineEdit.setPlaceholderText('Recommended')
+        self.cholestrolMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_5.setWidget(14, QFormLayout.FieldRole, self.cholestrolMgLineEdit)
 
         self.omega3FattyAcidGLineEdit = QLineEdit(self.fatsFrame)
         self.omega3FattyAcidGLineEdit.setObjectName(u"omega3FattyAcidGLineEdit")
+        self.omega3FattyAcidGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_5.setWidget(16, QFormLayout.FieldRole, self.omega3FattyAcidGLineEdit)
 
         self.omega6FattyAcidGLineEdit = QLineEdit(self.fatsFrame)
         self.omega6FattyAcidGLineEdit.setObjectName(u"omega6FattyAcidGLineEdit")
+        self.omega6FattyAcidGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_5.setWidget(18, QFormLayout.FieldRole, self.omega6FattyAcidGLineEdit)
 
@@ -1233,11 +1279,13 @@ class addIngredientDialog(QDialog):
 
         self.vitaminAIUIULineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminAIUIULineEdit.setObjectName(u"vitaminAIUIULineEdit")
+        self.vitaminAIUIULineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(2, QFormLayout.FieldRole, self.vitaminAIUIULineEdit)
 
         self.vitaminAREMcgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminAREMcgLineEdit.setObjectName(u"vitaminAREMcgLineEdit")
+        self.vitaminAREMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(4, QFormLayout.FieldRole, self.vitaminAREMcgLineEdit)
 
@@ -1248,66 +1296,79 @@ class addIngredientDialog(QDialog):
 
         self.vitaminB1ThiaminMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminB1ThiaminMgLineEdit.setObjectName(u"vitaminB1ThiaminMgLineEdit")
+        self.vitaminB1ThiaminMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(8, QFormLayout.FieldRole, self.vitaminB1ThiaminMgLineEdit)
 
         self.vitaminB2RiboflavinMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminB2RiboflavinMgLineEdit.setObjectName(u"vitaminB2RiboflavinMgLineEdit")
+        self.vitaminB2RiboflavinMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(10, QFormLayout.FieldRole, self.vitaminB2RiboflavinMgLineEdit)
 
         self.vitaminB3NiacinMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminB3NiacinMgLineEdit.setObjectName(u"vitaminB3NiacinMgLineEdit")
+        self.vitaminB3NiacinMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(12, QFormLayout.FieldRole, self.vitaminB3NiacinMgLineEdit)
 
         self.vitaminB3NiacinEquivMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminB3NiacinEquivMgLineEdit.setObjectName(u"vitaminB3NiacinEquivMgLineEdit")
+        self.vitaminB3NiacinEquivMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(14, QFormLayout.FieldRole, self.vitaminB3NiacinEquivMgLineEdit)
 
         self.vitaminB6MgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminB6MgLineEdit.setObjectName(u"vitaminB6MgLineEdit")
+        self.vitaminB6MgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(16, QFormLayout.FieldRole, self.vitaminB6MgLineEdit)
 
         self.vitaminB12McgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminB12McgLineEdit.setObjectName(u"vitaminB12McgLineEdit")
+        self.vitaminB12McgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(18, QFormLayout.FieldRole, self.vitaminB12McgLineEdit)
 
         self.vitaminCMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminCMgLineEdit.setObjectName(u"vitaminCMgLineEdit")
+        self.vitaminCMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(20, QFormLayout.FieldRole, self.vitaminCMgLineEdit)
 
         self.vitaminDIUIULineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminDIUIULineEdit.setObjectName(u"vitaminDIUIULineEdit")
+        self.vitaminDIUIULineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(22, QFormLayout.FieldRole, self.vitaminDIUIULineEdit)
 
         self.vitaminEAlphaTocoMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminEAlphaTocoMgLineEdit.setObjectName(u"vitaminEAlphaTocoMgLineEdit")
+        self.vitaminEAlphaTocoMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(24, QFormLayout.FieldRole, self.vitaminEAlphaTocoMgLineEdit)
 
         self.folateMcgLineEdit = QLineEdit(self.vitaminsFrame)
         self.folateMcgLineEdit.setObjectName(u"folateMcgLineEdit")
+        self.folateMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(26, QFormLayout.FieldRole, self.folateMcgLineEdit)
 
         self.folateDFEMcgDFELineEdit = QLineEdit(self.vitaminsFrame)
         self.folateDFEMcgDFELineEdit.setObjectName(u"folateDFEMcgDFELineEdit")
+        self.folateDFEMcgDFELineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(28, QFormLayout.FieldRole, self.folateDFEMcgDFELineEdit)
 
         self.vitaminKMcgLineEdit = QLineEdit(self.vitaminsFrame)
         self.vitaminKMcgLineEdit.setObjectName(u"vitaminKMcgLineEdit")
+        self.vitaminKMcgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(30, QFormLayout.FieldRole, self.vitaminKMcgLineEdit)
 
         self.panothenicAcidMgLineEdit = QLineEdit(self.vitaminsFrame)
         self.panothenicAcidMgLineEdit.setObjectName(u"panothenicAcidMgLineEdit")
+        self.panothenicAcidMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_7.setWidget(32, QFormLayout.FieldRole, self.panothenicAcidMgLineEdit)
 
@@ -1334,6 +1395,8 @@ class addIngredientDialog(QDialog):
         self.totalProteinGLineEdit = QLineEdit(self.proteinsFrame)
         self.totalProteinGLineEdit.setObjectName(u"totalProteinGLineEdit")
         self.totalProteinGLineEdit.setAlignment(Qt.AlignCenter)
+        self.totalProteinGLineEdit.setPlaceholderText('Required')
+        self.totalProteinGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.totalProteinGLineEdit)
 
@@ -1344,6 +1407,7 @@ class addIngredientDialog(QDialog):
         self.otherNutrientsFrame.setObjectName(u"otherNutrientsFrame")
         self.otherNutrientsFrame.setAutoFillBackground(True)
         self.otherNutrientsFrame.setFrameShape(QFrame.StyledPanel)
+
         self.formLayout_3 = QFormLayout(self.otherNutrientsFrame)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.caloriesKCalLabel = QLabel(self.otherNutrientsFrame)
@@ -1364,45 +1428,53 @@ class addIngredientDialog(QDialog):
         self.cholineMgLabel = QLabel(self.otherNutrientsFrame)
         self.cholineMgLabel.setObjectName(u"cholineMgLabel")
 
-        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.cholineMgLabel)
+        self.formLayout_3.setWidget(7, QFormLayout.LabelRole, self.cholineMgLabel)
 
         self.alcoholGLabel = QLabel(self.otherNutrientsFrame)
         self.alcoholGLabel.setObjectName(u"alcoholGLabel")
 
-        self.formLayout_3.setWidget(5, QFormLayout.LabelRole, self.alcoholGLabel)
+        self.formLayout_3.setWidget(9, QFormLayout.LabelRole, self.alcoholGLabel)
 
         self.sugarAlcoholGLabel = QLabel(self.otherNutrientsFrame)
         self.sugarAlcoholGLabel.setObjectName(u"sugarAlcoholGLabel")
 
-        self.formLayout_3.setWidget(7, QFormLayout.LabelRole, self.sugarAlcoholGLabel)
+        self.formLayout_3.setWidget(11, QFormLayout.LabelRole, self.sugarAlcoholGLabel)
 
         self.caloriesKCalLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.caloriesKCalLineEdit.setObjectName(u"caloriesKCalLineEdit")
+        self.caloriesKCalLineEdit.setPlaceholderText('Required')
+        self.caloriesKCalLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_3.setWidget(1, QFormLayout.FieldRole, self.caloriesKCalLineEdit)
 
         self.moistureGLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.moistureGLineEdit.setObjectName(u"moistureGLineEdit")
+        self.moistureGLineEdit.setPlaceholderText('Recommended')
+        self.moistureGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.moistureGLineEdit)
 
         self.caffeineMgLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.caffeineMgLineEdit.setObjectName(u"caffeineMgLineEdit")
+        self.caffeineMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.caffeineMgLineEdit)
 
         self.cholineMgLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.cholineMgLineEdit.setObjectName(u"cholineMgLineEdit")
+        self.cholineMgLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_3.setWidget(7, QFormLayout.FieldRole, self.cholineMgLineEdit)
 
         self.alcoholGLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.alcoholGLineEdit.setObjectName(u"alcoholGLineEdit")
+        self.alcoholGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_3.setWidget(9, QFormLayout.FieldRole, self.alcoholGLineEdit)
 
         self.sugarAlcoholGLineEdit = QLineEdit(self.otherNutrientsFrame)
         self.sugarAlcoholGLineEdit.setObjectName(u"sugarAlcoholGLineEdit")
+        self.sugarAlcoholGLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
 
         self.formLayout_3.setWidget(11, QFormLayout.FieldRole, self.sugarAlcoholGLineEdit)
 
@@ -1551,10 +1623,16 @@ class addIngredientDialog(QDialog):
         # sets up signals
         self.browseForFileBtn.clicked.connect(lambda: self.browseFiles()) # lambda might not be right for this
         self.clearAllFromTableBtn.clicked.connect(lambda: self.filesToBeUploadedTableWidget.setRowCount(0)) # lambda might not be right for this
+        self.vitaminAIUIULineEdit.textChanged.connect(self.toggleVitA) 
+        self.vitaminAREMcgLineEdit.textChanged.connect(self.toggleVitA)
+        self.vitaminARAEMcgLineEdit.textChanged.connect(self.toggleVitA)
+
+        self.folateDFEMcgDFELineEdit.textChanged.connect(self.toggleFolate)
+        self.folateMcgLineEdit.textChanged.connect(self.toggleFolate)
 
         # sets up autocompletion for user input 
         # VV adds suggestions for suppliers to general tab supplier box VV 
-        with dbConnection('FormualSchema').cursor() as cursor:
+        with dbConnection('FormulaSchema').cursor() as cursor:
             cursor.execute('SELECT supplier_id, supplier_name FROM supplier')
             suppliers = cursor.fetchall()
             model = QStandardItemModel()
@@ -1640,6 +1718,10 @@ class addIngredientDialog(QDialog):
 
     # called when submitting the form 
     def formSubmit(self):
+        validated = self.validateNutrients()
+        if not validated:
+            return
+
         # validates successful connection with the database
         try:
             db = dbConnection('FormulaSchema')
@@ -1749,9 +1831,272 @@ class addIngredientDialog(QDialog):
                 msg.exec_()
                 # return?
     
+    # ensures user does not input more than one measure for vitamin A
+    def toggleVitA(self):
+
+        if self.vitaminAIUIULineEdit.text() != '':
+            self.vitaminARAEMcgLineEdit.setEnabled(False)
+            self.vitaminARAEMcgLineEdit.setPlaceholderText('Disabled')
+            self.vitaminAREMcgLineEdit.setEnabled(False)
+            self.vitaminAREMcgLineEdit.setPlaceholderText('Disabled')
+        elif self.vitaminARAEMcgLineEdit.text() != '':
+            self.vitaminAIUIULineEdit.setEnabled(False)
+            self.vitaminAIUIULineEdit.setPlaceholderText('Disabled')
+            self.vitaminAREMcgLineEdit.setEnabled(False)
+            self.vitaminAREMcgLineEdit.setPlaceholderText('Disabled')
+        elif self.vitaminAREMcgLineEdit.text() != '':
+            self.vitaminAIUIULineEdit.setEnabled(False)
+            self.vitaminAIUIULineEdit.setPlaceholderText('Disabled')
+            self.vitaminARAEMcgLineEdit.setEnabled(False)
+            self.vitaminARAEMcgLineEdit.setPlaceholderText('Disabled')
+        else:
+            self.vitaminAIUIULineEdit.setEnabled(True)
+            self.vitaminAIUIULineEdit.setPlaceholderText('')
+            self.vitaminARAEMcgLineEdit.setEnabled(True)
+            self.vitaminARAEMcgLineEdit.setPlaceholderText('')
+            self.vitaminAREMcgLineEdit.setEnabled(True)
+            self.vitaminAREMcgLineEdit.setPlaceholderText('')
+    
+    # ensures user does not input more than one measure for folate
+    def toggleFolate(self):
+        if self.folateDFEMcgDFELineEdit.text() != '':
+            self.folateMcgLineEdit.setEnabled(False)
+            self.folateMcgLineEdit.setPlaceholderText('Disabled')
+        elif self.folateMcgLineEdit.text() != '':
+            self.folateDFEMcgDFELineEdit.setEnabled(False)
+            self.folateDFEMcgDFELineEdit.setPlaceholderText('Disabled')
+        else:
+            self.folateDFEMcgDFELineEdit.setEnabled(True)
+            self.folateDFEMcgDFELineEdit.setPlaceholderText('')
+            self.folateMcgLineEdit.setEnabled(True)
+            self.folateMcgLineEdit.setPlaceholderText('')
+
+    def validateNutrients(self):
+        # required inputs are calories, total fat, total protein, total carbs 
+
+        # NOTE
+        # omega3 + omega6 is a polyunsat fat 
+        # sugar alcohols are not considered carbs
+        # sugars are monosaccharides and disaccharides
+
+
+        carbs = self.totalCarbohydratesGLineEdit.text()
+        fats = self.totalFatGLineEdit.text()
+        proteins = self.totalFatGLineEdit.text()
+        calories = self.caloriesKCalLineEdit.text()
+        alcohol = self.alcoholGLineEdit.text()
+        sugarAlcohols = self.sugarAlcoholGLineEdit.text()
+        water = self.moistureGLineEdit.text()
+        totalSugar = self.totalSugarsGLineEdit.text()
+        addedSugar = self.addedSugarsGLineEdit.text()
+        totalDietaryFiber = self.totalDietaryFiberGLineEdit.text()
+        totalSolubleFiber = self.totalSolubleFiberGLineEdit.text()
+        monosaccharides = self.monosaccharidesGLineEdit.text()
+        disaccharides = self.disaccharidesGLineEdit.text()
+        otherCarbs = self.otherCarbohydratesGLineEdit.text()
+        totalUnsatFat = self.totalUnsaturatedFatGLineEdit.text()
+        totalSatFat = self.saturatedFatGLineEdit.text()
+        monounsatFat = self.monounsaturatedFatGLineEdit.text()
+        polyunsatFat = self.polyunsaturatedFatGLineEdit.text()
+        transFat = self.transFatGLineEdit.text()
+        omega3 = self.omega3FattyAcidGLineEdit.text()
+        omega6 = self.omega6FattyAcidGLineEdit.text()
+
+        # water
+        if water != '':
+            water = float(water)
+        else:
+            water = 0
+        # alcohol
+        if alcohol != '':
+            alcohol = float(alcohol)
+        else:
+            alcohol = 0
+        # sugar alcohol
+        if sugarAlcohols != '':
+            sugarAlcohols = float(sugarAlcohols)
+        else:
+            sugarAlcohols = 0
+        # total sugar
+        if totalSugar != '':
+            totalSugar = float(totalSugar)
+        else:
+            totalSugar = 0
+        # added sugar
+        if addedSugar != '':
+            addedSugar = float(addedSugar)
+        else:
+            addedSugar = 0
+        # total dietary fiber
+        if totalDietaryFiber != '':
+            totalDietaryFiber = float(totalDietaryFiber)
+        else:
+            totalDietayrFiber = 0
+        # total soluble fiber
+        if totalSolubleFiber != '':
+            totalSolubleFiber = float(totalSolubleFiber)
+        else:
+            totalSolubleFiber = 0
+        # monosaccharides
+        if monosaccharides != '':
+            monosaccharides = float(monosaccharides)
+        else:
+            monosaccharides = 0
+        # disaccharides
+        if disaccharides != '':
+            disaccharides = float(disaccharides)
+        else:
+            disaccharides = 0
+        # other carbs
+        if otherCarbs != '':
+            otherCarbs = float(otherCarbs)
+        else:
+            otherCarbs = 0
+        # total unsaturated fat 
+        if totalUnsatFat != '':
+            totalUnsatFat = float(totalUnsatFat)
+        else:
+            totalUnsatFat = 0
+        # total saturated fat 
+        if totalSatFat != '':
+            totalSatFat = float(totalSatFat)
+        else:
+            totalSatFat = 0
+        # monounsaturated fats
+        if monounsatFat != '':
+            monounsatFat = float(monounsatFat)
+        else:
+            monounsatFat = 0
+        # polyunsaturated fats
+        if polyunsatFat != '':
+            polyunsatFat = float(polyunsatFat)
+        else:
+            polyunsatFat = 0   
+        # trans fat 
+        if transFat != '':
+            transFat = float(transFat)
+        else:
+            transFat = 0
+        # omega 3
+        if omega3 != '':
+            omega3 = float(omega3)
+        else:
+            omega3 = 0
+        # omega 6 
+        if omega6 != '':
+            omega6 = float(omega6)
+        else:
+            omega6 = 0
+
+
+        # validates the mandatory inputs
+        if carbs != '':
+            carbs = float(carbs)
+        else:
+            msg = QMessageBox()
+            msg.setText('Input required in total carbohydates box on nutritionals tab')
+            self.totalCarbohydratesGLineEdit.setFocus()
+            msg.exec_()
+            return False
+        if fats != '':
+            fats = float(fats)
+        else:
+            msg = QMessageBox()
+            msg.setText('Input required in total fats box on nutritionals tab')
+            self.totalFatGLineEdit.setFocus()
+            msg.exec_()
+            return False
+        if proteins != '':
+            proteins = float(proteins)
+        else:
+            msg = QMessageBox()
+            msg.setText('Input required in total proteins box on nutritionals tab')
+            self.totalProteinGLineEdit.setFocus()
+            msg.exec_()
+            return False
+        if calories != '':
+            calories = float(calories)
+        else:
+            msg = QMessageBox()
+            msg.setText('Input required in calories box on nutritionals tab')
+            self.caloriesKCalLineEdit.setFocus()
+            msg.exec_()
+            return False
+            
+
+
+        # Logic
+        # checks that calories are validated in relation to major calorie-contributing nutrients
+        if (proteins * 4) + (fats * 9) + (carbs * 4) + (alcohol * 7) + (sugarAlcohols * 4) > calories:
+            msg = QMessageBox()
+            msg.setText('Calories are lower than expected given entered macronutrients')
+            self.caloriesKCalLineEdit.setFocus()
+            msg.exec_()
+            return False
+
+        # checkse that nutrient weights are validated in relation to per-weight
+        perWeight = self.perGramsSpinBox.value()
+        if proteins + fats + carbs + alcohol + sugarAlcohols + water > perWeight:
+            msg = QMessageBox()
+            msg.setText('Invalid input. Nutrient weights are greater than the reference weight')
+            self.perGramsSpinBox.setFocus()
+            msg.exec_()
+            return False 
+         
+        # if added sugars are higher than total sugar
+        if addedSugar > totalSugar and totalSugar != 0:
+            msg = QMessageBox()
+            msg.setText('Added sugar cannot be greater than the total sugar')
+            self.totalSugarsGLineEdit.setFocus()
+            msg.exec_()
+            return False
+        
+        # checks mono/disaccharide inconsistency with total sugar if total sugar is inputted
+        if monosaccharides + disaccharides > totalSugar and totalSugar != 0:
+            msg = QMessageBox()
+            msg.setText('The total sugar content cannot be less than the sum of monosaaccharide and disaccharide content')
+            self.totalSugarsGLineEdit.setFocus()
+            msg.exec_()
+            return False
+        
+        # checks all carbs in relation to total carbs
+        if max(totalSugar, monosaccharides + disaccharides) + totalDietaryFiber + totalSolubleFiber + otherCarbs > carbs:
+            msg = QMessageBox()
+            msg.setText('Inputted carbohydrates are greater than the total carbohydrates')
+            msg.exec_()
+            return False
+
+        # checks polyunsaturated fats are not inconsistent
+        if omega3 + omega6 > polyunsatFat and polyunsatFat != 0:
+            msg = QMessageBox()
+            msg.setText('Inconsistent input for polyunsaturated fat. Omega-3 and Omega-6 are higher than the total')
+            self.totalUnsaturatedFatGLineEdit.setFocus()
+            msg.exec_()
+            return False
+
+        # checks that total unsaturated fat isnt lower than sum of constituents
+        if monounsatFat + polyunsatFat > totalUnsatFat and totalUnsatFat != 0:
+            msg = QMessageBox()
+            msg.setText('Inconsistent input for unsaturated fats. Monunsaturated and Polyunsaturated fat content cannot be higher than the total Unsaturated Fat Content')
+            self.totalUnsaturatedFatGLineEdit.setFocus()
+            msg.exec_()
+            return False
+        
+        # checks that total fat is not less than sum of its constituents 
+        if totalSatFat + max(totalUnsatFat, monounsatFat + polyunsatFat, monounsatFat + omega3 + omega6) + transFat > fats:
+            msg = QMessageBox()
+            msg.setText('Total fats cannot be less than the sum of the inputted fats')
+            msg.exec_()
+            return False
+        
+
+        
+
+
 
     def retranslateUi(self, addIngredientDialog):
-        self.ingredientNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Specific Name", None))
+        self.ingDescLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Ingredient Description", None))
+        self.ingNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Specific Name", None))
         self.ingNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Common Name (if applicable)", None))
         self.ingNameLineEdit.setPlaceholderText(QCoreApplication.translate("addIngredientDialog", u"ie. Cellulose Gum", None))
         self.supplierLabel_2.setText(QCoreApplication.translate("addIngredientDialog", u"Supplier (if applicable)", None))
@@ -1861,3 +2206,10 @@ class addIngredientDialog(QDialog):
         pass
     # retranslateUi
 
+
+
+
+app = QApplication(sys.argv)
+gui = addIngredientDialog()
+gui.show()
+sys.exit(app.exec_())
