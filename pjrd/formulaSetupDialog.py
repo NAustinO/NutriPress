@@ -386,8 +386,8 @@ class formulaSetupDialog(QDialog):
                     self.close()
                     
 
-app = QApplication(sys.argv)
+'''app = QApplication(sys.argv)
 gui = formulaSetupDialog()
 gui.show()
 sys.exit(app.exec_())
-#test(formulaSetupDialog)
+#test(formulaSetupDialog)'''

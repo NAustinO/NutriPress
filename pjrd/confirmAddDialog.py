@@ -17,13 +17,14 @@ from helpers import test, dbConnection, TimedMessageBox
 
 class confirmationDialog(QDialog):
 
-    def __init__(self, root, ingID=None):
-        if ingID is None:
+    def __init__(self, root, foodToAdd=None):
+        if foodToAdd is None:
             pass
+        self.foodToAdd = foodToAdd
         super(confirmationDialog, self).__init__()
         self.root = root
         self.setupUi(self)
-        self.setupFromSearchResultsDialog(ingID)
+        self.setupFromSearchResultsDialog(foodToAdd)
         self.setupLogic()
 
        
@@ -161,6 +162,9 @@ class confirmationDialog(QDialog):
         self.retranslateUi(confirmationDialog)
 
         QMetaObject.connectSlotsByName(confirmationDialog)
+
+        ##################
+        self.weightLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
     # setupUi
 
     def retranslateUi(self, confirmationDialog):
@@ -194,7 +198,7 @@ class confirmationDialog(QDialog):
         with dbConnection('FormulaSchema').cursor() as cursor:
             completer = QCompleter()
             model = QStandardItemModel()
-            cursor.execute('SELECT unit_id, unit_name, unit_symbol, si_unit_factor, conversion_offset FROM unit WHERE unit_class = "mass" ORDER BY si_unit_factor DESC')
+            cursor.execute('SELECT unit_id, unit_name, unit_symbol, conversion_factor, conversion_offset FROM unit WHERE unit_class = "mass" ORDER BY conversion_factor ASC')
             uoms = cursor.fetchall()
             for uom in uoms:
                 unitItem = QStandardItem()
@@ -207,37 +211,42 @@ class confirmationDialog(QDialog):
             self.unitComboBox.setModel(model)
             self.unitComboBox.setCurrentIndex(-1)
 
-    def setupFromSearchResultsDialog(self, ingID):
+    def setupFromSearchResultsDialog(self, foodToAdd):
         with dbConnection('FormulaSchema').cursor() as cursor:
             try:
                 # ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code
-                cursor.execute('SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code FROM ingredient INNER JOIN supplier ON ingredient.supplier_id = supplier.supplier_id WHERE ing_id = %s',(ingID,))
+                cursor.execute('SELECT food_desc, specific_name, supplier_name, supplier_ing_item_code FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food.food_id = %s', (self.foodToAdd['food_id']))
             except Exception:
                 print('There was an error in the query')
                 exit(1)
             else:
-                ing = cursor.fetchone()
+                food = cursor.fetchone()
+
+            self.foodToAdd['food_desc'] = food['food_desc']
+            self.foodToAdd['supplier_name'] = food['supplier_name']
+            self.foodToAdd['specific_name'] = food['specific_name']
+            self.foodToAdd['supplier_ing_item_code'] = food['supplier_ing_item_code']
 
             # ingredient name label
-            self.namePlaceholderLabel.setText(ing['ing_common_name'])   
+            self.namePlaceholderLabel.setText(food['food_desc'])  
 
             # update specific name if exists
-            if ing['ing_specific_name'] is None:
-                self.specificNamePlaceholderLabel.setText('N/A')
+            if food['specific_name'] is None:
+                self.specificNamePlaceholderLabel.setText('')
             else:
-                self.specificNamePlaceholderLabel.setText(ing['ing_specific_name'])
+                self.specificNamePlaceholderLabel.setText(food['specific_name'])
 
             # update supplier name if exists
-            if ing['supplier_name'] is None:
-                self.supplierPlaceholderLabel.setText('N/A')
+            if food['supplier_name'] is None:
+                self.supplierPlaceholderLabel.setText('None')
             else:
-                self.supplierPlaceholderLabel.setText(ing['supplier_name'])
+                self.supplierPlaceholderLabel.setText(food['supplier_name'])
 
             # update supplier item code if exists
-            if ing['supplier_ing_item_code'] is None:
-                self.supplierCodePlaceholderLabel.setText('N/A')
+            if food['supplier_ing_item_code'] is None:
+                self.supplierCodePlaceholderLabel.setText('')
             else:
-                self.supplierCodePlaceholderLabel.setText(ing['supplier_ing_item_code'])
+                self.supplierCodePlaceholderLabel.setText(food['supplier_ing_item_code'])
    
     # event filter to listen for return button 
     def eventFilter(self, source, event):
@@ -252,28 +261,48 @@ class confirmationDialog(QDialog):
         if self.validatedInput() is False:
             return
         else:
+            weight = float(self.weightLineEdit.text())
+            unitData = self.unitComboBox.currentData(Qt.UserRole)
+            unitID = unitData['unit_id']
+            unitName = unitData['unit_name']
+            unitConversionFactor = unitData['conversion_factor']
+            conversionOffset = unitData['conversion_factor']
+            
+            self.foodToAdd['weight'] = weight
+            self.foodToAdd['unit_id'] = unitID
+            self.foodToAdd['unit_name'] = unitName
+            self.foodToAdd['conversion_factor'] = unitConversionFactor
+            self.foodToAdd['conversion_offset'] = conversionOffset
+
             # continues if the user input is valid
             rowCount = self.root.ingTabFormulaTableWidget.rowCount()
             rowIndex = self.root.ingTabFormulaTableWidget.rowCount() - 1
             if rowCount == 0:
                 rowIndex = 0
+
+            itemWithData = QTableWidgetItem()
+            itemWithData.setData(Qt.UserRole, self.foodToAdd)
+            itemWithData.setText(self.namePlaceholderLabel.text())
+
             self.root.ingTabFormulaTableWidget.insertRow(rowIndex)
-            ###just to see that it works. Need to fix
-            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 0, QTableWidgetItem(self.namePlaceholderLabel.text()))
+
+            ###just to see that it works. Need to fix <_________
+            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 0, itemWithData)
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 2, QTableWidgetItem(self.weightLineEdit.text()))
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 3, QTableWidgetItem(self.unitComboBox.currentText()))
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 4, QTableWidgetItem(self.supplierPlaceholderLabel.text()))
             self.root.ingTabFormulaTableWidget.update()
+            self.root.refresh()
+
             self.root.update()
 
-            self.close()
             msg = TimedMessageBox(timeout = 3)
             msg.setText('Successfully added ingredient. You can add another or return to editor')
             msg.setIcon(QMessageBox.Information)
             msg.setStandardButtons(QMessageBox.Ok)
+            self.close()
             msg.exec_()
-            
-            ##
+ 
 
     # returns true if the user input for this window is valid, otherwise returns false
     def validatedInput(self):

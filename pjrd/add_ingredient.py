@@ -482,7 +482,6 @@ class addIngredientDialog(QDialog):
             }
         ]
 
-
     def setupUi(self, addIngredientDialog):
         if not addIngredientDialog.objectName():
             addIngredientDialog.setObjectName(u"addIngredientDialog")
@@ -1181,7 +1180,6 @@ class addIngredientDialog(QDialog):
 
         self.formLayout_5.setWidget(18, QFormLayout.FieldRole, self.omega6FattyAcidGLineEdit)
 
-
         self.gridLayout_4.addWidget(self.fatsFrame, 0, 2, 1, 1)
 
         self.vitaminsFrame = QFrame(self.scrollAreaWidgetContents)
@@ -1610,6 +1608,22 @@ class addIngredientDialog(QDialog):
 
         ### CHANGES BEYOND QT ###############<--------------------------------------------
         self.addIngredientTabWidget.setCurrentIndex(0)
+        self.percentYieldDoubleSpinBox.setValue(100)
+
+        ### sets tab order 
+        self.setTabOrder(self.totalCarbohydratesGLineEdit, self.totalSugarsGLineEdit)
+        self.setTabOrder(self.totalSugarsGLineEdit, self.addedSugarsGLineEdit)
+        self.setTabOrder(self.addedSugarsGLineEdit, self.totalDietaryFiberGLineEdit)
+        self.setTabOrder(self.totalDietaryFiberGLineEdit, self.totalSolubleFiberGLineEdit)
+        self.setTabOrder(self.totalSolubleFiberGLineEdit, self.monosaccharidesGLineEdit)
+        self.setTabOrder(self.monosaccharidesGLineEdit, self.disaccharidesGLineEdit)
+        self.setTabOrder(self.disaccharidesGLineEdit, self.otherCarbohydratesGLineEdit)
+        self.setTabOrder(self.otherCarbohydratesGLineEdit, self.totalFatGLineEdit)
+        self.setTabOrder(self.omega6FattyAcidGLineEdit, self.caloriesKCalLineEdit)
+        self.setTabOrder(self.sugarAlcoholGLineEdit, self.totalProteinGLineEdit)
+        self.setTabOrder(self.totalProteinGLineEdit, self.calciumMgLineEdit)
+        self.setTabOrder(self.zincMgLineEdit ,self.vitaminAIUIULineEdit)
+
         # adds suggestions to input fields
         
         #self.buttonBox.accepted.connect(addIngredientDialog.accept)
@@ -1617,7 +1631,6 @@ class addIngredientDialog(QDialog):
         QMetaObject.connectSlotsByName(addIngredientDialog)
         # setupUi
     
-
     def setupLogic(self):
 
         # sets up signals
@@ -1677,7 +1690,6 @@ class addIngredientDialog(QDialog):
                 item.setCheckState(Qt.Unchecked)
                 self.groupListWidget.addItem(item)
             self.groupListWidget.sortItems(Qt.AscendingOrder)
-
 
     # clears all files from table
     def clearContentsWrapper(self): 
@@ -1878,7 +1890,6 @@ class addIngredientDialog(QDialog):
         # omega3 + omega6 is a polyunsat fat 
         # sugar alcohols are not considered carbs
         # sugars are monosaccharides and disaccharides
-
 
         carbs = self.totalCarbohydratesGLineEdit.text()
         fats = self.totalFatGLineEdit.text()
@@ -2089,11 +2100,9 @@ class addIngredientDialog(QDialog):
             msg.exec_()
             return False
         
-
+        # returns True if all error checking has passed 
+        return True
         
-
-
-
     def retranslateUi(self, addIngredientDialog):
         self.ingDescLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Ingredient Description", None))
         self.ingNameLabel.setText(QCoreApplication.translate("addIngredientDialog", u"Specific Name", None))
@@ -2209,7 +2218,7 @@ class addIngredientDialog(QDialog):
 
 
 
-app = QApplication(sys.argv)
+'''app = QApplication(sys.argv)
 gui = addIngredientDialog()
 gui.show()
-sys.exit(app.exec_())
+sys.exit(app.exec_())'''

@@ -66,6 +66,7 @@ class searchResults(QDialog):
         self.searchResultsTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.searchResultsTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.searchResultsTable.setSortingEnabled(False)
+        self.searchResultsTable.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
         self.verticalLayout_2.addWidget(self.searchResultsTable)
 
@@ -103,16 +104,16 @@ class searchResults(QDialog):
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
-        self.cancelPushBtn = QPushButton(searchResults)
-        self.cancelPushBtn.setObjectName(u"cancelPushBtn")
-        self.cancelPushBtn.setText(u"Cancel")
+        self.exitPushBtn = QPushButton(searchResults)
+        self.exitPushBtn.setObjectName(u"exitPushBtn")
+        self.exitPushBtn.setText(u"Exit")
 
-        self.horizontalLayout_2.addWidget(self.cancelPushBtn)
+        self.horizontalLayout_2.addWidget(self.exitPushBtn)
 
         self.okPushBtn = QPushButton(searchResults)
         self.okPushBtn.setObjectName(u"okPushBtn")
         self.okPushBtn.setAutoDefault(False)
-        self.okPushBtn.setText(u"Ok")
+        self.okPushBtn.setText(u"OK")
 
         self.horizontalLayout_2.addWidget(self.okPushBtn)
 
@@ -151,7 +152,7 @@ class searchResults(QDialog):
         self.goBtn.clicked.connect(self.searchEvent)
         self.searchLineEdit.returnPressed.connect(self.searchEvent)
         self.okPushBtn.clicked.connect(self.accept)
-        self.cancelPushBtn.clicked.connect(self.cancel)
+        self.exitPushBtn.clicked.connect(self.cancel)
 
         #sets up events
         self.searchResultsTable.viewport().installEventFilter(self)
@@ -163,7 +164,7 @@ class searchResults(QDialog):
         if query is None:
             query = ''
         with dbConnection('FormulaSchema').cursor() as cursor:
-            rows = cursor.execute("SELECT ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id FROM ingredient INNER JOIN supplier ON supplier.supplier_id = ingredient.supplier_id WHERE ing_common_name LIKE %s OR ing_specific_name LIKE %s OR supplier_name LIKE %s OR ingredient_statement LIKE %s", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%",))
+            rows = cursor.execute("SELECT food.food_desc, supplier_food.specific_name, supplier.supplier_name, supplier_food.supplier_ing_item_code, supplier_food.ing_statement, food.food_id, food.ing_statement FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
             queryResults = cursor.fetchall()
             # data comes in order of index ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id
 
@@ -186,18 +187,18 @@ class searchResults(QDialog):
             self.searchResultsTable.insertRow(rowIndex)
 
             # IMPORTANT: data for each ingredient is contained in column 0 in dictionary form within QTableWidgetItem. It is the Qt.UserRole
-            widgetItem = QTableWidgetItem(result['ing_common_name'])
+            widgetItem = QTableWidgetItem(result['food_desc'])
             widgetItem.setData(Qt.UserRole, result)
-            widgetItem.setText(result['ing_common_name'])
+            widgetItem.setText(result['food_desc'].capitalize())
             self.searchResultsTable.setItem(rowIndex, 0, widgetItem)
             # sets specific name
-            self.searchResultsTable.setItem(rowIndex, 1, QTableWidgetItem(result['ing_specific_name']))
+            self.searchResultsTable.setItem(rowIndex, 1, QTableWidgetItem(result['specific_name']))
             # sets supplier name
             self.searchResultsTable.setItem(rowIndex, 2, QTableWidgetItem(result['supplier_name']))
             # sets supplier item code 
             self.searchResultsTable.setItem(rowIndex, 3, QTableWidgetItem(result['supplier_ing_item_code']))
             # sets ingredient statement 
-            self.searchResultsTable.setItem(rowIndex, 4, QTableWidgetItem(result['ingredient_statement']))
+            self.searchResultsTable.setItem(rowIndex, 4, QTableWidgetItem(result['ing_statement']))
             self.searchResultsTable.update()
 
     # double click event filter TODO call the confirmAddUI passing in thek
@@ -206,8 +207,8 @@ class searchResults(QDialog):
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
             ingItem = self.searchResultsTable.itemAt(event.pos())
             ingDict = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
-            ingID = ingDict['ing_id']
-            self.accept(id=ingID)
+            ingID = ingDict['food_id']
+            self.accept(id=ingID, foodToAdd=ingDict)
             return True
         return super(searchResults, self).eventFilter(source, event)
 
@@ -220,8 +221,11 @@ class searchResults(QDialog):
         return super(searchResults, self).enterEventFilter(source, event)
 
     # ingredient is chosen, brings up confirmation window where user inputs the amount and unit
-    def accept(self, id: int=None):
-        if id is None:
+    # TODO from eventFilter, pass in the item data instead of just the id
+    def accept(self, id: int=None, foodToAdd=None): #TODO
+        #foodToAdd = {}
+
+        if foodToAdd is None:
             chosen = self.searchResultsTable.selectedItems()
             rows = int(len(chosen)/self.searchResultsTable.columnCount())
             if not chosen:
@@ -234,15 +238,16 @@ class searchResults(QDialog):
                 msg.exec_()
             else:
                 ingItem = self.searchResultsTable.selectedItems().pop()
-                ingID = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)['ing_id']
-
-                confirmWindow = confirmationDialog(self.root, ingID)
+                foodID = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)['food_id']
+                foodToAdd = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
+                confirmWindow = confirmationDialog(self.root, foodToAdd)
                 confirmWindow.setModal(True)
                 confirmWindow.exec_()
                 return True
                 # self.close()<<_-- do you want the search window to close after the confirmation window appears
         else:
-            confirmWindow = confirmationDialog(self.root, id)
+            #foodToAdd['food_id'] = id
+            confirmWindow = confirmationDialog(self.root, foodToAdd)
             confirmWindow.setModal(True)
             confirmWindow.exec_()
             return True

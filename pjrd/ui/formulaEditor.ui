@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>865</width>
-    <height>987</height>
+    <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="usesScrollButtons">
       <bool>true</bool>
@@ -542,8 +542,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>750</width>
-            <height>924</height>
+            <width>793</width>
+            <height>674</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -809,7 +809,7 @@
             <x>0</x>
             <y>0</y>
             <width>793</width>
-            <height>872</height>
+            <height>640</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1019,7 +1019,7 @@
                  <item>
                   <widget class="QCheckBox" name="recipeWeighsCheckbox">
                    <property name="text">
-                    <string>Recipe weighs</string>
+                    <string>Serving weighs</string>
                    </property>
                   </widget>
                  </item>
