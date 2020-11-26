@@ -198,14 +198,11 @@ class formulaSetupDialog(QDialog):
 
         self.verticalLayout.addWidget(self.buttonBox)
 
-
         self.retranslateUi(formulaSetupDialog)
         self.buttonBox.accepted.connect(formulaSetupDialog.accept)
         self.buttonBox.rejected.connect(formulaSetupDialog.close)
 
-        
-        #####
-
+        ##
         self.revisionContainerFrame.setDisabled(True)
         self.newFormulaContainerFrame.setDisabled(True)
         ###

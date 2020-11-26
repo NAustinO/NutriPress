@@ -9,17 +9,18 @@
 ################################################################################
 
 import sys
-
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from helpers import test, dbConnection, TimedMessageBox
+from helpers import dbConnection, TimedMessageBox
 
 class confirmationDialog(QDialog):
 
     def __init__(self, root, foodToAdd=None):
-        if foodToAdd is None:
-            pass
+        if foodToAdd is None: #error handling?
+            msg = QMessageBox()
+            msg.setText('Something went wrong')
+            self.close()
         self.foodToAdd = foodToAdd
         super(confirmationDialog, self).__init__()
         self.root = root
@@ -27,7 +28,9 @@ class confirmationDialog(QDialog):
         self.setupFromSearchResultsDialog(foodToAdd)
         self.setupLogic()
 
-       
+    '''
+    CALLED: called during setup of the dialog (__init__())
+    '''
     def setupUi(self, confirmationDialog):
         if not confirmationDialog.objectName():
             confirmationDialog.setObjectName(u"confirmationDialog")
@@ -167,6 +170,9 @@ class confirmationDialog(QDialog):
         self.weightLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
     # setupUi
 
+    '''
+    CALLED: called during setup of the dialog (setupUi())
+    '''
     def retranslateUi(self, confirmationDialog):
         confirmationDialog.setWindowTitle(QCoreApplication.translate("confirmationDialog", u"Confirm", None))
         self.headerLabel.setText(QCoreApplication.translate("confirmationDialog", u"Please confirm the ingredient and specify the weight added to the formula", None))
@@ -184,14 +190,16 @@ class confirmationDialog(QDialog):
         self.okPushBtn.setText(QCoreApplication.translate("confirmationDialog", u"Ok", None))
     # retranslateUi
 
-    # sets up the logic for the class
+    '''
+    CALLED: called during setup of the dialog (__init__())
+    PURPOSE: links the events and signal/slots
+    '''
     def setupLogic(self):
         # sets up signals
         self.okPushBtn.clicked.connect(self.submit)
         self.cancelPushBtn.clicked.connect(self.cancelEvent)
 
-        #sets up events
-        #self.keyPressEvent(QKeyEvent(QEvent.KeyPress, Qt.Key_Return)).connect(self.submit)
+        # setup events
         self.installEventFilter(self)
 
         # setup unit of measure combobox completer and data
@@ -211,91 +219,81 @@ class confirmationDialog(QDialog):
             self.unitComboBox.setModel(model)
             self.unitComboBox.setCurrentIndex(-1)
 
+    '''
+    CALLED: called during setup of the dialog (__init__())
+    PURPOSE: Takes in the food dictionary data that is passed when creating the confirmationDialog. Inputs the relevant information to placeholder labels in order to remind user of their choice
+    '''
     def setupFromSearchResultsDialog(self, foodToAdd):
-        with dbConnection('FormulaSchema').cursor() as cursor:
-            try:
-                # ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code
-                cursor.execute('SELECT food_desc, specific_name, supplier_name, supplier_ing_item_code FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food.food_id = %s', (self.foodToAdd['food_id']))
-            except Exception:
-                print('There was an error in the query')
-                exit(1)
-            else:
-                food = cursor.fetchone()
+        # ingredient name label
+        self.namePlaceholderLabel.setText(foodToAdd['food_desc'])  
 
-            self.foodToAdd['food_desc'] = food['food_desc']
-            self.foodToAdd['supplier_name'] = food['supplier_name']
-            self.foodToAdd['specific_name'] = food['specific_name']
-            self.foodToAdd['supplier_ing_item_code'] = food['supplier_ing_item_code']
+        # update specific name if exists
+        if foodToAdd['specific_name'] is None:
+            self.specificNamePlaceholderLabel.setText('')
+        else:
+            self.specificNamePlaceholderLabel.setText(foodToAdd['specific_name'])
 
-            # ingredient name label
-            self.namePlaceholderLabel.setText(food['food_desc'])  
+        # update supplier name if exists
+        if foodToAdd['supplier_name'] is None:
+            self.supplierPlaceholderLabel.setText('None')
+        else:
+            self.supplierPlaceholderLabel.setText(foodToAdd['supplier_name'])
 
-            # update specific name if exists
-            if food['specific_name'] is None:
-                self.specificNamePlaceholderLabel.setText('')
-            else:
-                self.specificNamePlaceholderLabel.setText(food['specific_name'])
-
-            # update supplier name if exists
-            if food['supplier_name'] is None:
-                self.supplierPlaceholderLabel.setText('None')
-            else:
-                self.supplierPlaceholderLabel.setText(food['supplier_name'])
-
-            # update supplier item code if exists
-            if food['supplier_ing_item_code'] is None:
-                self.supplierCodePlaceholderLabel.setText('')
-            else:
-                self.supplierCodePlaceholderLabel.setText(food['supplier_ing_item_code'])
+        # update supplier item code if exists
+        if foodToAdd['supplier_ing_item_code'] is None:
+            self.supplierCodePlaceholderLabel.setText('')
+        else:
+            self.supplierCodePlaceholderLabel.setText(foodToAdd['supplier_ing_item_code'])
    
-    # event filter to listen for return button 
+    '''# event filter to listen for return button '''
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress and source == self and event.key() == Qt.Key_Return: 
             self.submit()
             return True
         return False
 
-    # submits the form, adds the information back to the formula editor table
+    '''
+    PURPOSE: submits the form, adds the data and fills to the formula editor table.
+    CALLED: from eventFilter(), when okPushBtn.clicked (setupLogic()) 
+    ON SUCCESS: closes the confirmation dialog, allowing another addition
+    '''
     def submit(self):
         # validates for float input and that is a unit from box is chosen
         if self.validatedInput() is False:
             return
+        # if validated
         else:
+            unitData = self.unitComboBox.currentData(Qt.UserRole)
+            if unitData is None:
+                return
             weight = float(self.weightLineEdit.text())
             unitData = self.unitComboBox.currentData(Qt.UserRole)
-            unitID = unitData['unit_id']
-            unitName = unitData['unit_name']
-            unitConversionFactor = unitData['conversion_factor']
-            conversionOffset = unitData['conversion_factor']
-            
+            # adds information to dictionary
             self.foodToAdd['weight'] = weight
-            self.foodToAdd['unit_id'] = unitID
-            self.foodToAdd['unit_name'] = unitName
-            self.foodToAdd['conversion_factor'] = unitConversionFactor
-            self.foodToAdd['conversion_offset'] = conversionOffset
+            self.foodToAdd['unit_id'] = unitData['unit_id']
+            self.foodToAdd['unit_name'] = unitData['unit_name']
+            self.foodToAdd['conversion_factor'] = unitData['conversion_factor']
+            self.foodToAdd['conversion_offset'] = unitData['conversion_offset']
+            self.foodToAdd['weight_in_g'] = (weight + unitData['conversion_offset']) * unitData['conversion_factor'] # TODO This will potentially cause problems for (IU for VIT A in unit table)
 
-            # continues if the user input is valid
+            #updates the table widget in the formula editor window
             rowCount = self.root.ingTabFormulaTableWidget.rowCount()
             rowIndex = self.root.ingTabFormulaTableWidget.rowCount() - 1
             if rowCount == 0:
                 rowIndex = 0
-
             itemWithData = QTableWidgetItem()
             itemWithData.setData(Qt.UserRole, self.foodToAdd)
             itemWithData.setText(self.namePlaceholderLabel.text())
-
             self.root.ingTabFormulaTableWidget.insertRow(rowIndex)
-
-            ###just to see that it works. Need to fix <_________
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 0, itemWithData)
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 2, QTableWidgetItem(self.weightLineEdit.text()))
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 3, QTableWidgetItem(self.unitComboBox.currentText()))
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 4, QTableWidgetItem(self.supplierPlaceholderLabel.text()))
             self.root.ingTabFormulaTableWidget.update()
             self.root.refresh()
-
             self.root.update()
 
+            # popup window with timer to confirm successful addition
             msg = TimedMessageBox(timeout = 3)
             msg.setText('Successfully added ingredient. You can add another or return to editor')
             msg.setIcon(QMessageBox.Information)
@@ -303,7 +301,10 @@ class confirmationDialog(QDialog):
             self.close()
             msg.exec_()
  
-
+    '''
+    PURPOSE: validates the user input
+    RETURN: Returns true if user input is validated, returns false if not valid
+    '''
     # returns true if the user input for this window is valid, otherwise returns false
     def validatedInput(self):
         try:
@@ -321,18 +322,11 @@ class confirmationDialog(QDialog):
                 return False
             return True
     
+    '''
+    PURPOSE: Event handler to confirm whether the user wants to exit the dialog without adding the ingredient to the formula
+    Calls a message box, allowing user to confirm before exiting
+    '''
     def cancelEvent(self):
         confirm = QMessageBox().question(self, 'Confirm cancellation', 'Are you sure you want to cancel?', QMessageBox.Yes|QMessageBox.No)
         if confirm == QMessageBox.Yes:
             self.close()
-    
-'''
-if __name__ == '__main__':
-    confirmationDialog()
-
-app = QApplication(sys.argv)
-gui = confirmationDialog(1)
-gui.show()
-sys.exit(app.exec_())
-
-'''

@@ -8,14 +8,17 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
+
+import sys
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from helpers import test, dbConnection
-import sys
+
 from confirmAddDialog import confirmationDialog
 
 class searchResults(QDialog):
+
 
     # query: the search query passed in from the formulaEditor window
     # root: a dictionary(not) that holds the references of QWidgets that are updated during certain window changes
@@ -88,6 +91,7 @@ class searchResults(QDialog):
 
         self.searchLineEdit = QLineEdit(self.frame)
         self.searchLineEdit.setObjectName(u"searchLineEdit")
+        self.searchLineEdit.setPlaceholderText('Press "Enter" or click Go to search')
 
         self.horizontalLayout.addWidget(self.searchLineEdit)
 
@@ -110,22 +114,18 @@ class searchResults(QDialog):
 
         self.horizontalLayout_2.addWidget(self.exitPushBtn)
 
-        self.okPushBtn = QPushButton(searchResults)
-        self.okPushBtn.setObjectName(u"okPushBtn")
-        self.okPushBtn.setAutoDefault(False)
-        self.okPushBtn.setText(u"OK")
+        self.addSelectedBtn = QPushButton(searchResults)
+        self.addSelectedBtn.setObjectName(u"addSelectedBtn")
+        self.addSelectedBtn.setAutoDefault(False)
+        self.addSelectedBtn.setText(u"Add Selected")
 
-        self.horizontalLayout_2.addWidget(self.okPushBtn)
+        self.horizontalLayout_2.addWidget(self.addSelectedBtn)
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
         self.retranslateUi(searchResults)
 
         QMetaObject.connectSlotsByName(searchResults)
-
-        #####--------------_#####
-        #self.searchEvent(query)
-        #####--------------_#####
     # setupUi
 
     def retranslateUi(self, searchResults):
@@ -151,7 +151,7 @@ class searchResults(QDialog):
         # sets up signals
         self.goBtn.clicked.connect(self.searchEvent)
         self.searchLineEdit.returnPressed.connect(self.searchEvent)
-        self.okPushBtn.clicked.connect(self.accept)
+        self.addSelectedBtn.clicked.connect(self.accept)
         self.exitPushBtn.clicked.connect(self.cancel)
 
         #sets up events
@@ -164,9 +164,8 @@ class searchResults(QDialog):
         if query is None:
             query = ''
         with dbConnection('FormulaSchema').cursor() as cursor:
-            rows = cursor.execute("SELECT food.food_desc, supplier_food.specific_name, supplier.supplier_name, supplier_food.supplier_ing_item_code, supplier_food.ing_statement, food.food_id, food.ing_statement FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
+            rows = cursor.execute("SELECT food.food_desc, supplier_food.specific_name, supplier.supplier_name, supplier_food.supplier_ing_item_code, food.ing_statement, food.food_id FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
             queryResults = cursor.fetchall()
-            # data comes in order of index ing_common_name, ing_specific_name, supplier_name, supplier_ing_item_code, ingredient_statement, ing_id
 
             # updates the header
             if rows == 0:
@@ -176,7 +175,7 @@ class searchResults(QDialog):
             else:
                 self.resultsLabel.setText("Seach returned {count} results. Double click to add to formula.".format(count=rows))
 
-        # refreshes table with results 
+        # refreshes table with results
         self.searchResultsTable.setRowCount(0)
         for result in queryResults:
             if self.searchResultsTable.rowCount() == 0:
@@ -191,40 +190,39 @@ class searchResults(QDialog):
             widgetItem.setData(Qt.UserRole, result)
             widgetItem.setText(result['food_desc'].capitalize())
             self.searchResultsTable.setItem(rowIndex, 0, widgetItem)
-            # sets specific name
             self.searchResultsTable.setItem(rowIndex, 1, QTableWidgetItem(result['specific_name']))
-            # sets supplier name
             self.searchResultsTable.setItem(rowIndex, 2, QTableWidgetItem(result['supplier_name']))
-            # sets supplier item code 
             self.searchResultsTable.setItem(rowIndex, 3, QTableWidgetItem(result['supplier_ing_item_code']))
-            # sets ingredient statement 
             self.searchResultsTable.setItem(rowIndex, 4, QTableWidgetItem(result['ing_statement']))
             self.searchResultsTable.update()
 
     # double click event filter TODO call the confirmAddUI passing in thek
-    # called when user double clicks within table viewport to choose ingredient. Opens the confirmation window
+    
     def eventFilter(self, source, event):
+        '''This function handles all the events for the window
+        Events include:
+        1. Double clicking within search table to choose ingredient
+        '''
+        # continues when user double clicks within table viewport to choose an ingredient. Opens the confirmation window
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
             ingItem = self.searchResultsTable.itemAt(event.pos())
             ingDict = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
             ingID = ingDict['food_id']
-            self.accept(id=ingID, foodToAdd=ingDict)
+            self.accept(foodToAdd=ingDict)
             return True
-        return super(searchResults, self).eventFilter(source, event)
 
-    # enter event. called when enter is pressed # TODO I dont think this works
-    def enterEventFilter(self, source, event):
-        if (event.type() == QEvent.KeyPress and source == self.self and event.key() == Qt.Key_Enter):
+        # enter event, called when enter is pressed. 
+        if (event.type() == QEvent.KeyPress and source == self.self and event.key() == Qt.Key_Return):
             query = self.searchLineEdit.text()
             self.searchEvent(query)
             return True
-        return super(searchResults, self).enterEventFilter(source, event)
+        return super(searchResults, self).eventFilter(source, event)
 
     # ingredient is chosen, brings up confirmation window where user inputs the amount and unit
     # TODO from eventFilter, pass in the item data instead of just the id
-    def accept(self, id: int=None, foodToAdd=None): #TODO
-        #foodToAdd = {}
+    def accept(self, foodToAdd=None): #TODO
 
+        # continues if the user uses the button to confirm selected ingredient
         if foodToAdd is None:
             chosen = self.searchResultsTable.selectedItems()
             rows = int(len(chosen)/self.searchResultsTable.columnCount())
@@ -238,29 +236,18 @@ class searchResults(QDialog):
                 msg.exec_()
             else:
                 ingItem = self.searchResultsTable.selectedItems().pop()
-                foodID = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)['food_id']
                 foodToAdd = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
                 confirmWindow = confirmationDialog(self.root, foodToAdd)
                 confirmWindow.setModal(True)
                 confirmWindow.exec_()
                 return True
-                # self.close()<<_-- do you want the search window to close after the confirmation window appears
+
+        # continues if the user double clicks on ingredient to confirm selection
         else:
-            #foodToAdd['food_id'] = id
             confirmWindow = confirmationDialog(self.root, foodToAdd)
             confirmWindow.setModal(True)
             confirmWindow.exec_()
             return True
-            # self.close()<<_-- do you want the search window to close after the confirmation window appears 
 
     def cancel(self):
         self.close()
-
-#if __name__ == '__main__':
-#    searchResults()
-
-'''
-app = QApplication(sys.argv)
-gui = searchResults('grape')
-gui.show()
-sys.exit(app.exec_())'''
