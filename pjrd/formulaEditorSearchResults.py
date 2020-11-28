@@ -18,8 +18,9 @@ from helpers import test, dbConnection
 from confirmAddDialog import confirmationDialog
 
 class searchResults(QDialog):
-
-
+    '''This class opens is called when searching from the formula editor. 
+    
+    '''
     # query: the search query passed in from the formulaEditor window
     # root: a dictionary(not) that holds the references of QWidgets that are updated during certain window changes
     def __init__(self, query, root=None):
@@ -248,6 +249,7 @@ class searchResults(QDialog):
             confirmWindow.setModal(True)
             confirmWindow.exec_()
             return True
+
 
     def cancel(self):
         self.close()

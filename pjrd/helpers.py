@@ -131,6 +131,9 @@ def nutrientColMap():
     map[664] = 15 # total trans fat
     return map
 
+def numberWithCommas(number):
+    return f"{number:,.2f}"
+
 class TimedMessageBox(QMessageBox):
     
     def __init__(self, autoClose=True, timeout=2):
