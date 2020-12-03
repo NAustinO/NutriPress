@@ -8,24 +8,23 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-import sys
+import sys, os
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+sys.path.append(sys.path.append('../pjrd'))
 from helpers import dbConnection, TimedMessageBox
+from pjrd.helperClasses import Ingredient, UnitOfMeasure, FormulaIngredient
+
 
 class confirmationDialog(QDialog):
 
-    def __init__(self, root, foodToAdd=None):
-        if foodToAdd is None: #error handling?
-            msg = QMessageBox()
-            msg.setText('Something went wrong')
-            self.close()
-        self.foodToAdd = foodToAdd
+    def __init__(self, root, ingredient: Ingredient):
+        self.ingredient = ingredient
         super(confirmationDialog, self).__init__()
         self.root = root
         self.setupUi(self)
-        self.setupFromSearchResultsDialog(foodToAdd)
+        self.setupFromSearchResultsDialog(ingredient)
         self.setupLogic()
 
     '''
@@ -209,10 +208,9 @@ class confirmationDialog(QDialog):
             cursor.execute('SELECT unit_id, unit_name, unit_symbol, conversion_factor, conversion_offset FROM unit WHERE unit_class = "mass" ORDER BY conversion_factor ASC')
             uoms = cursor.fetchall()
             for uom in uoms:
-                unitItem = QStandardItem()
-                unitItem.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
-                unitItem.setData(uom, Qt.UserRole)
-                model.appendRow(unitItem)
+                unit = UnitOfMeasure(uom['unit_id'], uom['unit_name'], uom['conversion_factor'], uom['conversion_offset'], uom['unit_symbol'])
+                unit.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
+                model.appendRow(unit)
             completer.setModel(model)
             completer.setCompletionMode(QCompleter.InlineCompletion)
             self.unitComboBox.setCompleter(completer)
@@ -223,27 +221,28 @@ class confirmationDialog(QDialog):
     CALLED: called during setup of the dialog (__init__())
     PURPOSE: Takes in the food dictionary data that is passed when creating the confirmationDialog. Inputs the relevant information to placeholder labels in order to remind user of their choice
     '''
-    def setupFromSearchResultsDialog(self, foodToAdd):
+    def setupFromSearchResultsDialog(self, ingredient: Ingredient):
+
         # ingredient name label
-        self.namePlaceholderLabel.setText(foodToAdd['food_desc'])  
+        self.namePlaceholderLabel.setText(ingredient.desc)  
 
         # update specific name if exists
-        if foodToAdd['specific_name'] is None:
-            self.specificNamePlaceholderLabel.setText('')
+        if ingredient.specificName is None:
+            self.specificNamePlaceholderLabel.setText('-')
         else:
-            self.specificNamePlaceholderLabel.setText(foodToAdd['specific_name'])
+            self.specificNamePlaceholderLabel.setText(ingredient.specificName)
 
         # update supplier name if exists
-        if foodToAdd['supplier_name'] is None:
-            self.supplierPlaceholderLabel.setText('None')
+        if ingredient.supplierName is None:
+            self.supplierPlaceholderLabel.setText('-')
         else:
-            self.supplierPlaceholderLabel.setText(foodToAdd['supplier_name'])
+            self.supplierPlaceholderLabel.setText(ingredient.supplierName)
 
         # update supplier item code if exists
-        if foodToAdd['supplier_ing_item_code'] is None:
-            self.supplierCodePlaceholderLabel.setText('')
+        if ingredient.supplierItemCode is None:
+            self.supplierCodePlaceholderLabel.setText('-')
         else:
-            self.supplierCodePlaceholderLabel.setText(foodToAdd['supplier_ing_item_code'])
+            self.supplierCodePlaceholderLabel.setText(ingredient.supplierItemCode)
    
     '''# event filter to listen for return button '''
     def eventFilter(self, source, event):
@@ -261,20 +260,19 @@ class confirmationDialog(QDialog):
         # validates for float input and that is a unit from box is chosen
         if self.validatedInput() is False:
             return
+
         # if validated
         else:
-            unitData = self.unitComboBox.currentData(Qt.UserRole)
-            if unitData is None:
+            unit = self.unitComboBox.currentData(Qt.UserRole)
+            if unit is None:
                 return
-            weight = float(self.weightLineEdit.text())
-            unitData = self.unitComboBox.currentData(Qt.UserRole)
+        
             # adds information to dictionary
-            self.foodToAdd['weight'] = weight
-            self.foodToAdd['unit_id'] = unitData['unit_id']
-            self.foodToAdd['unit_name'] = unitData['unit_name']
-            self.foodToAdd['conversion_factor'] = unitData['conversion_factor']
-            self.foodToAdd['conversion_offset'] = unitData['conversion_offset']
-            self.foodToAdd['weight_in_g'] = (weight + unitData['conversion_offset']) * unitData['conversion_factor'] # TODO This will potentially cause problems for (IU for VIT A in unit table)
+            self.ingredient.inputWeight = float(self.weightLineEdit.text())
+            self.ingredient.unit = unit
+            '''self.ingredient['weight_in_g'] = (weight + unit['conversion_offset']) * unit['conversion_factor']''' # TODO This will potentially cause problems for (IU for VIT A in unit table)
+
+            self.root.formula.addIngredient(self.ingredient)
 
             #updates the table widget in the formula editor window
             rowCount = self.root.ingTabFormulaTableWidget.rowCount()
@@ -282,8 +280,8 @@ class confirmationDialog(QDialog):
             if rowCount == 0:
                 rowIndex = 0
             itemWithData = QTableWidgetItem()
-            itemWithData.setData(Qt.UserRole, self.foodToAdd)
-            itemWithData.setText(self.namePlaceholderLabel.text())
+            itemWithData.setData(Qt.UserRole, self.ingredient)
+            itemWithData.setText(self.ingredient.desc)
             self.root.ingTabFormulaTableWidget.insertRow(rowIndex)
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 0, itemWithData)
             self.root.ingTabFormulaTableWidget.setItem(rowIndex, 2, QTableWidgetItem(self.weightLineEdit.text()))
@@ -321,6 +319,7 @@ class confirmationDialog(QDialog):
                 msg.exec_()
                 return False
             return True
+        
     
     '''
     PURPOSE: Event handler to confirm whether the user wants to exit the dialog without adding the ingredient to the formula

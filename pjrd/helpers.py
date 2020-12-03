@@ -14,37 +14,9 @@ import PySide2.QtQml
 sys.path.append('/pjrd')
 sys.path.append('..')
 
-
-def dbConnection(database: str, cursorclass=pymysql.cursors.DictCursor):
-    connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database, cursorclass=cursorclass)
-    return connection
-
-def displayNfp(): # parent
-
-    #html = open('pjrd/static/templates/nfp.html', 'r').read().splitlines()
-    #html = open('pjrd/static/templates/nfp.html', 'r').read()
-    html = open('ext/nutrition-label/dist/demo/legacy-version/demo.html', 'r').read().rstrip('\n')
-    html.rstrip('\t')
-    #jsFile = open('ext/nutrition-label/dist/js/nutritionLabel.js', 'r')
-    #jsFunc = jsFile.read().splitlines()
-    webEngineView = QWebEngineView()
-    webEngineView.resize(QSize(800, 600))
-    webEngineView.setHtml(html)
-    #run = "('#nfp').nutritionLabel({})".format("{showLegacyVersion: false}")
-    #js = 'document.getElementById("nfp").nutritionLabel()'
-    #webEngineView.page().setHtml(html)
-    #webEngineView.page().runJavaScript(js)
-    webEngineView.show()
- 
-
-# called to test if the window works
-def test(window):
-    app = QApplication(sys.argv)
-    gui = window()
-    gui.show()
-    sys.exit(app.exec_())
-
+''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
 # returns a dictionary that maps the nutrient id to the which column in self.nutrientReportTableView 
+# example (nutrientID) -> column index of nutrient in formualEditor.nutrientReportTableView
 def nutrientColMap():
     map = {}
     # self.map[nutrient_id] = column_applicable
@@ -131,8 +103,134 @@ def nutrientColMap():
     map[664] = 15 # total trans fat
     return map
 
+
+''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
+# returns a dictionary that maps the nutrient id to the row in formulaEditor.dvReportTableView
+def nutrientRowMap():
+    map = {}
+    map[203] = 7 # protein
+    map[204] = 1 # total fat 
+    map[205] = 4 # total carbs 
+    map[208] = 0 # calories
+    map[269] = 6 # total sugars
+    map[291] = 5 # total fiber
+    map[301] = 21 # calcium 
+    map[303] = 23 # iron 
+    map[305] = 25 # phosphorus
+    map[306] = 27 # potassium
+    map[307] = 29 # sodium
+    map[309] = 30 # Zinc 
+    map[312] = 22 # copper
+    map[317] = 28 # selenium
+    map[320] = 8 # vitamin a 
+    map[323] = 18 # vitamin e 
+    map[328] = 17 # vitamin d 
+    map[401] = 16 # vitaimn C 
+    map[404] = 9 # thiamin
+    map[405] = 10 # riboflavin
+    map[406] = 11 # niacin
+    map[415] = 13 # vitamin b6
+    map[418] = 15 # vitamin b12
+    map[421] = 20 # choline
+    map[430] = 19 # vitamin k 
+    map[431] = 14 # folic acid
+    map[601] = 3 # cholestrol
+    map[606] = 2 # total sat fat 
+    map[651] = 24 # magnesium
+    map[656] = 25 #manganese 
+    map[658] = 12 # vitamin b5, panothenic acid 
+    return map 
+ 
+
+''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
+# returns a dictionary that maps the nutrient id to the row in formulaEditor -> compareTable(QuickTableView class)
+def compareTableRowMap():
+    map = {}
+    map[208] = 0 # calories
+    map[204] = 1 # total fat
+    map[606] = 2 # total saturated fat
+    map[664] = 3 # total trans fat
+    map[645] = 4 # total monounsaturated fat
+    map[646] = 5 # total polyunsaturated fat 
+    map[663] = 6 # total unsaturated fat
+    map[660] = 7 # omega 3
+    map[661] = 8 # omega 6
+    map[601] = 9 # cholestrol
+    map[205] = 10 # total carbs
+    map[291] = 11 # total dietary fiber
+    map[269] = 12 # total sugar
+    map[659] = 13 # added sugar 
+    map[1] = 14 # monosaccharides
+    map[649] = 15 # disaccharides
+    map[203] = 16 # protein
+    map[-1] = 17 # vitamin A IU # TODO
+    map[-1] = 18 # vitamin A RE # TODO 
+    map[320] = 19 # Vitamin A RAE 
+    map[404] = 20 # Thiamin
+    map[405] = 21 # Riboflaving
+    map[406] = 22 # Niacin
+    map[-1] = 23 # Niacin Equivalent # TODO
+    map[658] = 24 # Vitamin B5/Panothenic Acid
+    map[415] = 25 # Vitamin B6
+    map[417] = 26 # Folate (there is also 432 -> folate, food and 435-> folate, DFE) Not sure which to use 
+    map[418] = 27 # Vitamin B12
+    map[401] = 28 # Vitamin C 
+    map[328] = 29 # Vitamin D (D2 + D3). Not sure if right
+    map[323] = 30 # Vitamin E/alpha tocopherol
+    map[430] = 31 # Vitamin K 
+    map[421] = 32 # Choline
+    map[301] = 33 # Calcium
+    map[312] = 34 # Copper
+    map[303] = 35 # Iron
+    map[651] = 36 # Magnesium
+    map[656] = 37 # Manganese 
+    map[657] = 38 # Molybdenum
+    map[305] = 39 # Phosphorus
+    map[306] = 40 # potassium
+    map[317] = 41 # Selenium
+    map[307] = 42 # Sodium
+    map[309] = 43 # Zinc
+    return map
+
+def dbConnection(database: str, cursorclass=pymysql.cursors.DictCursor):
+    connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database, cursorclass=cursorclass)
+    return connection
+
+def displayNfp(): # parent
+
+    #html = open('pjrd/static/templates/nfp.html', 'r').read().splitlines()
+    #html = open('pjrd/static/templates/nfp.html', 'r').read()
+    html = open('ext/nutrition-label/dist/demo/legacy-version/demo.html', 'r').read().rstrip('\n')
+    html.rstrip('\t')
+    #jsFile = open('ext/nutrition-label/dist/js/nutritionLabel.js', 'r')
+    #jsFunc = jsFile.read().splitlines()
+    webEngineView = QWebEngineView()
+    webEngineView.resize(QSize(800, 600))
+    webEngineView.setHtml(html)
+    #run = "('#nfp').nutritionLabel({})".format("{showLegacyVersion: false}")
+    #js = 'document.getElementById("nfp").nutritionLabel()'
+    #webEngineView.page().setHtml(html)
+    #webEngineView.page().runJavaScript(js)
+    webEngineView.show()
+ 
+# returns a 2d array with each value set to value
+def initialize2DArray(rowCount: int, colCount: int, value=None):
+    array = [[None] * colCount for _ in range(rowCount)]
+    return array
+
+# called to test if the window works
+def test(window):
+    app = QApplication(sys.argv)
+    gui = window()
+    gui.show()
+    sys.exit(app.exec_())
+
+
+# returns a formatted string of a number with commas separating the thousands
+# example 2432532.12 -> 2,432,432.12
 def numberWithCommas(number):
     return f"{number:,.2f}"
+
 
 class TimedMessageBox(QMessageBox):
     

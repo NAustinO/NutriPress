@@ -6,107 +6,47 @@ from operator import itemgetter
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
+from typing import Union
 sys.path.append('/pjrd')
 sys.path.append('..')
 
+
+"""
+Class Docstring Template
+----------------------------
+
+    '''
+    Description:
+        
+    Methods:
+        
+    Attributes:
+         
+    '''
+
+Class Method/Function Template 
+----------------------------
+
+    '''
+    Purpose:
+        
+    Arguments:
+        
+    Returns:
+        
+    '''
+
+
+"""
+
+
 class CustomTableModel(QAbstractTableModel):
-    def __init__(self, headers: list = None, tableData=None):
+    def __init__(self, horizHeaders: list = None, tableData=None, vertHeaders: list=None):
         super(CustomTableModel, self).__init__()
         self.tableData = tableData
-        self.headers = headers
-    
-        if headers is not None:
-            self.inputHeaders(headers)
-        if tableData is not None:
-            self.inputData(tableData)
+        self.horizHeaders = horizHeaders
+        self.vertHeaders = vertHeaders
 
-    # creates the map[nutrient ID] -> column of table
-    '''def initialize(self):
-        self.map = {}
-        # self.map[nutrient_id] = column_applicable
-        self.map[1] = 11 #monosaccharides
-        self.map[203] = 5 # protein
-        self.map[204] = 13 #total fat
-        self.map[205] = 6 # total carbs
-        self.map[208] = 4 # calories
-        self.map[221] = 23 # alcohol
-        self.map[255] = 22 # water
-        self.map[262] = 24 # caffeiene
-        self.map[263] = None # theobromine
-        self.map[269] = 9 # total sugars
-        self.map[291] = 7 # total dietary fiber
-        self.map[301] = 27 # calcium
-        self.map[303] = 32 # iron
-        self.map[305] = 36 # phosphorus
-        self.map[306] = 37 # potassium
-        self.map[307] = 39 # sodium
-        self.map[309] = 40 # zinc
-        self.map[312] = 29 # copper
-        self.map[317] = 38 # selenium
-        self.map[319] = None # retinol
-        self.map[320] = 43 # vitamin A RAE 
-        self.map[321] = None # beta carotene
-        self.map[322] = None # alpha carotene
-        self.map[323] = 52 # vitamn E (alpha tocopherol)
-        self.map[328] = 51 #vitamin D (D2 + D3) <---- needs conversion
-        self.map[334] = None # cryptoxanthinin
-        self.map[337] = None # lycopene
-        self.map[338] = None # lutein + zeaxanthinin
-        self.map[401] = 50 # vitamin c
-        self.map[404] = 44 # vitamin b1/thiamin
-        self.map[405] = 45 # vitamin b3/riboflavin
-        self.map[406] = 46 # vitamin b3/niacin <----- 47 is b3/niacin equivalent
-        self.map[415] = 48 # vitamin b6
-        self.map[417] = 53 # folate <----- folate, dfe is 54
-        self.map[418] = 49 # vitamin b12
-        self.map[421] = 25 # choline
-        self.map[430] = 55 # vitamin k 
-        self.map[431] = None # folic acid?????
-        self.map[432] = None # folate, food
-        self.map[435] = 54 # folate, dfe
-        self.map[573] = None # vitamin e added
-        self.map[578] = None # vitamin b12 added
-        self.map[601] = 21 # cholestrol
-        self.map[606] = 14 # total sat fat
-        self.map[607] = None # 4:0
-        self.map[608] = None #6:0
-        self.map[609] = None # 8:0
-        self.map[610] = None #10:0
-        self.map[611] = None # 12:0
-        self.map[612] = None #14:0
-        self.map[613] = None # 16:0
-        self.map[614] = None #18:0
-        self.map[617] = None #18:1
-        self.map[618] = None #18:2
-        self.map[619] = None #18:3
-        self.map[620] = None #20:4
-        self.map[621] = None #22:6 n-3
-        self.map[626] = None #16:1
-        self.map[627] = None #18:4
-        self.map[628] = None # 20:1
-        self.map[629] = None # 20:5 n-3
-        self.map[630] = None # 22:1
-        self.map[631] = None # 22:5 n-3
-        self.map[645] = 16 # total monounsat fat 
-        self.map[646] = 17 # total polyunsat fat 
-        self.map[647] = 26 # sugar alcohol
-        self.map[648] = 8 # total soluble fiber 
-        self.map[649] = 12 # disaccharides
-        self.map[651] = 33 # magnesium
-        self.map[652] = 30 # fluoride
-        self.map[654] = 28 # chromium
-        self.map[655] = 31 # iodine
-        self.map[656] = 33 # manganese
-        self.map[657] = 35 # molybdenum 
-        self.map[658] = 56 # vitamin b5/panothenic acid
-        self.map[659] = 10 # added sugars
-        self.map[660] = 19 # omega 3
-        self.map[661] = 20 # omega 6 
-        self.map[662] = None # other carbs
-        self.map[663] = 18 # total unsat fat  <--- make sure that 645 and 646 add to make 663
-        self.map[664] = 15 # total trans fat
-        return self.map'''
-  
     def rowCount(self, parent: QModelIndex):
         if self.tableData is None:
             return 0
@@ -115,35 +55,44 @@ class CustomTableModel(QAbstractTableModel):
     
     def columnCount(self, parent: QModelIndex):
         if self.tableData is None:
-            if self.headers is None:
+            if self.horizHeaders is None:
                 return 0
             else:
-                return len(self.headers)
+                return len(self.horizHeaders)
         else:
             return len(self.tableData[0])
-
-    def inputHeaders(self, headers: list):
-        self.headers = headers
-        for index, value in enumerate(headers):
-            self.setHeaderData(index, Qt.Horizontal, value, Qt.DisplayRole)
 
     def inputTableData(self, tableData):
         self.emit(SIGNAL("layoutAboutToBeChanged()"))
         self.tableData = tableData
         self.emit(SIGNAL("layoutChanged()"))
     
+    def setHeaderLabels(self, headerList, orientation, role):
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            self.vertHeaders = headerList
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            self.horizHeaders = headerList
+        for index, value in enumerate(headerList):
+            self.setHeaderData(index, orientation, value, role=role)
+        self.emit(SIGNAL("headerDataChanged()"))
+
     def data(self, index, role):
-        if not index.isValid():
-            return None
-        elif role != Qt.DisplayRole:
-            return None
-        elif self.tableData is None:
-            return None
-        return self.tableData[index.row()][index.column()]
+        if role == Qt.DisplayRole:
+            return self.tableData[index.row()][index.column()]
+        if role == Qt.TextAlignmentRole:
+            return Qt.AlignCenter
+        else:
+            return 
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-            return self.headers[section]
+            if self.horizHeaders is None:
+                return
+            return self.horizHeaders[section]
+        if role == Qt.DisplayRole and orientation == Qt.Vertical:
+            if self.vertHeaders is None:
+                return
+            return self.vertHeaders[section]
         return QAbstractTableModel.headerData(self, section, orientation, role)
 
     def sort(self, nCol, order):
@@ -153,10 +102,154 @@ class CustomTableModel(QAbstractTableModel):
             if order == Qt.DescendingOrder:
                 self.tableData.reverse()
             self.emit(SIGNAL("layoutChanged()"))
-        except:
+        except Exception:
             return
 
 
 
+class UnitOfMeasure(QStandardItem):
+    '''
+
+    Description:
+        Class to hold unit data
+    Methods:
+        pass
+    Attributes:
+        inputWeight - the user inputted weight that is contained within the formula
+        conversionFactor - the multiplier to convert to the database consistent unit of measure
+        conversionOffset - the number offset to use before multiplying by the conversion factor to get the database-consistent unit of measure
+    '''
+
+    def __init__(self, unitID: int, unitName: str, conversionFactor=None, conversionOffset=None, symbol: str=None):
+        self.unitID = unitID
+        self.unitName = unitName
+        self.conversionFactor = conversionFactor
+        self.conversionOffset = conversionOffset
+        self.symbol = symbol
+    
+
+class Ingredient(object):
+    '''
+    Description:
+        Wrapper class to organize and alter data of each a formula ingredient object. The food description and id is required when declaring an object
+    Methods:
+        setDesc - sets the food descrition
+        setFoodID - sets the foodID
+        
+        
+    Attributes:
+        __desc: str = food description
+        foodID: int = integer id that uniquely identifies the food from food        database. Each ingredient is contained within the food
+        inputWeight- a tuple representing the inputted float weight coupled with the unit object
+    '''
+
+    def __init__(self, desc: str, foodID: int, inputWeight: Union[float, int] = None, unit: UnitOfMeasure = None, supplierID: int = None, supplierName: str = None, supplierItemCode: str = None, specificName: str = None, ingredientStatement: str = None):
+        self.desc = desc
+        self.foodID = foodID
+        self.inputWeight = inputWeight
+        self.unit = unit
+        self.supplierName = supplierName
+        self.supplierID = supplierID
+        self.supplierItemCode = supplierItemCode
+        self.specificName = specificName
+        self.ingredientStatement = ingredientStatement
+        self.__inputWeightInGrams = None
+        self.nutrients = {{}} 
+
+    @property
+    def inputWeightInGrams(self):
+        if self.unit or self.inputWeight is None:
+            return False
+        elif self.__inputWeightInGrams is not None:
+            return self.__inputWeightInGrams
+        else:
+            self.__inputWeightInGrams = (self.inputWeight + self.unit.conversionOffset) * self.unit.conversionFactor
+            return self.__inputWeightInGrams
+
+    # sets attribute
+    def setInputWeightInGrams(self, newWeight):
+        self.__inputWeightInGrams = newWeight
 
 
+class Nutrient(object):
+
+    def __init__(self, nutrientID: int, nutrientName: str, dailyValueInGrams: float = None):
+        self.nutrientID = nutrientID
+        self.nutrientName = nutrientName
+        self.dailyValueInGrams = dailyValueInGrams
+
+
+class Formula(object):
+
+    def __init__(self, formulaName: str, formulaID: int=None, versionNumber = None, isRevision: bool = None, prevRevisionID = None):
+        self.formulaName = formulaName
+        self.formulaID = formulaID
+        self.versionNumber = versionNumber
+        self.isRevision = isRevision
+        self.prevRevisionID = prevRevisionID
+        self.totalWeightG = 0
+        self.categories = [] # list of categories that the formula can be attributed to 
+        self.allergens = [] # list of all allergens
+        self.claims = [] # list of all claims that can be made
+        self.__currentIngredients = {{}} # holds the ingredients, maybe map by ingredientID?
+        self.servingSize = None
+        self.servingWeight = None
+        self.numberOfServings = None
+
+        '''
+        {
+            foodID: {
+                'object': Ingredient
+                'percentByWeight': float
+                ''
+            }
+        }
+
+        '''
+    def currentIngredients(self):
+        self.calculateTotalFormulaWeight()
+        self.refreshPercentByWeight()
+        return self.__currentIngredients
+    
+    def addIngredient(self, ingredient: Ingredient):
+        self.totalWeightG += ingredient.inputWeightInGrams
+
+        # if the ingredient already exists in the formula
+        if ingredient.foodID in self.__currentIngredients:
+            dict = self.__currentIngredients.get(ingredient.foodID)
+            existingIngredient = dict['object']
+            newWeight = existingIngredient.inputWeightInGrams + ingredient.inputWeightInGrams
+            existingIngredient.setInputWeightInGrams(newWeight)
+            #dict['percentByWeight'] = (existingIngredient.inputWeightInGrams/self.totalWeightG) * 100
+
+        # if the ingredient does not already exist in the formula
+        else:
+            self.__currentIngredients[ingredient.foodID]['object'] = ingredient
+            self.__currentIngredients[ingredient.foodID]['percentByWeight'] = (ingredient.inputWeightInGrams/self.totalWeightG) * 100
+
+    def removeIngredient(self, ingredient: Ingredient):
+        if ingredient.foodID in self.__currentIngredients:
+            ingredientToRemove = self.__currentIngredients[ingredient.foodID]
+            self.totalWeightG -= ingredientToRemove.inputWeightInGrams
+            self.__currentIngredients.remove(ingredient.foodID)
+            self.refreshPercentByWeight()
+            return True
+        else:
+            return False
+
+    def getIngredientPercentWeight(self, ingredient: Ingredient):
+        if ingredient.foodID in self.__currentIngredients:
+            self.refreshPercentByWeight()
+            return self.__currentIngredients[ingredient.foodID]['percentByWeight']
+        else:
+            return 0
+
+    def refreshPercentByWeight(self):
+        for ingredient in self.__currentIngredients:
+            ingredient['percentByWeight'] = (ingredient['object'].inputWeightInGrams/self.totalWeightG) * 100
+
+    def calculateTotalFormulaWeight(self):
+        self.totalWeightG = 0
+        for ingredient in self.__currentIngredients:
+            self.totalWeightG += ingredient['object'].inputWeightInGrams
+        

@@ -1,0 +1,50 @@
+Activate venv 
+source venv/bin/activate
+
+bin is for storing executable files. could be hte project itself 
+
+pyside2-uic mainwindow.ui > ui_mainwindow.py
+
+
+
+
+NOTES FOR DOCSTRINGS
+---------------------
+CLASS DOCSTRING
+
+'''
+Description:
+    
+Methods:
+    
+    
+Attributes:
+    
+    
+'''
+
+CLASS FUNTION DOCSTRING
+'''
+Purpose:
+    
+Arguments:
+    
+Returns:
+    
+'''
+
+
+NOTES FOR METHODS 
+------------------------------------
+
+Static methods
+A static method in python must be created by decorating it with @staticmethod in order to let python now that the method should be static. The main characteristic of a static method is that they can be called without instantiating the class. These methods are self-contained, meaning that they cannot access any other attribute or call any other method within that class.
+You could use a static method when you have a class but you do not need a specific instance in order to access that method. For example, if you have a class called Math and you have a method called factorial. You probably won’t need a specific instance to call that method so you could use a static method.
+
+
+Class method
+Methods have to be created with the decorator @classmethod, and these methods share a characteristic with the static methods in that they can be called without having an instance of the class. The difference relies on the capability to access other methods and class attributes but no instance attributes [2].
+
+
+Instance Methods
+This method can only be called if the class has been instantiated. Once an object of that class has been created, the instance method can be called and can access all the attributes of that class through the reserved word self. An instance method is capable of creating, getting, and setting new instance attributes and calling other instance, class, and static methods [2].

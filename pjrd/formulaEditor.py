@@ -10,6 +10,7 @@
 
 import sys
 import math
+import os
 from PyQt5.QtCore import pyqtSlot
 
 from PySide2.QtCore import *
@@ -22,16 +23,21 @@ from operator import itemgetter
 
 sys.path.append('../pjrd')
 import pymysql
-from pjrd.helpers import displayNfp, test, dbConnection, TimedMessageBox, nutrientColMap, numberWithCommas
+from pjrd.helpers import compareTableRowMap, displayNfp, test, dbConnection, TimedMessageBox, nutrientColMap, numberWithCommas, nutrientRowMap, initialize2DArray
 from pjrd.formulaEditorSearchResults import searchResults
-from pjrd.helperClasses import CustomTableModel
+from pjrd.helperClasses import CustomTableModel, UnitOfMeasure, Nutrient, Ingredient, Formula
+from pjrd.quickTableView import QuickTableView
+
+# Fixes compatibility bug with mac big sur and pyqt
+os.environ['QT_MAC_WANTS_LAYER'] = '1' 
 
 
 class formulaEditorDialog(QDialog):
     
-    def __init__(self, revision: bool = None, formulaName: str = None, prevRevisionID: int = None, differences: str = None):
+    def __init__(self, formulaName: str, revision: bool = None, prevRevisionID: int = None, differences: str = None):
         super(formulaEditorDialog, self).__init__()
         self.setupUi(self)
+        self.formula = Formula(formulaName, isRevision = revision, prevRevisionID = prevRevisionID)
         self.fromSetupDialog(revision=revision, formulaName=formulaName, revisionID=prevRevisionID, differences=differences)
         self.setupLogic()
         
@@ -820,10 +826,12 @@ class formulaEditorDialog(QDialog):
         self.nutrientReportTableView.setAlternatingRowColors(True) # Might remove this
         self.nutrientReportTableView.setSortingEnabled(True)
         font = QFont()
-        font.setPointSize(12)
+        font.setPointSize(10)
         self.nutrientReportTableView.setFont(font)
         self.nutrientReportTableView.setObjectName(u"nutrientReportTableView")
-        headerLabels = ['Item Desc', 'Quantity', 'Unit', 'Weight (g)', 'Cals (kCal)', 'Protein (g)', 'Carbohydrates (g)', 'Dietary Fiber (g)', 'Soluble Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosac (g)', 'Disac (g)', 'Total Fat (g)', 'Sat Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)', 'Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Water (g)', 'Alcohol (g)', 'Caffeine (mg)', 'Choline (mg)', 'Sugar Alcohol (g)', 'Calcium (mg)', 'Chromium (µg)', 'Copper (mg)', 'Fluoride (mg)', 'Iodine (µg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Molybdenum (µg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)', 'Vitamin A (IU)', 'Vitamin A - RE (µg)', 'Vitamin A - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B6 (mg)', 'Vitamin B12 (µg)', 'Vitamin C (mg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-toco (mg)', 'Folate (µg)', 'Folate, DFE (µg DFE)', 'Vitamin K (µg)', 'Panothenic Acid (mg)']
+        headerLabels = ['Item Desc', 'Quantity', 'Unit', 'Weight (g)', 'Calories (kCal)', 'Protein (g)', 'Carbohydrates (g)', 'Dietary Fiber (g)', 'Soluble Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosac (g)', 'Disac (g)', 'Total Fat (g)', 'Sat Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)', 'Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Water (g)', 'Alcohol (g)', 'Caffeine (mg)', 'Choline (mg)', 'Sugar Alcohol (g)', 'Calcium (mg)', 'Chromium (µg)', 'Copper (mg)', 'Fluoride (mg)', 'Iodine (µg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Molybdenum (µg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)', 'Vitamin A (IU)', 'Vitamin A - RE (µg)', 'Vitamin A - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B6 (mg)', 'Vitamin B12 (µg)', 'Vitamin C (mg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-toco (mg)', 'Folate (µg)', 'Folate, DFE (µg DFE)', 'Vitamin K (µg)', 'Panothenic Acid (mg)']
+
+
         model = CustomTableModel(headerLabels)
         self.nutrientReportTableView.setModel(model)
         self.nutrientReportTableView.setColumnWidth(0, 200)
@@ -874,16 +882,11 @@ class formulaEditorDialog(QDialog):
 
         self.verticalLayout_5.addWidget(self.dailyValueLabel)
 
-        dvHeaders = ['Nutrient', 'Per 100g', 'Per Serving', '% Daily Value Per Serving']
-        dvModel = CustomTableModel(dvHeaders)
-        self.dvReportTableView = QTableView(self.scrollAreaWidgetContents)
-        self.dvReportTableView.setObjectName(u"dvReportTableView")
-        self.dvReportTableView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.dvReportTableView.setMinimumHeight(275)
-        self.dvReportTableView.setModel(dvModel)
-        self.dvReportTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.dvToggleBtn = QPushButton(self.scrollAreaWidgetContents)
+        self.dvToggleBtn.setObjectName(u"dvToggleBtn")
+        self.dvToggleBtn.setText('Show')
 
-        self.verticalLayout_5.addWidget(self.dvReportTableView)
+        self.verticalLayout_5.addWidget(self.dvToggleBtn)
 
         self.horizLine3 = QFrame(self.scrollAreaWidgetContents)
         self.horizLine3.setObjectName(u"horizLine3")
@@ -894,24 +897,18 @@ class formulaEditorDialog(QDialog):
 
         self.byComparisonLabel = QLabel(self.scrollAreaWidgetContents)
         self.byComparisonLabel.setObjectName(u"byComparisonLabel")
-
+        
         self.verticalLayout_5.addWidget(self.byComparisonLabel)
+
+        self.showComparisonBtn = QPushButton(self.scrollAreaWidgetContents)
+        self.showComparisonBtn.setText('Show')
+    
+        self.verticalLayout_5.addWidget(self.showComparisonBtn)
 
         self.comboBox = QComboBox(self.scrollAreaWidgetContents)
         self.comboBox.setObjectName(u"comboBox")
-
+        
         self.verticalLayout_5.addWidget(self.comboBox)
-
-        self.compareTableView = QTableView(self.scrollAreaWidgetContents)
-        compareHeaders = ['Nutrient', 'Current (per 100g)', 'Comparison (per 100g)']
-        compareModel = CustomTableModel(compareHeaders)
-        self.compareTableView.setObjectName(u"compareTableView")
-        self.compareTableView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.compareTableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.compareTableView.setModel(compareModel)
-        self.compareTableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        self.verticalLayout_5.addWidget(self.compareTableView)
 
         self.nutrientReportScrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -958,8 +955,11 @@ class formulaEditorDialog(QDialog):
         self.displayNFPBtn.clicked.connect(displayNfp)
         self.removeSelectedBtn.clicked.connect(self.removeSelected)
         self.scaleCombobox.currentIndexChanged.connect(self.toggleFocus)
-
-        ##### MAKE SURE THESE WORK 
+        self.dvToggleBtn.clicked.connect(self.openDVTableViewer)
+        self.comboBox.currentIndexChanged.connect(self.openComparisonTableViewer)
+        
+        #temporary
+        self.showComparisonBtn.clicked.connect(self.openComparisonTableViewer)
 
         ## TODO
         # Optimize the refresh method for less queryies to database
@@ -976,41 +976,6 @@ class formulaEditorDialog(QDialog):
 
         # event setup
         self.formulaIngredientSearchBtn.installEventFilter(self)
-
-        # sets up category box completer 
-        # #categories completer and category_id added to the category box
-        '''with dbConnection('FormulaSchema').cursor() as cursor:
-            cursor.execute('SELECT category_id, category_name FROM category WHERE scope = "formula"')
-            categoriesDict = cursor.fetchall()
-            categoryCompleter = QCompleter()
-            categoryModel = QStandardItemModel()
-            for category in categoriesDict:
-                categoryItem = QStandardItem()
-                categoryItem.setText(category['category_name'].title())
-                categoryItem.setData(category, Qt.UserRole)
-                categoryModel.appendRow(categoryItem)
-            categoryCompleter.setModel(categoryModel)
-            self.categoryComboBox.setCompleter(categoryCompleter)
-            self.categoryComboBox.setModel(categoryModel)
-            self.categoryComboBox.setCurrentIndex(-1)
-
-        # sets up completer for scaling formula combobox
-        with dbConnection('FormulaSchema').cursor() as cursor:
-            completer = QCompleter()
-            model = QStandardItemModel()
-            cursor.execute('SELECT unit_id, unit_name, unit_symbol, conversion_factor, conversion_offset FROM unit WHERE unit_class = "mass" ORDER BY conversion_factor ASC')
-            uoms = cursor.fetchall()
-            for uom in uoms:
-                unitItem = QStandardItem()
-                unitItem.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
-                unitItem.setData(uom, Qt.UserRole)
-                model.appendRow(unitItem)
-            completer.setModel(model)
-            completer.setCompletionMode(QCompleter.InlineCompletion)
-            self.unitWeightCombobox.setModel(model)
-            self.unitWeightCombobox.setCurrentIndex(-1)'''
-
-
         # sets up all of the completer logic with appropriate data 
         with dbConnection('FormulaSchema').cursor() as cursor:
             # sets up the complter for the categories combobox
@@ -1028,16 +993,16 @@ class formulaEditorDialog(QDialog):
             self.categoryComboBox.setModel(categoryModel)
             self.categoryComboBox.setCurrentIndex(-1)
 
+
             # sets up the completer for the formula combobox
             unitModel = QStandardItemModel()
             unitCompleter = QCompleter()
             cursor.execute('SELECT unit_id, unit_name, unit_symbol, conversion_factor, conversion_offset FROM unit WHERE unit_class = "mass" ORDER BY conversion_factor ASC')
             uoms = cursor.fetchall()
             for uom in uoms:
-                unitItem = QStandardItem()
-                unitItem.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
-                unitItem.setData(uom, Qt.UserRole)
-                unitModel.appendRow(unitItem)
+                unit = UnitOfMeasure(uom['unit_id'], uom['unit_name'], uom['conversion_factor'], uom['conversion_offset'], uom['unit_symbol'])
+                unit.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
+                unitModel.appendRow(unit)
             unitCompleter.setModel(unitModel)
             unitCompleter.setCompletionMode(QCompleter.InlineCompletion)
             self.unitWeightCombobox.setModel(unitModel)
@@ -1071,7 +1036,108 @@ class formulaEditorDialog(QDialog):
             self.nutrientReportCombobox.setCurrentIndex(-1)
         #####
 
+    # Opens a separate QDialog containing the tableview with the nutrient report broken down by daily recommended value, per 100 gram, per serving and % Daily Value per serving    
+    def openDVTableViewer(self):
+
+        # for the daily value report 
+        totalWeightG = self.getTotalTableWeight()
+        map = nutrientRowMap()
+
+        model = CustomTableModel()
+        dvHeaders = ['Daily Recommended Value','Per 100g', 'Per Serving', '% Daily Value Per Serving']
+        vHeaders = ['Calories (kCal)', 'Fat (g)', 'Saturated Fat (g)', 'Cholestrol (mg)', 'Total Carbohydrates (g)', 'Total Dietary Fiber (g)', 'Total Sugar (g)', 'Protein (g)', 'Vitamn A (µg RAE)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B5/Panothenic Acid (mg)', 'Vitamin B6 (µg)', 'Vitamin B9/Folic Acid (mg)', 'Vitamin B12 (mg)', 'Vitamin C (mg)', 'Vitamin D (µg)', 'Vitamin E/Alpha-tocopherol (mg)', 'Vitamin K/Phylloquinone (µg)', 'Choline (mg)', 'Calcium (mg)', 'Copper (mg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Molybdenum (µg)','Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)']
+        model.setHeaderLabels(dvHeaders, Qt.Horizontal, Qt.DisplayRole)
+        model.setHeaderLabels(vHeaders, Qt.Vertical, Qt.DisplayRole)
+        data = initialize2DArray(len(vHeaders), len(dvHeaders), None)
+        
+        for row in range(self.ingTabFormulaTableWidget.rowCount()):
+            ingredient = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
+            unitConversionScale = 1/ingredient.unit.conversionFactor
             
+            amountOfIngG = ingredient.inputWeightInGrams()
+            
+            #####   X grams of nutrient/100 grams of ingredient = Z grams of nutrient/Y grams of ingredient (because nutrient_weight_g gives value as unscaled amount, we need to divide it by 100)
+            # therefore 
+            # Z grams of nutrient = (X grams of nutrient * Y grams of ingredient)/100  (ie. PER 100 grams)
+            multiplyBy = amountOfIngG/100 
+            
+            foodID = ingredient.foodID
+
+            with dbConnection('FormulaSchema').cursor() as cursor:
+                cursor.execute('SELECT nutrient.nutrient_id, nutrient.nutrient_name, nutrient.daily_value_g, food_nutrient.nutrient_weight_g_per_100g * %s AS amount_in_g, unit.conversion_factor, unit.conversion_offset, unit.unit_name FROM nutrient LEFT JOIN food_nutrient ON nutrient.nutrient_id = food_nutrient.nutrient_id LEFT JOIN unit ON unit.unit_id = nutrient.unit_id WHERE food_nutrient.food_id = %s AND nutrient.nutrient_id IN (203, 204, 205, 208, 269, 291, 301, 303, 305, 309, 312, 317, 320, 323, 328, 401, 404, 405, 406, 415, 418, 421, 430, 431, 601, 606, 651, 656, 658)', (multiplyBy, foodID))
+                results = cursor.fetchall()
+
+            for result in results:
+                nutrientID = result['nutrient_id']
+                dailyValueInStdUnit = result['daily_value_g'] * unitConversionScale
+                amountInStdUnit = result['amount_in_g'] * unitConversionScale
+                per100g = amountInStdUnit * (100/totalWeightG) # <----- goes into
+                rowIndex = map.get(nutrientID)
+                try:
+                    servingWeight = self.servingWeightSpinBox.value()
+                    numberServings = totalWeightG/servingWeight
+                except:
+                    numberServings = 1
+                else:
+                    try:
+                        numberServings = self.numServingsSpinbox.value()
+                    except:
+                        pass
+                    else:
+                        numberServings = 1
+                        servingWeight = totalWeightG
+                perServing = amountInStdUnit/numberServings 
+                data[rowIndex][0] = dailyValueInStdUnit
+                data[rowIndex][1] = per100g
+                data[rowIndex][2] = perServing
+                data[rowIndex][3] = '{}%'.format(round(((amountInStdUnit/dailyValueInStdUnit)*100), 1))
+        model.inputTableData(data)
+
+        view = QuickTableView(model, label="Comparison by Daily Value and 100 g")
+        view.setSubheaderLabel('Percent daily values are based on a 2,000 calorie diet for healthy adults. Daily values last updated in 2016.')
+        view.exec_()
+
+    # Opens a separate QDialog containing the tableview for a comparison per 100g of current recipe vs recipe chosen
+    def openComparisonTableViewer(self):
+        totalWeightG = self.getTotalTableWeight()
+
+        rowMap = compareTableRowMap()
+
+        horizHeaders = ['Current (per 100g)', 'Comparison (per 100g)']
+        vertHeaders = ['Calories (kCal)', 'Total Fat (g)', 'Saturated Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)','Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Total Carbohydrates (g)', 'Total Dietary Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosaccharides (g)', 'Disaccharides (g)', 'Protein (g)', 'Vitamin A (IU)', 'Vitamin A - RE (µg)', 'Vitamin A - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B5/Panothenic Acid (mg)', 'Vitamin B6 (µg)', 'Vitamin B9/Folic Acid (mg)', 'Vitamin B12 (mg)', 'Vitamin C (mg)', 'Vitamin D (µg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-tocopherol (mg)', 'Vitamin K/Phylloquinone (µg)', 'Choline (mg)', 'Calcium (mg)', 'Copper (mg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)']
+        model = CustomTableModel()
+        model.setHeaderLabels(horizHeaders, Qt.Horizontal, Qt.DisplayRole)
+        model.setHeaderLabels(vertHeaders, Qt.Vertical, Qt.DisplayRole)
+        # temporary
+        data = initialize2DArray(len(vertHeaders), len(horizHeaders), None)
+
+        for row in range(self.ingTabFormulaTableWidget.rowCount()):
+            ingredient = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
+            unitConversionScale = 1/ingredient.unit.conversionFactor
+            amountOfIngG = ingredient.inputWeightInGrams()
+            multiplyBy = amountOfIngG/100
+            foodID = ingredient.foodID
+
+            with dbConnection('FormulaSchema').cursor() as cursor:
+                cursor.execute('SELECT nutrient.nutrient_id, nutrient.nutrient_name, nutrient.daily_value_g, food_nutrient.nutrient_weight_g_per_100g * %s AS amount_in_g, unit.conversion_factor, unit.conversion_offset, unit.unit_name FROM nutrient LEFT JOIN food_nutrient ON nutrient.nutrient_id = food_nutrient.nutrient_id LEFT JOIN unit ON unit.unit_id = nutrient.unit_id WHERE food_nutrient.food_id = %s AND nutrient.nutrient_id IN (203, 204, 205, 208, 269, 291, 301, 303, 305, 309, 312, 317, 320, 323, 328, 401, 404, 405, 406, 415, 418, 421, 430, 431, 601, 606, 651, 656, 658)', (multiplyBy, foodID))
+                results = cursor.fetchall()
+
+            for result in results:
+                nutrientID = result['nutrient_id']
+                amountInStdUnit = result['amount_in_g'] * unitConversionScale
+                per100g = amountInStdUnit * (100/totalWeightG) # <----- goes into
+                rowIndex = rowMap.get(nutrientID)
+                if rowIndex is None:
+                    continue
+                print('This is row index' + str(rowIndex))
+                data[rowIndex][0] = per100g
+        model.inputTableData(data)
+
+        #end temporary
+        view = QuickTableView(model)
+        view.setHeaderLabel('Comparison of the current formula and the chosen formula, each scaled to 100 g')
+        view.exec_()
+
     # toggles the focus of the scale formula portion 
     @pyqtSlot()
     def toggleFocus(self):
@@ -1099,6 +1165,7 @@ class formulaEditorDialog(QDialog):
         else:
             self.ingStatementTextBox.setReadOnly(True)
             self.editIngStatementBtn.setText('Edit')
+
 
     # opens print preview for ingredient statement
     @pyqtSlot()
@@ -1261,18 +1328,21 @@ class formulaEditorDialog(QDialog):
             self.refreshGeneralNutritionals(totalWeightG, idList=idList)
             self.refreshIngStatement(foodList=foodList)
             self.refreshReport(totalWeightG, idList=idList)
+            #self.refreshDVTable(totalWeightG=totalWeightG, idList=idList)
 
     
     #@pyqtSlot()
     # clears the highlighted rows from the ingredients table widget 
     def removeSelected(self):
         selected = self.ingTabFormulaTableWidget.selectionModel().selectedRows()
+        ingredientsToRemove = []
         if len(selected) == 0:
             return
         else:
             toRemove = ''
             for selection in selected:
                 data = selection.data(Qt.UserRole)
+                ingredientsToRemove.append(data)
                 foodDesc = data['food_desc']
                 if toRemove == '':
                     toRemove = foodDesc
@@ -1282,6 +1352,8 @@ class formulaEditorDialog(QDialog):
             if confirm == QMessageBox.YesToAll:
                 for selection in selected:
                     self.ingTabFormulaTableWidget.removeRow(selection.row())
+                for ingredient in ingredientsToRemove:
+                    self.formula.removeIngredient(ingredient)
                 self.refresh()
 
     # inserts row into qtablewidget 
@@ -1295,7 +1367,6 @@ class formulaEditorDialog(QDialog):
     PURPOSE: 
     '''
     def refreshReport(self, totalWeight, idList: list):  
-
         if self.scaleCombobox.currentIndex() == -1:
             self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} grams). The total inputted weight is {} grams'.format(numberWithCommas(round(totalWeight)), numberWithCommas(round(totalWeight))))
         else:
@@ -1363,7 +1434,7 @@ class formulaEditorDialog(QDialog):
         data.append(totals)
         model = self.nutrientReportTableView.model()
         model.inputTableData(data)
-        self.nutrientReportTableView.setModel(model)
+        self.nutrientReportTableView.setModel(model)            
             
     # SEEMS TO WORK OKAY 
     def refreshIngStatement(self, foodList: list=None): 
@@ -1447,7 +1518,7 @@ class formulaEditorDialog(QDialog):
         self.singleNutrientChartView.resetCachedContent() # not sure if needed
         totalWeightG = self.getTotalTableWeight()
 
-        if totalWeightG == 0: ### temporary fix 
+        if totalWeightG == 0:
             return
     
         nutrientID = self.nutrientReportCombobox.currentData(Qt.UserRole)['nutrient_id']
@@ -1459,15 +1530,15 @@ class formulaEditorDialog(QDialog):
     
         # TODO make more efficient
         for row in range(self.ingTabFormulaTableWidget.rowCount()):
-            foodItem = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
-            scalingFactor = foodItem['weight_in_g']/100
+            ingredient = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
+            scalingFactor = ingredient['weight_in_g']/100
             with dbConnection('FormulaSchema').cursor() as cursor:
-                cursor.execute('SELECT nutrient_weight_g_per_100g * %s AS amount FROM food_nutrient WHERE nutrient_id = %s AND food_id = %s', (scalingFactor, nutrientID, foodItem['food_id']))
+                cursor.execute('SELECT nutrient_weight_g_per_100g * %s AS amount FROM food_nutrient WHERE nutrient_id = %s AND food_id = %s', (scalingFactor, nutrientID, ingredient['food_id']))
                 result = cursor.fetchone()
                 if result is None:
                     continue
                 try:
-                    categories.append(foodItem['food_desc'])
+                    categories.append(ingredient['food_desc'])
                     amounts.append(result['amount'])
                     nutrientSum += result['amount']
                 except Exception:
@@ -1551,8 +1622,8 @@ class formulaEditorDialog(QDialog):
     def refreshTable(self, totalWeightG):
         # calculates the % by weight of each ingredient and adds to the table widget
         for row in range(self.ingTabFormulaTableWidget.rowCount()):
-            foodItem = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
-            percentWeight = (foodItem['weight_in_g']/totalWeightG) * 100
+            ingredient = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
+            percentWeight = (ingredient['weight_in_g']/totalWeightG) * 100
             percentWeight = round(percentWeight, 3)
             percentTableItem = QTableWidgetItem()
             percentTableItem.setData(Qt.UserRole + 1, percentWeight)
@@ -1564,6 +1635,7 @@ class formulaEditorDialog(QDialog):
                 self.ingTabFormulaTableWidget.setItem(row, 1, percentTableItem)
     
     
+
     # submits the form to the database
     def formSubmit(self):
         pass
@@ -1573,8 +1645,8 @@ class formulaEditorDialog(QDialog):
         totalWeightG = 0
         # calculatest the total weight of all ingredients in the formula
         for row in range(self.ingTabFormulaTableWidget.rowCount()):
-            foodItem = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
-            weightOfItemG = foodItem['weight_in_g']
+            ingredient = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
+            weightOfItemG = ingredient['weight_in_g']
             totalWeightG += weightOfItemG
         return totalWeightG
 

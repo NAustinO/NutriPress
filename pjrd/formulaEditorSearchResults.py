@@ -13,7 +13,9 @@ import sys
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+sys.path.append('../pjrd')
 from helpers import test, dbConnection
+from pjrd.helperClasses import Ingredient
 
 from confirmAddDialog import confirmationDialog
 
@@ -187,9 +189,11 @@ class searchResults(QDialog):
             self.searchResultsTable.insertRow(rowIndex)
 
             # IMPORTANT: data for each ingredient is contained in column 0 in dictionary form within QTableWidgetItem. It is the Qt.UserRole
+            ingredient = Ingredient(result['food_desc'], result['food_id'], specificName=result['specificName'], supplier=result['supplier'], supplierItemCode=result['supplier_ing_item_code'], ingredientStatement=result['ingredient_statement'], supplierID=result['supplier_id'])
+
             widgetItem = QTableWidgetItem(result['food_desc'])
-            widgetItem.setData(Qt.UserRole, result)
-            widgetItem.setText(result['food_desc'].capitalize())
+            widgetItem.setData(Qt.UserRole, ingredient) # <------ ingredient holds all the data
+            widgetItem.setText(ingredient.desc.capitalize())
             self.searchResultsTable.setItem(rowIndex, 0, widgetItem)
             self.searchResultsTable.setItem(rowIndex, 1, QTableWidgetItem(result['specific_name']))
             self.searchResultsTable.setItem(rowIndex, 2, QTableWidgetItem(result['supplier_name']))
@@ -207,9 +211,8 @@ class searchResults(QDialog):
         # continues when user double clicks within table viewport to choose an ingredient. Opens the confirmation window
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
             ingItem = self.searchResultsTable.itemAt(event.pos())
-            ingDict = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
-            ingID = ingDict['food_id']
-            self.accept(foodToAdd=ingDict)
+            ingredient = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
+            self.accept(foodToAdd=ingredient)
             return True
 
         # enter event, called when enter is pressed. 
@@ -220,7 +223,6 @@ class searchResults(QDialog):
         return super(searchResults, self).eventFilter(source, event)
 
     # ingredient is chosen, brings up confirmation window where user inputs the amount and unit
-    # TODO from eventFilter, pass in the item data instead of just the id
     def accept(self, foodToAdd=None): #TODO
 
         # continues if the user uses the button to confirm selected ingredient
@@ -237,8 +239,8 @@ class searchResults(QDialog):
                 msg.exec_()
             else:
                 ingItem = self.searchResultsTable.selectedItems().pop()
-                foodToAdd = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
-                confirmWindow = confirmationDialog(self.root, foodToAdd)
+                ingredient = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
+                confirmWindow = confirmationDialog(self.root, ingredient)
                 confirmWindow.setModal(True)
                 confirmWindow.exec_()
                 return True
