@@ -14,7 +14,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 sys.path.append(sys.path.append('../pjrd'))
 from helpers import dbConnection, TimedMessageBox
-from pjrd.helperClasses import Ingredient, UnitOfMeasure, FormulaIngredient
+from pjrd.helperClasses import Ingredient, UnitOfMeasure, Formula, Ingredient, Nutrient
 
 
 class confirmationDialog(QDialog):
@@ -209,6 +209,7 @@ class confirmationDialog(QDialog):
             uoms = cursor.fetchall()
             for uom in uoms:
                 unit = UnitOfMeasure(uom['unit_id'], uom['unit_name'], uom['conversion_factor'], uom['conversion_offset'], uom['unit_symbol'])
+                unit.setData(unit, Qt.UserRole)
                 unit.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
                 model.appendRow(unit)
             completer.setModel(model)
@@ -224,7 +225,7 @@ class confirmationDialog(QDialog):
     def setupFromSearchResultsDialog(self, ingredient: Ingredient):
 
         # ingredient name label
-        self.namePlaceholderLabel.setText(ingredient.desc)  
+        self.namePlaceholderLabel.setText(ingredient.desc)
 
         # update specific name if exists
         if ingredient.specificName is None:
@@ -266,30 +267,55 @@ class confirmationDialog(QDialog):
             unit = self.unitComboBox.currentData(Qt.UserRole)
             if unit is None:
                 return
-        
+
             # adds information to dictionary
-            self.ingredient.inputWeight = float(self.weightLineEdit.text())
+            ingWeightG = (float(self.weightLineEdit.text()) + unit.conversionOffset) * unit.conversionFactor
+
+            self.ingredient.setInputWeightInGrams(ingWeightG)
             self.ingredient.unit = unit
-            '''self.ingredient['weight_in_g'] = (weight + unit['conversion_offset']) * unit['conversion_factor']''' # TODO This will potentially cause problems for (IU for VIT A in unit table)
 
-            self.root.formula.addIngredient(self.ingredient)
+            foodID = self.ingredient.foodID
+            scalingNutrientFactor = ingWeightG/100
+            
+            # gets nutrient information from the database for the amount of the ingredient
+            with dbConnection('FormulaSchema').cursor() as cursor:
+                cursor.execute('SELECT nutrient.nutrient_id, nutrient.nutrient_name, nutrient.daily_value_g, food_nutrient.nutrient_weight_g_per_100g * %s AS amount_in_g, unit.unit_id, unit.conversion_factor, unit.conversion_offset, unit.unit_name FROM nutrient LEFT JOIN food_nutrient ON nutrient.nutrient_id = food_nutrient.nutrient_id LEFT JOIN unit ON unit.unit_id = nutrient.unit_id WHERE food_nutrient.food_id = %s', (scalingNutrientFactor, foodID))
+                nutrients = cursor.fetchall()
 
-            #updates the table widget in the formula editor window
-            rowCount = self.root.ingTabFormulaTableWidget.rowCount()
-            rowIndex = self.root.ingTabFormulaTableWidget.rowCount() - 1
-            if rowCount == 0:
-                rowIndex = 0
-            itemWithData = QTableWidgetItem()
-            itemWithData.setData(Qt.UserRole, self.ingredient)
-            itemWithData.setText(self.ingredient.desc)
-            self.root.ingTabFormulaTableWidget.insertRow(rowIndex)
-            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 0, itemWithData)
-            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 2, QTableWidgetItem(self.weightLineEdit.text()))
-            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 3, QTableWidgetItem(self.unitComboBox.currentText()))
-            self.root.ingTabFormulaTableWidget.setItem(rowIndex, 4, QTableWidgetItem(self.supplierPlaceholderLabel.text()))
-            self.root.ingTabFormulaTableWidget.update()
+                for nutrient in nutrients:
+                    # creates unit object to be stored in the nutrient object
+                    unit = UnitOfMeasure(unitID = nutrient['unit_id'], unitName = nutrient['unit_name'], conversionOffset = nutrient['conversion_offset'], conversionFactor = nutrient['conversion_factor'])
+
+                    # creates a nutrient object to be stored in the ingredient nutrient dictionary
+                    nutrientToAdd = Nutrient(nutrient['nutrient_id'], nutrientName=nutrient['nutrient_name'], unit=unit)
+                    nutrientToAdd.dailyValueInGrams = nutrient['daily_value_g']
+                    
+                    #adds the temporary nutrient object and amount to the ingredient-nutrient dictionary
+                    self.ingredient.addNutrient(nutrientToAdd, nutrient['amount_in_g'])
+
+            
+            # if foodID is already in the formula, asks user whether they want to replace or add to the ingredient 
+            # user also has the option to cancel 
+            if self.root.formula.ingredientExists(self.ingredient):
+                msg = QMessageBox()
+                msg.setText('This ingredient already exists in the formula. Would you like to replace the ingredient, or add to its existing weight?')
+                replace = msg.addButton('Replace', QMessageBox.ActionRole)
+                addExisting = msg.addButton('Add to Existing', QMessageBox.ActionRole)
+
+                cancel = msg.addButton('Cancel', QMessageBox.NoRole)
+                msg.exec_()
+
+                if msg.clickedButton() == replace:
+                    self.root.formula.setReplacementIngredient(self.ingredient)
+                elif msg.clickedButton() == addExisting:
+                    self.root.formula.addToExistingIngredient(self.ingredient)
+                else:
+                    self.close()
+                    return
+            else:
+                self.root.formula.addIngredient(self.ingredient)
+            
             self.root.refresh()
-            self.root.update()
 
             # popup window with timer to confirm successful addition
             msg = TimedMessageBox(timeout = 3)
@@ -298,13 +324,15 @@ class confirmationDialog(QDialog):
             msg.setStandardButtons(QMessageBox.Ok)
             self.close()
             msg.exec_()
- 
+
     '''
     PURPOSE: validates the user input
     RETURN: Returns true if user input is validated, returns false if not valid
     '''
     # returns true if the user input for this window is valid, otherwise returns false
     def validatedInput(self):
+        if not self.weightLineEdit.text():
+            return False
         try:
             weight = float(self.weightLineEdit.text()) #TODO error handling
         except ValueError:

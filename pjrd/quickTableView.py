@@ -23,7 +23,7 @@ class QuickTableView(QDialog):
     def setupUi(self, Dialog, label: str = None):
         if not Dialog.objectName():
             Dialog.setObjectName(u"quickTableView")
-        Dialog.resize(900, 700)ß
+        Dialog.resize(900, 700)
         self.verticalLayout_1 = QVBoxLayout(Dialog)
         self.verticalLayout_1.setObjectName(u"verticalLayout_1")
 

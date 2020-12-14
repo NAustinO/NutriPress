@@ -116,9 +116,9 @@ def nutrientRowMap():
     map[291] = 5 # total fiber
     map[301] = 21 # calcium 
     map[303] = 23 # iron 
-    map[305] = 25 # phosphorus
+    map[305] = 26 # phosphorus
     map[306] = 27 # potassium
-    map[307] = 29 # sodium
+    map[307] = 29  # sodium
     map[309] = 30 # Zinc 
     map[312] = 22 # copper
     map[317] = 28 # selenium
@@ -137,13 +137,64 @@ def nutrientRowMap():
     map[601] = 3 # cholestrol
     map[606] = 2 # total sat fat 
     map[651] = 24 # magnesium
-    map[656] = 25 #manganese 
+    map[656] = 25 # manganese 
     map[658] = 12 # vitamin b5, panothenic acid 
     return map 
  
 
 ''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
 # returns a dictionary that maps the nutrient id to the row in formulaEditor -> compareTable(QuickTableView class)
+def compareTableRowMap():
+    map = {}
+    map[208] = 0 # calories
+    map[204] = 1 # total fat
+    map[606] = 2 # total saturated fat
+    map[664] = 3 # total trans fat
+    map[645] = 4 # total monounsaturated fat
+    map[646] = 5 # total polyunsaturated fat 
+    map[663] = 6 # total unsaturated fat
+    map[660] = 7 # omega 3
+    map[661] = 8 # omega 6
+    map[601] = 9 # cholestrol
+    map[205] = 10 # total carbs
+    map[291] = 11 # total dietary fiber
+    map[269] = 12 # total sugar
+    map[659] = 13 # added sugar 
+    map[1] = 14 # monosaccharides
+    map[649] = 15 # disaccharides
+    map[203] = 16 # protein
+    map[320] = [17, 18, 19] # vitamin A RAE ID --> [vitamin A IU, vitamin A RE, Vitamin A RAE]
+    #map[-1] = 17 # vitamin A IU # TODO
+    #map[-1] = 18 # vitamin A RE # TODO 
+    #map[320] = 19 # Vitamin A RAE 
+    map[404] = 20 # Thiamin
+    map[405] = 21 # Riboflaving
+    map[406] = [22, 23] # Niacin ID --> [Niacin, Niacin Equivalents]
+    #map[406] = 22 # Niacin
+    #map[-1] = 23 # Niacin Equivalent # TODO
+    map[658] = 24 # Vitamin B5/Panothenic Acid
+    map[415] = 25 # Vitamin B6
+    map[417] = 26 # Folate (there is also 432 -> folate, food and 435-> folate, DFE) Not sure which to use 
+    map[418] = 27 # Vitamin B12
+    map[401] = 28 # Vitamin C 
+    map[328] = 29 # Vitamin D (D2 + D3). Not sure if right
+    map[323] = 30 # Vitamin E/alpha tocopherol
+    map[430] = 31 # Vitamin K 
+    map[421] = 32 # Choline
+    map[301] = 33 # Calcium
+    map[312] = 34 # Copper
+    map[303] = 35 # Iron
+    map[651] = 36 # Magnesium
+    map[656] = 37 # Manganese 
+    map[657] = 38 # Molybdenum
+    map[305] = 39 # Phosphorus
+    map[306] = 40 # potassium
+    map[317] = 41 # Selenium
+    map[307] = 42 # Sodium
+    map[309] = 43 # Zinc
+    return map
+
+'''
 def compareTableRowMap():
     map = {}
     map[208] = 0 # calories
@@ -190,7 +241,7 @@ def compareTableRowMap():
     map[317] = 41 # Selenium
     map[307] = 42 # Sodium
     map[309] = 43 # Zinc
-    return map
+    return map'''
 
 def dbConnection(database: str, cursorclass=pymysql.cursors.DictCursor):
     connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database, cursorclass=cursorclass)
@@ -250,4 +301,110 @@ class TimedMessageBox(QMessageBox):
         if self.currentTimer >= self.timeout:
             self.done(0)
 
+# returns nested dictionary for all subIngredients in the food identified by foodID
+# {
+#   'parent' : parent ingredient name
+#   'children': [
+#       {
+#           'parent': parent ingredient name
+#           'children': []
+#       }, ....
+#       
+#   ] 
+# }
+#
+#
+def getIngredientStatement(foodID: int):
+
+    keys = ['parent', 'children']
+    subIngredients = dict.fromkeys(keys)
+    
+    children = []
+    with dbConnection('FormulaSchema').cursor() as cursor:
+
+        # if the food is an fndds ingredient preloaded from database and has a subfood
+        # gets the subingredients from subfood_food table and appends to list in descending order of predominance
+        if cursor.execute('SELECT food.food_id, food_desc, subfood_desc, subfood_food.ingredient_weight FROM food LEFT JOIN subfood_food ON food.food_id = subfood_food.food_id WHERE food.food_id = %s ORDER BY food.food_id ASC, ingredient_weight DESC', (foodID,)) != 0:
+            subfoods = cursor.fetchall()
+            subIngredients['parent'] = subfoods[0]['food_desc']
+    
+            for food in subfoods:
+                children.append(food['subfood_desc'])
+        
+
+        # if the food is a formula (composed of other foods),
+        # combines all its components by food_desc and concatenates to an ingredient statement string
+        elif cursor.execute('SELECT formula.formula_name, formula_food.food_id, food.food_desc, food.ing_statement FROM formula LEFT JOIN formula_food ON formula.formula_id = formula_food.formula_id LEFT JOIN food ON food.food_id = formula_food.food_id WHERE food.food_id = %s ORDER BY formula_food.weight_g DESC', (foodID,)) != 0:
+            subfoods = cursor.fetchall()
+            subIngredients['parent'] = subfoods[0]['food_desc']
+    
+            for food in subfoods:
+                children.append(getIngredientStatement(food['food_id']))
+        
+        # if the food is a singular ingredient
+        else:
+            cursor.execute('SELECT food_id, food_desc, ing_statement, user_inputted FROM food WHERE food_id = %s', (foodID,))
+            result = cursor.fetchone()
+            subIngredients['parent'] = result['food_desc']
+
+            if result['ing_statement'] is not None:
+                children.append(result['ing_statement'])
+
+    subIngredients['children'] = children
+    return subIngredients
+
+
+    '''def extractString(next, separator: str=None):
+       
+        if separator is None:  #separators = ['(', '[', '{']
+            separator = ('(', ')')
+        elif separator == ('(', ')'):
+            separator = ('[', ']')
+        elif separator == ('[', ']'):
+            separator = ('{', '}')
+        elif separator == ('{', '}'):
+            separator = ('(', ')')
+    
+        statement = ', '
+        ingredients = []
+        # if the parent ingredient has no child ingredients
+        if len(next['children']) == 0:
+            return str(next['parent'])
+        else:
+            for child in next['children']:
+                ingredients.append(extractString(child, separator)) 
+            statement = separator[0] + statement.join(ingredients, ',') + separator[1]
+            return next['parent'] + statement'''
             
+
+
+    
+
+def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
+   
+    if separator is None:  #separators = ['(', '[', '{']
+        separator = ('(', ')')
+    elif separator == ('(', ')'):
+        separator = ('[', ']')
+    elif separator == ('[', ']'):
+        separator = ('{', '}')
+    elif separator == ('{', '}'):
+        separator = ('(', ')')
+
+    statement = ', '
+    ingredients = []
+    
+    if next is None:
+        next = {}
+        next['parent'] = toExtract['parent']
+        next['children'] = toExtract['children']
+    if isinstance(next, dict):
+        if len(next['children']) == 0:
+            return str('<b>' + next['parent'] + '</b>')
+        else:
+            for child in next['children']:
+                ingredients.append(extractIngredientStatement(toExtract, child, separator)) 
+            statement = separator[0] + statement.join(ingredients) + separator[1]
+            return '<b>' + next['parent'] + '</b>' + ' ' + statement
+    else: 
+        return str(next)

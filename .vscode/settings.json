@@ -10,7 +10,8 @@
     "python.linting.flake8Enabled": true,
     "python.pythonPath": "venv/bin/python",
     "python.analysis.completeFunctionParens": true,
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "editor.fontSize": 16
     
 
 }

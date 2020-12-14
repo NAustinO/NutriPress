@@ -24,7 +24,7 @@ class searchResults(QDialog):
     
     '''
     # query: the search query passed in from the formulaEditor window
-    # root: a dictionary(not) that holds the references of QWidgets that are updated during certain window changes
+    # root: reference to the formula editor window in order to access 
     def __init__(self, query, root=None):
         super(searchResults, self).__init__()
         self.setupUi(self)
@@ -167,7 +167,7 @@ class searchResults(QDialog):
         if query is None:
             query = ''
         with dbConnection('FormulaSchema').cursor() as cursor:
-            rows = cursor.execute("SELECT food.food_desc, supplier_food.specific_name, supplier.supplier_name, supplier_food.supplier_ing_item_code, food.ing_statement, food.food_id FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
+            rows = cursor.execute("SELECT food.food_desc, supplier_food.specific_name, supplier.supplier_id, supplier.supplier_name, supplier_food.supplier_ing_item_code, food.ing_statement, food.food_id FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
             queryResults = cursor.fetchall()
 
             # updates the header
@@ -189,7 +189,7 @@ class searchResults(QDialog):
             self.searchResultsTable.insertRow(rowIndex)
 
             # IMPORTANT: data for each ingredient is contained in column 0 in dictionary form within QTableWidgetItem. It is the Qt.UserRole
-            ingredient = Ingredient(result['food_desc'], result['food_id'], specificName=result['specificName'], supplier=result['supplier'], supplierItemCode=result['supplier_ing_item_code'], ingredientStatement=result['ingredient_statement'], supplierID=result['supplier_id'])
+            ingredient = Ingredient(result['food_desc'], result['food_id'], specificName=result['specific_name'], supplierName=result['supplier_name'], supplierItemCode=result['supplier_ing_item_code'], ingredientStatement=result['ing_statement'], supplierID=result['supplier_id'])
 
             widgetItem = QTableWidgetItem(result['food_desc'])
             widgetItem.setData(Qt.UserRole, ingredient) # <------ ingredient holds all the data
