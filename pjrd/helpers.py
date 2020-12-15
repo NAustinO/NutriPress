@@ -11,6 +11,7 @@ from PySide2.QtCore import *
 import PySide2.QtQml
 
 
+
 sys.path.append('/pjrd')
 sys.path.append('..')
 
@@ -194,79 +195,15 @@ def compareTableRowMap():
     map[309] = 43 # Zinc
     return map
 
-'''
-def compareTableRowMap():
-    map = {}
-    map[208] = 0 # calories
-    map[204] = 1 # total fat
-    map[606] = 2 # total saturated fat
-    map[664] = 3 # total trans fat
-    map[645] = 4 # total monounsaturated fat
-    map[646] = 5 # total polyunsaturated fat 
-    map[663] = 6 # total unsaturated fat
-    map[660] = 7 # omega 3
-    map[661] = 8 # omega 6
-    map[601] = 9 # cholestrol
-    map[205] = 10 # total carbs
-    map[291] = 11 # total dietary fiber
-    map[269] = 12 # total sugar
-    map[659] = 13 # added sugar 
-    map[1] = 14 # monosaccharides
-    map[649] = 15 # disaccharides
-    map[203] = 16 # protein
-    map[-1] = 17 # vitamin A IU # TODO
-    map[-1] = 18 # vitamin A RE # TODO 
-    map[320] = 19 # Vitamin A RAE 
-    map[404] = 20 # Thiamin
-    map[405] = 21 # Riboflaving
-    map[406] = 22 # Niacin
-    map[-1] = 23 # Niacin Equivalent # TODO
-    map[658] = 24 # Vitamin B5/Panothenic Acid
-    map[415] = 25 # Vitamin B6
-    map[417] = 26 # Folate (there is also 432 -> folate, food and 435-> folate, DFE) Not sure which to use 
-    map[418] = 27 # Vitamin B12
-    map[401] = 28 # Vitamin C 
-    map[328] = 29 # Vitamin D (D2 + D3). Not sure if right
-    map[323] = 30 # Vitamin E/alpha tocopherol
-    map[430] = 31 # Vitamin K 
-    map[421] = 32 # Choline
-    map[301] = 33 # Calcium
-    map[312] = 34 # Copper
-    map[303] = 35 # Iron
-    map[651] = 36 # Magnesium
-    map[656] = 37 # Manganese 
-    map[657] = 38 # Molybdenum
-    map[305] = 39 # Phosphorus
-    map[306] = 40 # potassium
-    map[317] = 41 # Selenium
-    map[307] = 42 # Sodium
-    map[309] = 43 # Zinc
-    return map'''
 
 def dbConnection(database: str, cursorclass=pymysql.cursors.DictCursor):
     connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database, cursorclass=cursorclass)
     return connection
 
-def displayNfp(): # parent
 
-    #html = open('pjrd/static/templates/nfp.html', 'r').read().splitlines()
-    #html = open('pjrd/static/templates/nfp.html', 'r').read()
-    html = open('ext/nutrition-label/dist/demo/legacy-version/demo.html', 'r').read().rstrip('\n')
-    html.rstrip('\t')
-    #jsFile = open('ext/nutrition-label/dist/js/nutritionLabel.js', 'r')
-    #jsFunc = jsFile.read().splitlines()
-    webEngineView = QWebEngineView()
-    webEngineView.resize(QSize(800, 600))
-    webEngineView.setHtml(html)
-    #run = "('#nfp').nutritionLabel({})".format("{showLegacyVersion: false}")
-    #js = 'document.getElementById("nfp").nutritionLabel()'
-    #webEngineView.page().setHtml(html)
-    #webEngineView.page().runJavaScript(js)
-    webEngineView.show()
- 
 # returns a 2d array with each value set to value
 def initialize2DArray(rowCount: int, colCount: int, value=None):
-    array = [[None] * colCount for _ in range(rowCount)]
+    array = [[value] * colCount for _ in range(rowCount)]
     return array
 
 # called to test if the window works
@@ -352,32 +289,6 @@ def getIngredientStatement(foodID: int):
 
     subIngredients['children'] = children
     return subIngredients
-
-
-    '''def extractString(next, separator: str=None):
-       
-        if separator is None:  #separators = ['(', '[', '{']
-            separator = ('(', ')')
-        elif separator == ('(', ')'):
-            separator = ('[', ']')
-        elif separator == ('[', ']'):
-            separator = ('{', '}')
-        elif separator == ('{', '}'):
-            separator = ('(', ')')
-    
-        statement = ', '
-        ingredients = []
-        # if the parent ingredient has no child ingredients
-        if len(next['children']) == 0:
-            return str(next['parent'])
-        else:
-            for child in next['children']:
-                ingredients.append(extractString(child, separator)) 
-            statement = separator[0] + statement.join(ingredients, ',') + separator[1]
-            return next['parent'] + statement'''
-            
-
-
     
 
 def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):

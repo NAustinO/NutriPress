@@ -13,14 +13,14 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 class QuickTableView(QDialog):
 
-    def __init__(self, model: CustomTableModel = None, label: str = None):
+    def __init__(self, model: CustomTableModel = None, label: str = None, note : str = ''):
         super(QuickTableView, self).__init__()
-        self.setupUi(self, label)
+        self.setupUi(self, label, note)
         self.setupLogic()
         if model is not None:
             self.setTableModel(model)
 
-    def setupUi(self, Dialog, label: str = None):
+    def setupUi(self, Dialog, label: str = None, note: str = ''):
         if not Dialog.objectName():
             Dialog.setObjectName(u"quickTableView")
         Dialog.resize(900, 700)
@@ -39,6 +39,13 @@ class QuickTableView(QDialog):
         self.subHeaderLabel.setText('')
 
         self.verticalLayout_1.addWidget(self.subHeaderLabel)
+
+        self.noteLabel = QLabel()
+        self.noteFont = QFont()
+        self.noteFont.setPointSize(10)
+        self.noteLabel.setFont(self.noteFont)
+        self.noteLabel.setText(note)
+        self.verticalLayout_1.addWidget(self.noteLabel)
 
         self.tableView = QTableView()
 

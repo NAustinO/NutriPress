@@ -232,7 +232,6 @@ class Ingredient(object):
     def getInputWeightInGrams(self):
         return self.__inputWeightInGrams
 
-
     # sets attribute
     def setInputWeightInGrams(self, weight):
         self.__inputWeightInGrams = weight
@@ -406,7 +405,7 @@ class Formula(object):
     
 
     # returns true if succesfully removed ingredient from data structure else false
-    def removeIngredient(self, ingredient: Ingredient=None, foodID:int = None):
+    def removeIngredient(self, ingredient: Ingredient=None, foodID:int=None):
         
         # if neither ingredient nor foodID is inputted
         if ingredient is None and foodID is None: 
@@ -552,7 +551,6 @@ class Formula(object):
             id = self.formulaTableRef.item(row, 0).data(Qt.UserRole) # id of the ingredient in the table
             percentWeight = self.getIngredientPercentWeight(foodID = id)
             self.formulaTableRef.setItem(row, 1, QTableWidgetItem(str(percentWeight)))    
-            #self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[id]['percentByWeight']))    
             if id == ingredient.foodID:  # if the ingredient in the table is the same as the ingredient replacing
                 #self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[id]['percentByWeight']))  # inputs the new percentage by weight
                 quantityUnit = ingredient.getInputtedQuantity()
@@ -593,7 +591,3 @@ class Formula(object):
             return True
         return False
 
-
-
-    
-        

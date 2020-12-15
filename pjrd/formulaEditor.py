@@ -11,19 +11,22 @@
 import sys
 import math
 import os
-from PyQt5.QtCore import pyqtSlot
+import PySide2.QtCharts
+
+from PyQt5.QtCore import Q_RETURN_ARG, pyqtSlot
 
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtPrintSupport import *
 from PySide2.QtCharts import * 
-import PySide2.QtCharts
+
+
 from operator import itemgetter, attrgetter
 
 sys.path.append('../pjrd')
 import pymysql
-from pjrd.helpers import compareTableRowMap, displayNfp, extractIngredientStatement, test, dbConnection, TimedMessageBox, nutrientColMap, numberWithCommas, nutrientRowMap, initialize2DArray, getIngredientStatement
+from pjrd.helpers import compareTableRowMap, extractIngredientStatement, test, dbConnection, TimedMessageBox, nutrientColMap, numberWithCommas, nutrientRowMap, initialize2DArray, getIngredientStatement
 from pjrd.formulaEditorSearchResults import searchResults
 from pjrd.helperClasses import CustomTableModel, UnitOfMeasure, Nutrient, Ingredient, Formula
 from pjrd.quickTableView import QuickTableView
@@ -44,8 +47,10 @@ class formulaEditorDialog(QDialog):
         
     def setupUi(self, Dialog):
         if not Dialog.objectName():
-            Dialog.setObjectName(u"Dialog")
+            Dialog.setObjectName(u"Dialog") 
         Dialog.resize(822, 1005)
+        tenPointFont = QFont()
+        tenPointFont.setPointSize(10)
         self.horizontalLayout_9 = QHBoxLayout(Dialog)
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.formulaEditorTabWidget = QTabWidget(Dialog)
@@ -94,6 +99,10 @@ class formulaEditorDialog(QDialog):
         self.revisionNumberPlaceholder.setObjectName(u"revisionNumberPlaceholder")
 
         self.horizontalLayout.addWidget(self.revisionNumberPlaceholder)
+
+        self.submitBtn = QPushButton()
+        self.submitBtn.setText('Submit')
+        self.horizontalLayout.add
 
 
         self.verticalLayout_11.addWidget(self.ingredientsTabHeaderWidget)
@@ -192,6 +201,7 @@ class formulaEditorDialog(QDialog):
         self.generalFrame2.setObjectName(u"generalFrame2")
         self.generalFrame2.setFrameShape(QFrame.StyledPanel)
         self.generalFrame2.setFrameShadow(QFrame.Raised)
+        self.generalFrame2.setToolTip('This frame provides the user a quick glimpse of the major nutritionals, which can be based on how the user defines the serving. Otherwise it defaults to the total amount entered.')
         self.verticalLayout_14 = QVBoxLayout(self.generalFrame2)
         self.verticalLayout_14.setObjectName(u"verticalLayout_14")
         self.generalNutritionalsHeaderWidget = QWidget(self.generalFrame2)
@@ -208,7 +218,6 @@ class formulaEditorDialog(QDialog):
         self.generalNutritionalsHeaderLabel.setAlignment(Qt.AlignCenter)
 
         self.horizontalLayout_12.addWidget(self.generalNutritionalsHeaderLabel)
-
 
         self.verticalLayout_14.addWidget(self.generalNutritionalsHeaderWidget)
 
@@ -327,10 +336,6 @@ class formulaEditorDialog(QDialog):
 
         self.verticalLayout_14.addWidget(self.widget)
 
-        self.displayNFPBtn = QPushButton(self.generalFrame2)
-        self.displayNFPBtn.setObjectName(u"displayNFPBtn")
-
-        self.verticalLayout_14.addWidget(self.displayNFPBtn)
 
 
         self.horizontalLayout_11.addWidget(self.generalFrame2)
@@ -410,6 +415,7 @@ class formulaEditorDialog(QDialog):
         self.qualityAttributeFrame.setObjectName(u"qualityAttributeFrame")
         self.qualityAttributeFrame.setFrameShape(QFrame.StyledPanel)
         self.qualityAttributeFrame.setFrameShadow(QFrame.Raised)
+        self.qualityAttributeFrame.setToolTip('This allows the user to input any notes related to ensure the quality of the product is recorded. Can also include processing/cooking details, parameters and calculated or measured attributes')
 
         self.verticalLayout_10 = QVBoxLayout(self.qualityAttributeFrame)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
@@ -434,27 +440,33 @@ class formulaEditorDialog(QDialog):
         self.addQAttributeBtn.setObjectName(u"addQAttributeBtn")
 
         self.horizontalLayout_13.addWidget(self.addQAttributeBtn)
-
-
+    
         self.verticalLayout_10.addWidget(self.qualityAttributeHeaderWidget)
 
-        
+        self.qualityAttributeSubheaderLabel = QLabel()
+        self.qualityAttributeSubheaderLabel.setFont(tenPointFont)
+        self.qualityAttributeSubheaderLabel.setText('Used to record any quality attributes and or parameters to ensure consistency when recreating.')
+
+        self.verticalLayout_10.addWidget(self.qualityAttributeSubheaderLabel)
 
         self.qualityAttributeTableWidget = QTableWidget(self.qualityAttributeFrame)
-        if (self.qualityAttributeTableWidget.columnCount() < 3):
-            self.qualityAttributeTableWidget.setColumnCount(3)
+        if (self.qualityAttributeTableWidget.columnCount() < 4):
+            self.qualityAttributeTableWidget.setColumnCount(4)
         __qtablewidgetitem8 = QTableWidgetItem()
         self.qualityAttributeTableWidget.setHorizontalHeaderItem(0, __qtablewidgetitem8)
         __qtablewidgetitem9 = QTableWidgetItem()
         self.qualityAttributeTableWidget.setHorizontalHeaderItem(1, __qtablewidgetitem9)
         __qtablewidgetitem10 = QTableWidgetItem()
         self.qualityAttributeTableWidget.setHorizontalHeaderItem(2, __qtablewidgetitem10)
+        qtablewidgetitem11 = QTableWidgetItem()
+        self.qualityAttributeTableWidget.setHorizontalHeaderItem(3, qtablewidgetitem11)
         if (self.qualityAttributeTableWidget.rowCount() < 1):
             self.qualityAttributeTableWidget.setRowCount(1)
         self.qualityAttributeTableWidget.setObjectName(u"qualityAttributeTableWidget")
         self.qualityAttributeTableWidget.setRowCount(1)
-        self.qualityAttributeTableWidget.horizontalHeader().setDefaultSectionSize(200)
+        self.qualityAttributeTableWidget.horizontalHeader().setDefaultSectionSize(175)
         self.qualityAttributeTableWidget.horizontalHeader().setStretchLastSection(True)
+        #self.qualityAttributeTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.verticalLayout_10.addWidget(self.qualityAttributeTableWidget)
 
@@ -474,6 +486,7 @@ class formulaEditorDialog(QDialog):
         self.ingStatementLabel = QLabel(self.ingStatementHeader)
         self.ingStatementLabel.setObjectName(u"ingStatementLabel")
         self.ingStatementLabel.setAlignment(Qt.AlignCenter)
+    
 
         self.horizontalLayout_7.addWidget(self.ingStatementLabel)
 
@@ -514,11 +527,12 @@ class formulaEditorDialog(QDialog):
         self.ingStatementContainer.setAutoFillBackground(False)
         self.verticalLayout_6 = QVBoxLayout(self.ingStatementContainer)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.ingStatetmentTxtLabel = QLabel(self.ingStatementContainer)
-        self.ingStatetmentTxtLabel.setObjectName(u"ingStatetmentTxtLabel")
-        self.ingStatetmentTxtLabel.setAlignment(Qt.AlignCenter)
+        self.ingStatementTxtLabel = QLabel(self.ingStatementContainer)
+        self.ingStatementTxtLabel.setObjectName(u"ingStatementTxtLabel")
+        self.ingStatementTxtLabel.setAlignment(Qt.AlignCenter)
+        self.ingStatementTxtLabel.setText('Auto-generated ingredient statement. Click the edit button below to make changes.')
 
-        self.verticalLayout_6.addWidget(self.ingStatetmentTxtLabel)
+        self.verticalLayout_6.addWidget(self.ingStatementTxtLabel)
 
         self.ingStatementTextBox = QTextEdit(self.ingStatementContainer)
         self.ingStatementTextBox.setObjectName(u"ingStatementTextBox")
@@ -603,16 +617,16 @@ class formulaEditorDialog(QDialog):
 
         self.scaleByLabel = QLabel(self.scaleFrame)
         self.scaleByLabel.setObjectName(u"scaleByLabel")
-        self.scaleByLabel.setText("How should we scale the formula entered? (Choose one)")
+        self.scaleByLabel.setText("Select below to indicate how to scale the current formula weight quantities")
         self.scaleByLabel.setAlignment(Qt.AlignLeft)
         self.verticalLayout.addWidget(self.scaleByLabel)
 
         self.scaleCombobox = QComboBox(self.scaleFrame)
         servingsItem = QStandardItem()
-        servingsItem.setText('Total Number of Servings')
+        servingsItem.setText('By Total Number of Servings The Formula Makes')
         servingsItem.setData('servings', Qt.UserRole)
         weightItem = QStandardItem()
-        weightItem.setText('Weight of One Serving')
+        weightItem.setText('By The Weight of One Serving')
         weightItem.setData('weight', Qt.UserRole)
         itemModel = QStandardItemModel()
         itemModel.appendRow(servingsItem) 
@@ -788,11 +802,11 @@ class formulaEditorDialog(QDialog):
 
         self.verticalLayout_3.addWidget(self.labelScrollArea)
 
-        self.displayNutritionalLabelBtn = QPushButton(self.labelTab)
+        '''self.displayNutritionalLabelBtn = QPushButton(self.labelTab)
         self.displayNutritionalLabelBtn.setObjectName(u"displayNutritionalLabelBtn")
         self.displayNutritionalLabelBtn.setMaximumSize(QSize(300, 16777215))
 
-        self.verticalLayout_3.addWidget(self.displayNutritionalLabelBtn, 0, Qt.AlignHCenter)
+        self.verticalLayout_3.addWidget(self.displayNutritionalLabelBtn, 0, Qt.AlignHCenter)'''
 
 
         self.formulaEditorTabWidget.addTab(self.labelTab, "")
@@ -817,6 +831,7 @@ class formulaEditorDialog(QDialog):
         self.spreadSheetBasedOnLabel = QLabel(self.scrollAreaWidgetContents)
         self.spreadSheetBasedOnLabel.setObjectName(u"spreadSheetBasedOnLabel")
         self.spreadSheetBasedOnLabel.setText('Add an ingredient to update')
+        self.spreadSheetBasedOnLabel.setFont(tenPointFont)
         self.verticalLayout_5.addWidget(self.spreadSheetBasedOnLabel)
 
         self.nutrientReportTableView = QTableView(self.scrollAreaWidgetContents)
@@ -825,11 +840,9 @@ class formulaEditorDialog(QDialog):
         self.nutrientReportTableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.nutrientReportTableView.setAlternatingRowColors(True) # Might remove this
         self.nutrientReportTableView.setSortingEnabled(True)
-        font = QFont()
-        font.setPointSize(10)
-        self.nutrientReportTableView.setFont(font)
+        self.nutrientReportTableView.setFont(tenPointFont)
         self.nutrientReportTableView.setObjectName(u"nutrientReportTableView")
-        headerLabels = ['Item Desc', 'Quantity', 'Unit', 'Weight (g)', 'Calories (kCal)', 'Protein (g)', 'Carbohydrates (g)', 'Dietary Fiber (g)', 'Soluble Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosac (g)', 'Disac (g)', 'Total Fat (g)', 'Sat Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)', 'Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Water (g)', 'Alcohol (g)', 'Caffeine (mg)', 'Choline (mg)', 'Sugar Alcohol (g)', 'Calcium (mg)', 'Chromium (µg)', 'Copper (mg)', 'Fluoride (mg)', 'Iodine (µg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Molybdenum (µg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)', 'Vitamin A (IU)', 'Vitamin A - RE (µg)', 'Vitamin A - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B6 (mg)', 'Vitamin B12 (µg)', 'Vitamin C (mg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-toco (mg)', 'Folate (µg)', 'Folate, DFE (µg DFE)', 'Vitamin K (µg)', 'Panothenic Acid (mg)']
+        headerLabels = ['Item Desc', 'Quantity', 'Unit', 'Weight Per Serv. (g)', 'Calories (kCal)', 'Protein (g)', 'Carbohydrates (g)', 'Dietary Fiber (g)', 'Soluble Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosac (g)', 'Disac (g)', 'Total Fat (g)', 'Sat Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)', 'Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Water (g)', 'Alcohol (g)', 'Caffeine (mg)', 'Choline (mg)', 'Sugar Alcohol (g)', 'Calcium (mg)', 'Chromium (µg)', 'Copper (mg)', 'Fluoride (mg)', 'Iodine (µg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Molybdenum (µg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)', 'Vitamin A (IU)', 'Vitamin A - RE (µg)', 'Vitamin A - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B6 (mg)', 'Vitamin B12 (µg)', 'Vitamin C (mg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-toco (mg)', 'Folate (µg)', 'Folate, DFE (µg DFE)', 'Vitamin K (µg)', 'Panothenic Acid (mg)']
 
 
         model = CustomTableModel(headerLabels)
@@ -851,10 +864,8 @@ class formulaEditorDialog(QDialog):
         self.verticalLayout_5.addWidget(self.singleNutrientLabel)
 
         self.disclaimerLabel = QLabel(self.scrollAreaWidgetContents)
-        self.disclaimerLabel.setText('Disclaimer: A 0% indicates may be due to no data being entered, or that there is no content in the food.')
-        disclaimerFont = QFont()
-        disclaimerFont.setPointSize(10)
-        self.disclaimerLabel.setFont(disclaimerFont)
+        self.disclaimerLabel.setText('Choose a nutrient below to see how each ingredient contributes to the total amount')
+        self.disclaimerLabel.setFont(tenPointFont)
         self.verticalLayout_5.addWidget(self.disclaimerLabel)
 
 
@@ -882,6 +893,14 @@ class formulaEditorDialog(QDialog):
 
         self.verticalLayout_5.addWidget(self.dailyValueLabel)
 
+        self.dailyValueSubHeader = QLabel(self.scrollAreaWidgetContents)
+        self.dailyValueSubHeader.setObjectName(u"dailyValueSubHeader")
+    
+        self.dailyValueSubHeader.setText('Click below to see how a serving and 100 gram equivalent of the current formula contributes to the recommended daily value of nutrients')
+        self.dailyValueSubHeader.setFont(tenPointFont)
+        
+        self.verticalLayout_5.addWidget(self.dailyValueSubHeader)
+
         self.dvToggleBtn = QPushButton(self.scrollAreaWidgetContents)
         self.dvToggleBtn.setObjectName(u"dvToggleBtn")
         self.dvToggleBtn.setText('Show')
@@ -900,22 +919,32 @@ class formulaEditorDialog(QDialog):
         
         self.verticalLayout_5.addWidget(self.byComparisonLabel)
 
-        self.showComparisonBtn = QPushButton(self.scrollAreaWidgetContents)
-        self.showComparisonBtn.setText('Show')
-    
-        self.verticalLayout_5.addWidget(self.showComparisonBtn)
+        self.byComparisonSubHeaderLabel = QLabel(self.scrollAreaWidgetContents)
+        self.byComparisonSubHeaderLabel.setObjectName(u"byComparisonSubHeaderLabel")
+ 
+        self.byComparisonSubHeaderLabel.setFont(tenPointFont)
+        self.byComparisonSubHeaderLabel.setText('Select a previous formula or ingredient below to see how identical quantities of each compare by nutrient')
+
+        self.verticalLayout_5.addWidget(self.byComparisonSubHeaderLabel)
+
 
         self.comboBox = QComboBox(self.scrollAreaWidgetContents)
         self.comboBox.setObjectName(u"comboBox")
         
         self.verticalLayout_5.addWidget(self.comboBox)
 
+
+        self.showComparisonBtn = QPushButton(self.scrollAreaWidgetContents)
+        self.showComparisonBtn.setText('Show')
+    
+        self.verticalLayout_5.addWidget(self.showComparisonBtn)
+
         self.nutrientReportScrollArea.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_15.addWidget(self.nutrientReportScrollArea)
 
         self.formulaEditorTabWidget.addTab(self.nutrientReportTab, "")
-        self.imagesTab = QWidget()
+        '''self.imagesTab = QWidget()
         self.imagesTab.setObjectName(u"imagesTab")
         self.verticalLayout_12 = QVBoxLayout(self.imagesTab)
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
@@ -934,7 +963,7 @@ class formulaEditorDialog(QDialog):
 
         self.verticalLayout_12.addWidget(self.imagesTableWidget)
 
-        self.formulaEditorTabWidget.addTab(self.imagesTab, "")
+        self.formulaEditorTabWidget.addTab(self.imagesTab, "")'''
 
         self.horizontalLayout_9.addWidget(self.formulaEditorTabWidget)
 
@@ -952,21 +981,14 @@ class formulaEditorDialog(QDialog):
         # signal setup
         self.formulaIngredientSearchBtn.clicked.connect(self.search)
         self.formulaIngredientSearchLineEdit.returnPressed.connect(self.search)
-        self.displayNFPBtn.clicked.connect(displayNfp)
         self.removeSelectedBtn.clicked.connect(self.removeSelected)
         self.scaleCombobox.currentIndexChanged.connect(self.toggleFocus)
         self.dvToggleBtn.clicked.connect(self.openDVTableViewer)
-        self.comboBox.currentIndexChanged.connect(self.openComparisonTableViewer)
-        
-        #temporary
+        #self.comboBox.currentIndexChanged.connect(self.openComparisonTableViewer)
         self.showComparisonBtn.clicked.connect(self.openComparisonTableViewer)
-
-        ## TODO
-        # Optimize the refresh method for less queryies to database
-        self.servingWeightSpinBox.valueChanged.connect(self.refresh) #<----- could substitute for just refreshgeneralnutritionals and remove *arg for total weight 
+        self.servingWeightSpinBox.valueChanged.connect(self.refresh) 
         self.unitWeightCombobox.currentIndexChanged.connect(self.refresh)
         self.numServingsSpinbox.valueChanged.connect(self.refresh)
-        ######
         self.editIngStatementBtn.clicked.connect(self.toggleReadOnly)
         self.copyIngStatementBtn.clicked.connect(self.copy)
         self.addQAttributeBtn.clicked.connect(self.insertRow)
@@ -999,6 +1021,7 @@ class formulaEditorDialog(QDialog):
             uoms = cursor.fetchall()
             for uom in uoms:
                 unit = UnitOfMeasure(uom['unit_id'], uom['unit_name'], uom['conversion_factor'], uom['conversion_offset'], uom['unit_symbol'])
+                unit.setData(unit, Qt.UserRole)
                 unit.setText('{unitName} ({unitSymbol})'.format(unitName=uom['unit_name'], unitSymbol = uom['unit_symbol']))
                 unitModel.appendRow(unit)
             unitCompleter.setModel(unitModel)
@@ -1006,16 +1029,31 @@ class formulaEditorDialog(QDialog):
             self.unitWeightCombobox.setModel(unitModel)
             self.unitWeightCombobox.setCurrentIndex(-1)
 
-            # sets up the model for the compari
+            # sets up the model for the comparison combobox
             compareModel = QStandardItemModel() 
+
+            # starts by adding the formulas to the comparisons
             cursor.execute('SELECT formula.formula_id, formula.food_id, formula.formula_name, food.food_desc FROM formula LEFT JOIN food ON formula.food_id = food.food_id ORDER BY formula.formula_name ASC')
             compareFoods = cursor.fetchall()
             for cFood in compareFoods:
                 compareItem = QStandardItem()
-                compareItem.setText(cFood['food_desc'].capitalize())
+                compareItem.setText(cFood['food_desc'].capitalize() + ' (Formula)')
                 compareItem.setData(cFood, Qt.UserRole)
                 compareModel.appendRow(compareItem)
+            
+            # finishes by adding the ingredients
+            cursor.execute('SELECT food_id, food_desc, user_inputted FROM food ORDER BY food_desc ASC')
+            compareFoods = cursor.fetchall()
+            for cFood in compareFoods:
+                compareItem = QStandardItem()
+                if cFood['user_inputted'] == 1:
+                    compareItem.setText(cFood['food_desc'].capitalize() + ' (User Ingredient)')
+                else: compareItem.setText(cFood['food_desc'].capitalize())
+                compareItem.setData(cFood, Qt.UserRole)
+                compareModel.appendRow(compareItem)
+    
             self.comboBox.setModel(compareModel)
+            self.comboBox.setCurrentIndex(-1)
             
             #excludes theobromine,  unsaturated fatty acids, retinol, beta carotene, alpha carotene, cryptoxanthinin, lycopene, luteine + zeaxanthinin, folic acid, folate, vitamin e added, vitamin b12 added, other carbs
             excluding = (263, 319, 321, 322, 334, 337, 338, 431, 432, 573, 578, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 626, 627, 628, 629, 630, 631, 662)
@@ -1056,6 +1094,8 @@ class formulaEditorDialog(QDialog):
         
         try:
             servingWeight = self.servingWeightSpinBox.value()
+            #if servingWeight == 0:
+              #  servingWeight = totalWeightG
             numberServings = totalWeightG/servingWeight
         except:
             numberServings = 1
@@ -1084,8 +1124,13 @@ class formulaEditorDialog(QDialog):
             
             if rowIndex is None:
                 continue
-            
-            data[rowIndex][0] = numberWithCommas(dailyRecommendedValueStdUnit) 
+            if float(str(dailyRecommendedValueStdUnit).split('.')[1]) >= .1:
+                round(dailyRecommendedValueStdUnit, 2)
+            else:
+                dailyRecommendedValueStdUnit = int(dailyRecommendedValueStdUnit)
+
+
+            data[rowIndex][0] = dailyRecommendedValueStdUnit
             data[rowIndex][1] = numberWithCommas(round(per100g, 3))
             data[rowIndex][2] = numberWithCommas(round(amountInStdUnit/numberServings, 3))
             data[rowIndex][3] = '{}%'.format(round(((amountInStdUnit/dailyRecommendedValueStdUnit) * 100), 1))
@@ -1097,23 +1142,30 @@ class formulaEditorDialog(QDialog):
 
     # Opens a separate QDialog containing the tableview for a comparison per 100g of current recipe vs recipe chosen
     def openComparisonTableViewer(self):
-        
+        if len(self.formula.getCurrentIngredients()) == 0: 
+            return
+        if self.comboBox.currentIndex() == -1:
+            comparedTo = None
+        else:
+            comparedTo = self.comboBox.currentData(Qt.UserRole)['food_id']
         totalWeightG = self.formula.totalFormulaWeight()
+        compareToName = 'No comparison chosen'
 
         rowMap = compareTableRowMap()
-
+        # header information for the table
         horizHeaders = ['Current (per 100g)', 'Comparison (per 100g)']
         vertHeaders = ['Calories (kCal)', 'Total Fat (g)', 'Saturated Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)','Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Total Carbohydrates (g)', 'Total Dietary Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosaccharides (g)', 'Disaccharides (g)', 'Protein (g)', 'Vitamin A (Retinols)(IU)', 'Vitamin A (Retinols) - RE (µg)', 'Vitamin A (Retinols) - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B5/Panothenic Acid (mg)', 'Vitamin B6 (µg)', 'Vitamin B9/Folic Acid (mg)', 'Vitamin B12 (mg)', 'Vitamin C (mg)', 'Vitamin D (µg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-tocopherol (mg)', 'Vitamin K/Phylloquinone (µg)', 'Choline (mg)', 'Calcium (mg)', 'Copper (mg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)'] 
-    
+
+        # creates model for the table that holds the data
         model = CustomTableModel()
         model.setHeaderLabels(horizHeaders, Qt.Horizontal, Qt.DisplayRole)
         model.setHeaderLabels(vertHeaders, Qt.Vertical, Qt.DisplayRole)
         # temporary
-        data = initialize2DArray(len(vertHeaders), len(horizHeaders), None)
+        data = initialize2DArray(len(vertHeaders), len(horizHeaders), '-')
 
+        # fill sin the data for the current formula
         allNutritionals = self.formula.getAllNutritionals()
         for nutrientID, rows in rowMap.items():
-
             if nutrientID == 320: # vitamin A RAE ID --> [vitamin A IU, vitamin A RE, Vitamin A RAE] (17, 18, 19)
                 if nutrientID not in allNutritionals:
                     for rowIndex in rows:
@@ -1130,13 +1182,6 @@ class formulaEditorDialog(QDialog):
                             amountStdUnit = amountVitAG * 100000
                             per100g = amountStdUnit * (100/totalWeightG)
                             data[rowIndex][0] = round(per100g, 3)
-
-                        '''elif rowIndex == 18: # vitamin A RE 
-                            amountStdUnit = amountVitAG * 100000
-                            per100g = amountStdUnit * (100/totalWeightG)
-                            data[rowIndex][0] = round(per100g, 3)
-                        elif rowIndex == 19: # vitamin A RAE 
-                            data[rowIndex][0] = round(amountVitAG * 100000, 3)'''
 
             elif nutrientID == 406: # Niacin ID --> [Niacin, Niacin Equivalents] (22, 23)
                 if nutrientID not in allNutritionals:
@@ -1156,37 +1201,45 @@ class formulaEditorDialog(QDialog):
                     amountStdUnit = Nutrient.getStdUnitWeight(nutrientDict['totalInG'], nutrientDict['unit'])[0]
                     per100g = amountStdUnit * (100/totalWeightG)
                     data[rows][0] = round(per100g, 3)
-        model.inputTableData(data)
-        view = QuickTableView(model)
-        view.setHeaderLabel('Comparison of the current formula and the chosen formula, each scaled to 100 g')
-        view.exec_()
-                
 
-        ''' 
-        for row in range(self.ingTabFormulaTableWidget.rowCount()):
-            ingredient = self.ingTabFormulaTableWidget.item(row, 0).data(Qt.UserRole)
-            unitConversionScale = 1/ingredient.unit.conversionFactor
-            amountOfIngG = ingredient.inputWeightInGrams()
-            multiplyBy = amountOfIngG/100
-            foodID = ingredient.foodID
+        if comparedTo is not None:
 
+            # sets data for nutritionals for the comparison
             with dbConnection('FormulaSchema').cursor() as cursor:
-                cursor.execute('SELECT nutrient.nutrient_id, nutrient.nutrient_name, nutrient.daily_value_g, food_nutrient.nutrient_weight_g_per_100g * %s AS amount_in_g, unit.conversion_factor, unit.conversion_offset, unit.unit_name FROM nutrient LEFT JOIN food_nutrient ON nutrient.nutrient_id = food_nutrient.nutrient_id LEFT JOIN unit ON unit.unit_id = nutrient.unit_id WHERE food_nutrient.food_id = %s AND nutrient.nutrient_id IN (203, 204, 205, 208, 269, 291, 301, 303, 305, 309, 312, 317, 320, 323, 328, 401, 404, 405, 406, 415, 418, 421, 430, 431, 601, 606, 651, 656, 658)', (multiplyBy, foodID))
+                
+                # pulls the g per 100g of ingredient value from database, along with unit conversion values to convert to its standard unit
+                cursor.execute('SELECT nutrient.nutrient_id, food_nutrient.nutrient_weight_g_per_100g, unit.conversion_factor, unit.conversion_offset FROM nutrient LEFT JOIN food_nutrient ON nutrient.nutrient_id = food_nutrient.nutrient_id LEFT JOIN unit ON nutrient.unit_id = unit.unit_id WHERE food_nutrient.food_id = %s',  (comparedTo,))
                 results = cursor.fetchall()
-
-            for result in results:
-                nutrientID = result['nutrient_id']
-                amountInStdUnit = result['amount_in_g'] * unitConversionScale
-                per100g = amountInStdUnit * (100/totalWeightG) # <----- goes into
-                rowIndex = rowMap.get(nutrientID)
-                if rowIndex is None:
-                    continue
-                print('This is row index' + str(rowIndex))
-                data[rowIndex][0] = per100g
-        model.inputTableData(data)'''
-
-        #end temporary
-        
+                for result in results:
+                    compareToName = 'Current formula being compared to ' + self.comboBox.currentText()
+                    nutrientID = result['nutrient_id']
+                    if nutrientID not in rowMap.keys():
+                        continue
+                    rowIndex = rowMap.get(nutrientID)
+                    if rowIndex is None: continue
+                    # vitamin A RAE ID --> [vitamin A IU, vitamin A RE, Vitamin A RAE] (17, 18, 19)
+                    if nutrientID == 320:
+                        for specialNutrient in rowIndex:
+                            if specialNutrient == 17:
+                                per100g = result['nutrient_weight_g_per_100g'] * (100000/0.3)
+                                data[specialNutrient][1] = round(per100g, 3)
+                            else:
+                                per100g = result['nutrient_weight_g_per_100g'] * 100000
+                                data[specialNutrient][1] = round(per100g, 3)
+                    # Niacin ID --> [Niacin, Niacin Equivalents] (22, 23)
+                    elif nutrientID == 406: 
+                        for specialNutrient in rowIndex:
+                            per100g = result['nutrient_weight_g_per_100g']/result['conversion_factor'] - result['conversion_offset']
+                            data[specialNutrient][1] = round(per100g, 3)
+                    else:
+                        per100g = result['nutrient_weight_g_per_100g']/result['conversion_factor'] - result['conversion_offset']
+                        data[rowIndex][1] = round(per100g, 3)
+            
+        model.inputTableData(data)
+        view = QuickTableView(model, note=compareToName)
+        view.setHeaderLabel('Comparison of the current formula and the chosen item, each scaled to 100 g')
+        view.exec_()
+            
 
     # toggles the focus of the scale formula portion 
     @pyqtSlot()
@@ -1243,13 +1296,14 @@ class formulaEditorDialog(QDialog):
         if self.scaleCombobox.currentIndex() != -1:
             scaleMethod = self.scaleCombobox.currentData(Qt.UserRole)
             if scaleMethod == 'weight':
-                 
+                if self.servingWeightSpinBox.value() != 0 and self.unitWeightCombobox.currentData(Qt.UserRole) is None:
+                    return
                 # if user does not choose unit or does not input a serving weight, both are defaults
-                if self.unitWeightCombobox.currentData(Qt.UserRole) is not None and self.servingWeightSpinBox.vaue() == 0: 
+                if self.unitWeightCombobox.currentData(Qt.UserRole) is not None and self.servingWeightSpinBox.value() == 0: 
                     msg = QMessageBox()
                     msg.setText('Please complet ethe scale b weight information on Tab 3-Label')
                     msg.exec_()
-                    
+                    totalWeight = self.formula.totalFormulaWeight()
                     # fills all the placeholders with no text
                     self.totalWeightPlaceholderLabel.setText(f'{totalWeight:,}')
                     if self.servingSizeLineEdit.text() != '':
@@ -1283,6 +1337,10 @@ class formulaEditorDialog(QDialog):
                     msg.exec_()
                     return
                 else:
+                    self.totalWeightPlaceholderLabel.setText(str(round(totalWeightG, 2)))
+                    self.servingSizePlaceholderLabel.setText(str(round(totalWeightG/servings, 2)))
+                    self.servingWeightPlaceholder.setText(str(round(totalWeightG/servings, 2)))
+        
                     servingWeight = totalWeightG/servings
         else:
             servingWeight = totalWeightG
@@ -1351,10 +1409,8 @@ class formulaEditorDialog(QDialog):
             self.refreshGeneralNutritionals()
             self.refreshIngStatement()
             self.refreshReport()
-            #self.refreshDVTable(totalWeightG=totalWeightG, idList=idList)
 
 
-    #@pyqtSlot()
     # clears the highlighted rows from the ingredients table widget 
     def removeSelected(self):
         rowIndeces = self.ingTabFormulaTableWidget.selectionModel().selectedRows(0)
@@ -1382,12 +1438,18 @@ class formulaEditorDialog(QDialog):
         totalWeightG = self.formula.totalFormulaWeight()
         if self.scaleCombobox.currentIndex() == -1:
             self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} grams). The total inputted weight is {} grams'.format(numberWithCommas(round(totalWeightG)), numberWithCommas(round(totalWeightG))))
+            totalServings = 1
         else:
             # adjusts the header
             try: 
                 scaleMethod = self.scaleCombobox.currentData(Qt.UserRole)
                 # if user chooses to scale by weight
                 if scaleMethod == 'weight':
+
+                    if self.servingWeightSpinBox.value() == 0 or self.unitWeightCombobox.currentData(Qt.UserRole) is None:
+                        self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} g). There is 1 serving inputted'.format(numberWithCommas(round(totalWeightG))))
+                        return 
+
                     weight = self.servingWeightSpinBox.value()
                     unit = self.unitWeightCombobox.currentData(Qt.UserRole)
                     factor = unit.conversionFactor
@@ -1402,11 +1464,12 @@ class formulaEditorDialog(QDialog):
                     servingWeight = totalWeightG/servings
                     totalServings = totalWeightG/servingWeight
 
-                    self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} g). There are approximately {} serving{} inputted'.format(numberWithCommas(round(servingWeight)), totalServings, s))
+                    self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} g). There are approximately {} serving{} inputted'.format(numberWithCommas(round(servingWeight)), round(totalServings, 3), s))
             except Exception:
                 servingWeight = totalWeightG
                 self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} g). There is 1 serving inputted'.format(numberWithCommas(round(servingWeight))))
-                print('something went wrong during scaling')       
+                print('something went wrong during scaling')  
+                totalServings = 1     
 
 
         ##### updates nutrient spreadsheet
@@ -1425,15 +1488,14 @@ class formulaEditorDialog(QDialog):
             dataframeRow[0] = ingredient.desc
             dataframeRow[1] = ingredient.getInputtedQuantity()[0]
             dataframeRow[2] = ingredient.getInputtedQuantity()[1].unitName
-            dataframeRow[3] = ingredient.getInputWeightInGrams
+            dataframeRow[3] = ingredient.getInputWeightInGrams/totalServings
             totals[3] += ingredient.getInputWeightInGrams
             for nutrientID, dictItem in ingredient.nutrientDict.items():
                 columnIndex = map[nutrientID]
                 if columnIndex is None:
                     continue
                 nutrient = dictItem['object']
-                stdUnitAmount = nutrient.getStdUnitWeightFromG(dictItem['amountInIngredientG'])[0]
-                #stdUnitAmount = nutrient.stdUnitWeight()[0]
+                stdUnitAmount = nutrient.getStdUnitWeightFromG(dictItem['amountInIngredientG'])[0]/totalServings
                 dataframeRow[columnIndex] = stdUnitAmount
                 totals[columnIndex] += stdUnitAmount
             data.append(dataframeRow)
@@ -1482,61 +1544,16 @@ class formulaEditorDialog(QDialog):
 
             nestedStatement = getIngredientStatement(ingredient.foodID) 
             extracted = extractIngredientStatement(nestedStatement)
-            unboldened = extracted.replace('<b>', '')
-            unboldened = unboldened.replace('</b>', '')
-            self.ingStatementTable.setItem(rowIndex, 2, QTableWidgetItem(str(unboldened)))
+            tableInsert = extracted.replace('<b>', '')
+            tableInsert = tableInsert.replace('</b>', '')
+            tableInsert = tableInsert.split('(')[1].replace('(', ' ').replace(')', ' ')
+            self.ingStatementTable.setItem(rowIndex, 2, QTableWidgetItem(str(tableInsert)))
             mainStatement.append(extracted)
             rowIndex += 1
         mainStatement = ', '.join(mainStatement)
         self.ingStatementTable.resizeRowsToContents()
         self.ingStatementTable.resizeRowsToContents()
         self.ingStatementTextBox.setText(mainStatement)
-
-                  
-        '''with dbConnection('FormulaSchema').cursor() as cursor: # <---- bad practice to execute cursor query in loop?
-            # if the food is a fndds ingredient preloaded from database
-            # gets the subingredients from subfood_food table and appends as
-            # 
-            if cursor.execute('SELECT food.food_id, food_desc, subfood_desc, subfood_food.ingredient_weight FROM food LEFT JOIN subfood_food ON food.food_id = subfood_food.food_id WHERE food.food_id = %s ORDER BY food.food_id ASC, ingredient_weight DESC', (ingredient.foodID,)) != 0:
-                subfoods = cursor.fetchall()
-                for food in subfoods:
-                    subIngsForTable.append('({})'.format(counter) + ' ' + food['subfood_desc'])
-                    mainStatement.append(food['subfood_desc'])
-                    counter += 1
-            else:
-                # if the food is a formula (composed of other foods), combines all its components by food_desc and concatenates to an ingredient statement string
-                if cursor.execute('SELECT formula.formula_name, formula_food.food_id, food.food_desc, food.ing_statement FROM formula LEFT JOIN formula_food ON formula.formula_id = formula_food.formula_id LEFT JOIN food ON food.food_id = formula_food.food_id WHERE food.food_id = %s ORDER BY formula_food.weight_g DESC', (ingredient.foodID)) != 0:
-                    ingredients = cursor.fetchall()
-                    formulaStatement = ''
-                    for ing in ingredients:
-                        if formulaStatement == '':
-                            formulaStatement = ing['food_desc']
-                        else:
-                            formulaStatement = formulaStatement + ', ' + ing['food_desc']
-                        if ing['ing_statement']:
-                            formulaStatement = formulaStatement + ' ({})'.format(ing['ing_statement'].capitalize())
-
-                    subIngsForTable.append('({})'.format(counter) + ' ' + formulaStatement)
-                    mainStatement.append(formulaStatement)
-                else:
-                    # if the food is a manufacturer supplied ingredient or a user inputted generic ingredient
-                    if food['ing_statement']:
-                        subIngsForTable.append(food['ing_statement'])
-                        mainStatement.append(food['ing_statement'].capitalize())
-                    else:
-                        subIngsForTable.append('None')
-                        mainStatement.append(food['food_desc'].capitalize())
-        # fooddesc, percentByWeight, subIngredients
-        subIngsForTable = ', '.join(subIngsForTable)
-        mainStatement = ', '.join(mainStatement)
-        self.ingStatementTable.setItem(rowIndex, 2, QTableWidgetItem(subIngsForTable)) 
-        foodStatement = '<b>{food}</b> ({subFoods})'.format(food=food['food_desc'].title(), subFoods=mainStatement)
-        ingStatement.append(foodStatement)
-        rowIndex += 1 
-    self.ingStatementTable.resizeRowsToContents()
-
-    ingStatement = ', '.join(ingStatement)
-    self.ingStatementTextBox.setText(ingStatement)'''
 
     # updates the chartview to display a barchart 
     # The barchart shows what percentage of the total nutrient amount is 
@@ -1596,20 +1613,6 @@ class formulaEditorDialog(QDialog):
                 except Exception:
                     continue
 
-        # if none of the ingredients have inputted data for the given nutrient
-        # TODO create a view when none of the ingredients have a given value. Currently does not work because the view does not go away once a nutrient with values is chosen 
-        '''if len(categories) == 0:
-            path = QPainterPath()
-            sceneFont = QFont()
-            sceneFont.setPixelSize(100)
-            path.addText(100, 100, sceneFont, 'There is no data for the specified nutrient')
-            scene = QGraphicsScene()
-            graphicsTextItem = QGraphicsTextItem()
-            graphicsTextItem.setPos(150, 150)
-            graphicsTextItem.setPlainText('There is no data for the specified nutrient. Please try another')
-            scene.addItem(graphicsTextItem)
-            self.singleNutrientChartView.setScene(scene)
-            return'''
         # stores the percentages of contribution for each ingredient
         percentages = [0 for i in range(len(ingredientSeriesList))]
 
@@ -1711,7 +1714,7 @@ class formulaEditorDialog(QDialog):
         self.proteinPlaceholderLabel.setText("")
         self.totalWeightLabel.setText(QCoreApplication.translate("Dialog", u"Total Weight (g)", None))
         self.totalWeightPlaceholderLabel.setText(QCoreApplication.translate("Dialog", u"Must input an ingredient ", None))
-        self.displayNFPBtn.setText(QCoreApplication.translate("Dialog", u"Display Nutrition Label", None))
+        
         self.formulaIngredientSearchLineEdit.setText("")
         self.formulaIngredientSearchLineEdit.setPlaceholderText(QCoreApplication.translate("Dialog", u"Enter Ingredient, Supplier", None))
         self.formulaIngredientSearchBtn.setText(QCoreApplication.translate("Dialog", u"Search", None))
@@ -1736,6 +1739,9 @@ class formulaEditorDialog(QDialog):
         ___qtablewidgetitem7.setText(QCoreApplication.translate("Dialog", u"Unit", None));
         ___qtablewidgetitem8 = self.qualityAttributeTableWidget.horizontalHeaderItem(2)
         ___qtablewidgetitem8.setText(QCoreApplication.translate("Dialog", u"Value", None));
+        qtablewidgetitem11 = self.qualityAttributeTableWidget.horizontalHeaderItem(3)
+        qtablewidgetitem11.setText(QCoreApplication.translate("Dialog", u"Description", None))
+
         self.ingStatementLabel.setText(QCoreApplication.translate("Dialog", u"Ingredient Statement", None))
         ___qtablewidgetitem9 = self.ingStatementTable.horizontalHeaderItem(0)
         ___qtablewidgetitem9.setText(QCoreApplication.translate("Dialog", u"Ingredient Name", None));
@@ -1743,7 +1749,6 @@ class formulaEditorDialog(QDialog):
         ___qtablewidgetitem10.setText(QCoreApplication.translate("Dialog", u"% by Weight", None));
         ___qtablewidgetitem11 = self.ingStatementTable.horizontalHeaderItem(2)
         ___qtablewidgetitem11.setText(QCoreApplication.translate("Dialog", u"Sub-Ingredients", None));
-        self.ingStatetmentTxtLabel.setText(QCoreApplication.translate("Dialog", u"Click generate below to autofill statement. Click edit to input manually or change auto-generated text", None))
         self.editIngStatementBtn.setText(QCoreApplication.translate("Dialog", u"Edit", None))
         self.copyIngStatementBtn.setText(QCoreApplication.translate("Dialog", u"Copy", None))
         self.ingStatementPrintBtn.setText(QCoreApplication.translate("Dialog", u"Print", None))
@@ -1760,10 +1765,11 @@ class formulaEditorDialog(QDialog):
         self.scalingHeaderLabel.setText(QCoreApplication.translate("Dialog", u"Scale Formula", None))
         self.servingsLabel.setText(QCoreApplication.translate("Dialog", u"Serving(s)", None))
 
-#if QT_CONFIG(whatsthis)
-#endif // QT_CONFIG(whatsthis)
 
-        self.displayNutritionalLabelBtn.setText(QCoreApplication.translate("Dialog", u"Display Nutrition Label", None))
+
+        #if QT_CONFIG(whatsthis)
+        #endif // QT_CONFIG(whatsthis)
+
         self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.labelTab), QCoreApplication.translate("Dialog", u"Label", None))
 
         self.nutrientSpreadsheetLabel.setText(QCoreApplication.translate("Dialog", u"Nutrient Spreadsheet", None))
@@ -1771,11 +1777,11 @@ class formulaEditorDialog(QDialog):
         self.dailyValueLabel.setText(QCoreApplication.translate("Dialog", u"Daily Value and Per 100g", None))
         self.byComparisonLabel.setText(QCoreApplication.translate("Dialog", u"Comparison", None))
         self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.nutrientReportTab), QCoreApplication.translate("Dialog", u"Nutrient Report", None))
-        ___qtablewidgetitem75 = self.imagesTableWidget.horizontalHeaderItem(0)
-        ___qtablewidgetitem75.setText(QCoreApplication.translate("Dialog", u"Context/Note", None));
-        ___qtablewidgetitem76 = self.imagesTableWidget.horizontalHeaderItem(1)
-        ___qtablewidgetitem76.setText(QCoreApplication.translate("Dialog", u"Image", None));
-        self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.imagesTab), QCoreApplication.translate("Dialog", u"Images", None))
+        #___qtablewidgetitem75 = self.imagesTableWidget.horizontalHeaderItem(0)
+       # #___qtablewidgetitem75.setText(QCoreApplication.translate("Dialog", u"Context/Note", None));
+        #___qtablewidgetitem76 = self.imagesTableWidget.horizontalHeaderItem(1)
+        #___qtablewidgetitem76.setText(QCoreApplication.translate("Dialog", u"Image", None));
+       # self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.imagesTab), QCoreApplication.translate("Dialog", u"Images", None))
     # retranslateUi
 
 app = QApplication(sys.argv)
