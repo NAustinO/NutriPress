@@ -13,8 +13,6 @@ from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 import PySide2.QtQml
 
-
-
 ''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
 # returns a dictionary that maps the nutrient id to the which column in self.nutrientReportTableView 
 # example (nutrientID) -> column index of nutrient in formualEditor.nutrientReportTableView

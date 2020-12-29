@@ -85,7 +85,6 @@ class formulaEditorDialog(QDialog):
 
 
             # sets the scaling combobox based on how it was saved in database
-
             cursor.execute('SELECT unit.unit_name, unit.unit_symbol, unit.conversion_factor, unit.conversion_offset FROM unit WHERE unit.unit_id = %s', (result['serving_weight_unit_id'],))
             unitData = cursor.fetchone()
 
