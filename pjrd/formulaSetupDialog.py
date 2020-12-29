@@ -8,20 +8,26 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
+import sys
+import os
+import pymysql
+
+
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-import sys
-import pymysql
 
 sys.path.append('../pjrd')
-from helpers import test
-from formulaEditor import formulaEditorDialog
+from pjrd.helpers import test, dbConnection
+from pjrd.formulaEditor import formulaEditorDialog
+
+os.environ['QT_MAC_WANTS_LAYER'] = '1' 
 
 class formulaSetupDialog(QDialog):
 
-    def __init__(self):
+    def __init__(self, mainWindow):
         super(formulaSetupDialog, self).__init__()
+        self.mainWindow = mainWindow
         self.setupUi(self)
         self.setupLogic()
 
@@ -210,9 +216,6 @@ class formulaSetupDialog(QDialog):
         self.revisionRadioBtn.toggled.connect(self.revisionContainerFrame.setEnabled)
         self.newFormulaRadioBtn.toggled.connect(self.revisionContainerFrame.setDisabled)
         self.newFormulaRadioBtn.toggled.connect(self.newFormulaContainerFrame.setEnabled)
-
-
-
         QMetaObject.connectSlotsByName(formulaSetupDialog)
     # setupUi
 
@@ -233,116 +236,74 @@ class formulaSetupDialog(QDialog):
     # retranslateUi
 
     def setupLogic(self):
-    
         self.map = {}
-        # EXAMLE MAP
-            # self.map {
-                # 'bowl': {
-                    # 'category_id': int
-                    # 'model': QStandardItemModel
-                    # 'completer': QCompleter
-                    # },
-            # }   
-
-        # 0: create all categories model, all categories completer
-        # A: puts category_name, category_id, catSpecific model, catSpecific completer --> map
-        # B: category_name, category_id --------------------------------->  category item
-        # B: map(category_name) --> catSpecific model, catSpecific completer --> category item
-        # C: category item ----------------------------------------------> all categories model
-        # D: all categories model --> all categories completer -----------> category combobox, revision combobox
-        # E: formula_name, formula_id --> formula item -------------------> catSpecific model
-        # E: category_name --> map(category_name) ------------------------> catSpecific model 
-
-        # creates self.map to model and completer for each type of formula category
-        # inputs models into category comboboxes for autocompletion and datamapping
-        with pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database='FormulaSchema', cursorclass=pymysql.cursors.DictCursor).cursor() as cursor:
-
-            ############################## 0
-            # instantiates new completer for the category combo box
-            allCatCompleter = QCompleter()
-            # instantiates new model for the category combo box 
-            allCatModel = QStandardItemModel()
-            ############################# /0
-
-            # gets category name and id from database
-            cursor.execute('SELECT DISTINCT category_name, category.category_id FROM formula INNER JOIN category ON formula.category_id = category.category_id')
+        #self.revisionCategoryComboBox.currentIndexChanged.connect(self.comboBoxUpdate)
+        #self.formulasToDateComboBox.currentIndexChanged.connect(self.updatePreviousVersionLabel)'''
+        categoryModel = QStandardItemModel()
+        with dbConnection('FormulaSchema').cursor() as cursor:
+            cursor.execute('SELECT DISTINCT category_name, category.category_id FROM formula INNER JOIN category ON formula.formula_category_id = category.category_id')
             categories = cursor.fetchall()
-            
-            # category = {'category_name': 'bowl'}
             for category in categories:
-                name = category['category_name']
-
-                ######################### A --------> map 
-                self.map[name] = {}  
-                self.map[name]['category_id'] = category['category_id']
-                self.map[name]['model'] = QStandardItemModel()
-                self.map[name]['completer'] = QCompleter()
-                ########################## /A
-
-                ########################## B
                 categoryItem = QStandardItem()
-                categoryItem.setText(name.capitalize())
-                # Qt.UserRole - category id
-                categoryItem.setData(self.map[name]['category_id'], Qt.UserRole) 
-                # Qt.UserRole + 1 - category name
-                categoryItem.setData(name, Qt.UserRole + 1)
-                # Qt.UserRole + 2 - category completer for past formulas that are part of category
-                categoryItem.setData(self.map[name]['completer'], Qt.UserRole + 2)
-                # Qt.userRole + 3 - category formulas model that stores formula specific data (id, name, etc)
-                categoryItem.setData(self.map[name]['model'], Qt.UserRole + 3)
-                ############################ /B
+                categoryItem.setText(category['category_name'])
+                categoryItem.setData(category, Qt.UserRole)
+                categoryModel.appendRow(categoryItem)
 
-                ############################ C
-                allCatModel.appendRow(categoryItem)
-                ############################ /C
+            #cursor.execute('SELECT formula.formula_id, formula_name, formula.version_number, category.category_name, category.category_id FROM formula LEFT JOIN formula_category ON formula.formula_id = formula_category.formula_id LEFT JOIN category ON formula_category.category_id = category.category_id')
+            #formulas = cursor.fetchall()
+        self.newCategoryComboBox.setModel(categoryModel)
+        self.revisionCategoryComboBox.setModel(categoryModel)
+        self.revisionCategoryComboBox.setCurrentIndex(-1)
 
-            ################################ D
-            allCatCompleter.setCompletionMode(QCompleter.InlineCompletion)
-            allCatCompleter.setModel(allCatModel)
-            self.newCategoryComboBox.setModel(allCatModel)
-            self.newCategoryComboBox.setCompleter(allCatCompleter)
-            self.newCategoryComboBox.setCurrentIndex(-1)
-            self.revisionCategoryComboBox.setModel(allCatModel)
-            #self.revisionCategoryComboBox.setCompleter(allCatCompleter)
-            self.revisionCategoryComboBox.setCurrentIndex(-1)
-            ################################ /D
 
-            ################################ E
-            # adds formula information to the category model that it is applied to 
-            cursor.execute('SELECT formula_id, formula_name, category_name, category.category_id FROM formula INNER JOIN category ON formula.category_id = category.category_id')
-            results = cursor.fetchall()
-            for result in results:
-                category = result['category_name']
-                formulaItem = QStandardItem()
-                formulaItem.setText(result['formula_name'])
-                formulaItem.setData(result['formula_id'], Qt.UserRole)
-                self.map[category]['model'].appendRow(formulaItem)
-            ################################ /E
 
         self.revisionCategoryComboBox.currentIndexChanged.connect(self.comboBoxUpdate)
+        self.formulasToDateComboBox.currentIndexChanged.connect(self.updatePlaceholderLabel)
 
-    def comboBoxUpdate(self, isUpdated=False):
-        if isUpdated is False:
-            isUpdated = True
+    
+
+    def comboBoxUpdate(self):
+
+        categoryID = self.revisionCategoryComboBox.itemData(self.revisionCategoryComboBox.currentIndex(), Qt.UserRole)['category_id']
+        if categoryID is None:
             return
-        text = self.revisionCategoryComboBox.itemData(self.revisionCategoryComboBox.currentIndex(), Qt.UserRole + 1)
-        completer = self.map[text]['completer']
-        model = self.map[text]['model']
-        completer.setModel(model)
-        completer.setCompletionMode(QCompleter.PopupCompletion)
-        completer.setMaxVisibleItems(50)
-        self.formulasToDateComboBox.setCompleter(completer)
-        self.formulasToDateComboBox.setModel(model)
-        self.formulasToDateComboBox.setCurrentIndex(-1)
+        prevFormulasModel = QStandardItemModel()
 
-    # TODO 
-    def updatePlaceholderLabels(self):
-        with pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database='FormulaSchema', cursorclass=pymysql.cursors.DictCursor) as cursor:
-            pass
-        
-    # called form accept
+        blankItem = QStandardItem()
+        blankItem.setText('SELECT')
+        blankItem.setEditable(False)
+        blankItem.setData(0, Qt.UserRole)
+        prevFormulasModel.appendRow(blankItem)
+        with dbConnection('FormulaSchema').cursor() as cursor:
+            cursor.execute('SELECT formula.formula_id, formula_name, formula.version_number, formula.formula_category_id, formula.version_of_id, category.category_name, category.category_id FROM formula LEFT JOIN category ON category.category_id = formula.formula_category_id WHERE formula.formula_category_id = %s', (categoryID,))
+            formulas = cursor.fetchall()
+            for formula in formulas:
+                formulaItem = QStandardItem()
+                formulaItem.setText(formula['formula_name'].title())
+                formulaItem.setData(formula, Qt.UserRole)
+                prevFormulasModel.appendRow(formulaItem)
+        self.formulasToDateComboBox.setModel(prevFormulasModel)
+        #self.formulasToDateComboBox.setCurrentIndex(-1)      
+
+    # updates the version number label 
+    def updatePlaceholderLabel(self):
+        itemData = self.formulasToDateComboBox.itemData(self.formulasToDateComboBox.currentIndex(), Qt.UserRole)
+        if itemData == 0:
+            return
+        if itemData is None:
+            return
+        versionNumber = itemData['version_number']
+        #versionNumber = self.formulasToDateComboBox.currentData(Qt.UserRole)
+        if versionNumber:
+            self.previousVersionPlaceholderLabel.setText(str(versionNumber))
+        else:
+            self.previousVersionPlaceholderLabel.setText('None')
+
+
+
+    # form accept
     def accept(self):
-        # error checking
+        # if neither new formula or revision is indicated, throws an error message and returns
         if self.revisionRadioBtn.isChecked() is False and self.newFormulaRadioBtn.isChecked() is False:
             msg = QMessageBox()
             msg.setText('Please indicate whether this formula is new or a revision/iteration')
@@ -350,7 +311,6 @@ class formulaSetupDialog(QDialog):
             return
         else:
             isRevision = self.revisionRadioBtn.isChecked()
-
             if isRevision is False:
                 # if the formula is new but no name was inputted
                 if self.formulaNameLineEdit.text() == '' or self.formulaNameLineEdit.text() is None:
@@ -358,14 +318,12 @@ class formulaSetupDialog(QDialog):
                     msg.setText('Input a formula name to continue')
                     msg.exec_()
                     return
-
                 # if everything goes right
                 else:
-                    name = self.formulaNameLineEdit.text()
-                    formulaEditor = formulaEditorDialog(isRevision, formulaName = name)
-                    formulaEditor.exec_()
+                    name = self.formulaNameLineEdit.text().title()
+                    formulaEditor = formulaEditorDialog(self.mainWindow, formulaName = name, revision = False, category = self.newCategoryComboBox.currentText())
                     self.close()
-
+                    formulaEditor.exec_()
             else:
                 # if formula is a revision, but no previous formula was chosen
                 if self.formulasToDateComboBox.currentIndex() == -1:
@@ -373,18 +331,19 @@ class formulaSetupDialog(QDialog):
                     msg.setText('Select a previous formula that you are revising')
                     msg.exec_()
                     return
-
                 # if everything goes right
                 else:
-                    prevID = self.formulasToDateComboBox.currentData(Qt.UserRole)
-                    prevName = self.formulasToDateComboBox.currentText()
-                    formulaEditor = formulaEditorDialog(isRevision,formulaName = prevName, prevRevisionID =  'prevID') #<<<< debug
+                    prevID = self.formulasToDateComboBox.currentData(Qt.UserRole)['version_number']
+                    prevName = self.formulasToDateComboBox.currentText().title()
+                    #if isRevision is False:
+                    formulaEditor = formulaEditorDialog(self.mainWindow, formulaName = prevName, revision = isRevision, prevRevisionID = prevID, category = self.revisionCategoryComboBox.currentText())
+                        
                     formulaEditor.exec_()
                     self.close()
                     
-
-'''app = QApplication(sys.argv)
-gui = formulaSetupDialog()
+'''
+app = QApplication(sys.argv)
+gui = formulaSetupDialog(app)
 gui.show()
 sys.exit(app.exec_())
 #test(formulaSetupDialog)'''

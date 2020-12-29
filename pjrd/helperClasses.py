@@ -24,7 +24,8 @@ Class Docstring Template
     Attributes:
          
     '''
-
+"""
+"""
 Class Method/Function Template 
 ----------------------------
 
@@ -41,7 +42,28 @@ Class Method/Function Template
 """
 
 
+
 class CustomTableModel(QAbstractTableModel):
+    """
+    Class CustomTableModel
+    ----------------------------
+        '''
+        Description: Provides a table model to interact with the QTableView module in QT 
+            
+        Methods:
+        - rowCount: returns the number of rows currently in the table. If no table data is present, returns 0
+        - columnCount: returns the number of columns currently in the table. Returns the length of the first row if there is tableData, otherwise returns the length of the horizontalHeader if there is one, else returns 0
+        - inputTableData: allows user to input a 2DArray. Sets the tableData attribute to the input 
+        - setHeaderLabels: takes in an array of desired header labels and QT defined orientations and roles. Sets horizHeaders or vertHeaders based on orientation, and sets the base class headerData to the array values
+        - data: required method for QTableView implementation to display data
+        - headerData: required method for QTableView implemenentation to display the headers in table
+        - sort: allows basic sorting of the specified column by descending or ascending order
+        Attributes:
+        - tableData: 2D data table 
+        - horizHeaders: horizonal header row data (if any)
+        - vertHeaders: vertical header row data (if any)
+        '''
+    """
     def __init__(self, horizHeaders: list = None, tableData=None, vertHeaders: list=None):
         super(CustomTableModel, self).__init__()
         self.tableData = tableData
@@ -68,7 +90,7 @@ class CustomTableModel(QAbstractTableModel):
         self.tableData = tableData
         self.emit(SIGNAL("layoutChanged()"))
     
-    def setHeaderLabels(self, headerList, orientation, role):
+    def setHeaderLabels(self, headerList: list, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             self.vertHeaders = headerList
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -77,7 +99,7 @@ class CustomTableModel(QAbstractTableModel):
             self.setHeaderData(index, orientation, value, role=role)
         self.emit(SIGNAL("headerDataChanged()"))
 
-    def data(self, index, role):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if role == Qt.DisplayRole:
             return self.tableData[index.row()][index.column()]
         if role == Qt.TextAlignmentRole:
@@ -85,7 +107,7 @@ class CustomTableModel(QAbstractTableModel):
         else:
             return 
 
-    def headerData(self, section, orientation, role):
+    def headerData(self, section, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             if self.horizHeaders is None:
                 return
@@ -96,7 +118,7 @@ class CustomTableModel(QAbstractTableModel):
             return self.vertHeaders[section]
         return QAbstractTableModel.headerData(self, section, orientation, role)
 
-    def sort(self, nCol, order):
+    def sort(self, nCol: int, order: Qt.SortOrder):
         try:
             self.emit(SIGNAL("layoutAboutToBeChanged()"))
             self.tableData = sorted(self.tableData, key=itemgetter(nCol))
@@ -107,18 +129,25 @@ class CustomTableModel(QAbstractTableModel):
             return
 
 
-class UnitOfMeasure(QStandardItem):
-    '''
 
-    Description:
-        Class to hold unit data
-    Methods:
-        pass
-    Attributes:
-        inputWeight - the user inputted weight that is contained within the formula
-        conversionFactor - the multiplier to convert to the database consistent unit of measure
-        conversionOffset - the number offset to use before multiplying by the conversion factor to get the database-consistent unit of measure
-    '''
+
+class UnitOfMeasure(QStandardItem):
+
+    """
+    Class UnitOfMeasure
+    ----------------------------
+
+        '''
+        Description: Class to hold unit data
+        Methods: None
+        Attributes:
+            - unitID: unique integer identifier for the unit in the database
+            - unitName: unit name
+            - symbol: unit symbol
+            - conversionFactor - the multiplier to convert to the database consistent unit of measure (grams for weight in most cases)
+            - conversionOffset - the number offset to use before multiplying by the conversion factor to get the database-consistent unit of measure
+        '''
+    """
 
     def __init__(self, unitID: int, unitName: str, conversionFactor=None, conversionOffset=None, symbol: str=None):
         super(UnitOfMeasure, self).__init__()
@@ -127,10 +156,37 @@ class UnitOfMeasure(QStandardItem):
         self.conversionFactor = conversionFactor
         self.conversionOffset = conversionOffset
         self.symbol = symbol
+
+    @staticmethod
+    def convertToGrams(value: Union[float, int], unitFrom):
+        factor = unitFrom.conversionFactor
+        offset = unitFrom.conversionOffset
+        value = (value + offset) * factor
+        return value
     
 
 
 class Nutrient(object):
+
+    """
+    Class Nutrient
+    ----------------------------
+        '''
+        Description: Class designed to store unique nutrient amounts and facilitate converting to the commonly measured unit value from a standard gram weight. 
+        Designed to be used as unique nutrient objects stored within an ingredient tree for quick reference, update and deletion
+            
+        Methods:
+        - getStdUnitWeightFromG: class method which returns a tuple containing the nutrient amount in its commonly measured weight and its corresponding UnitOfMeasure object 
+        - getStdUnitWeight: takes in a numerical gram weight and UnitOfMeasure object that indicates the unit to convert the numerical gram weight to. 
+        Returns a tuple with the converted weight and the unit object passed in
+
+        Attributes:
+        - nutrientID: unique integer id that identifies the nutrient
+        - nutrientName: nutrient name
+        - dailyValueInGrams: the converted value for the FDA recommended daily value, converted to a gram weight. Not all nutrients will have a daily value
+        - unit: the UnitOfMeasure object which contains the unit the nutrient is typically measured in
+        '''
+    """
 
     def __init__(self, nutrientID: int, nutrientName: str, unit: UnitOfMeasure=None, dailyValueInGrams: float = None,):  #removed amountInIngredientG
         self.nutrientID = nutrientID
@@ -146,7 +202,8 @@ class Nutrient(object):
         return (value, self.unit)
 
     @staticmethod
-    def getStdUnitWeight(gramWeight, unit: UnitOfMeasure):
+    # returns the inputted gram weight into nutrients typical measuring unit 
+    def getStdUnitWeight(gramWeight: Union[float, int], unit: UnitOfMeasure):
         """
         returns a tuple containing the standard weight given the unit passed in
         """
@@ -155,23 +212,42 @@ class Nutrient(object):
         value = gramWeight/factor - offset
         return (value, unit)
 
-
-
 class Ingredient(object):
-    '''
-    Description:
-        Wrapper class to organize and alter data of each a formula ingredient object. The food description and id is required when declaring an object
-    Methods:
-        setDesc - sets the food descrition
-        setFoodID - sets the foodID
-        
-        
-    Attributes:
-        __desc: str = food description
-        foodID: int = integer id that uniquely identifies the food from food        database. Each ingredient is contained within the food
-        inputWeight- a tuple representing the inputted float weight coupled with the unit object
-    '''
-    ################## NEED UNIT TO BE MANDATORY INPUT, BUT HOW?
+
+    """
+    Class Ingredient
+    ----------------------------
+
+        '''
+        Description:class to organize, reference and alter data of an ingredient. The food description and id is required when declaring an object. 
+        Designed to be used within a formula
+            
+        Methods:
+        - addNutrient: takes in a nutrient object and amount of said nutrient (in grams). If the nutrient already exists in the ingredient, it simply returns. 
+        If the nutrient is not in the nutrientDict, then it will add a new key,value pair of nutrientID, and value with the nutrientObject and amount
+        - setNutrietntAmountG: takes in a nutrient object and amount of said nutrient (in grams). 
+        If the nutrient already exists in the ingredient, it replaces the old amount with the new amount in the nutrient data structure. 
+        If the nutrient does not exist in the ingredient, it will add the nutrient similar to as calling addNutrient()
+        - getInputtedQuantity: returns the __inputWeightInGrams attribute as a converted value with the nutrient UnitOfMeasure object as a tuple
+        - getInputWeightInGrams: returns the attribute of weight in grams contained in the formula
+        - setInputWeightInGrams: takes in a numerical value and sets the __inputWeightInGrams attribute to the new value
+            
+        Attributes:
+        - desc: the ingredient description used in the database
+        - foodID: unique integer that identifies the food from the food database. Each ingredient is contained within the food
+        - unit: UnitOfMeasure object that holds the unit that the user originally specified when inputting into the formula. 
+        Can be used to convert back to the user inputted unit when opening back from database
+        - supplierName: supplier name (if any)
+        - supplierID: stores the supplierID (if any)
+        - supplierItemCoe: stores the supplier item code (if any)
+        - specific name: stores the specific name (if any)
+        - ingredientStatement: stores the ingredient statement (if any)
+        - __inputWeightInGrams: stores how much of the ingredient is in the formula in grams 
+        - nutrientDict: data structure to quickly reference the nutrients contained within a given amount of the ingredient
+
+        '''
+    """
+
     def __init__(self, desc: str, foodID: int, unit: UnitOfMeasure = None, supplierID: int = None, supplierName: str = None, supplierItemCode: str = None, specificName: str = None, ingredientStatement: str = None):
         self.desc = desc
         self.foodID = foodID
@@ -192,7 +268,8 @@ class Ingredient(object):
         
         }
         '''
-        self.nutrientTotalsG = {} # maps id to the total amount in grams of each nutrient
+        
+        #self.nutrientTotalsG = {} # maps id to the total amount in grams of each nutrient <--- pretty sure I dont need
         '''
         {
             nutrientID: total in grams
@@ -237,13 +314,144 @@ class Ingredient(object):
         self.__inputWeightInGrams = weight
 
 
-
-#TODO create a comment of json for all the dictionaries in formula
-
-
 class Formula(object):
+    
 
-    def __init__(self, formulaName: str, formulaID: int=None, versionNumber = None, isRevision: bool = None, prevRevisionID = None, formulaTableRef: QTableWidget = None):
+    """
+    Class Formula
+    ----------------------------
+
+        '''
+        Description: The backend data structure to store a formulas ingredients, the ingredients nutritional values and units. 
+        A formula object is created during the formulaEditor initialization to store this information
+            
+        Methods:
+        - refreshNutritionals: returns the allNutritionals dictionary that is updated according to its ingredients
+        - getNumberOfIngredients: returns the number of ingredients stored in formula
+        - getAllNutritionals: returns the allNurtitionals dictionary
+        - nutrientExists: takes in either a nutrientID or a nutrient object. 
+        Returns a boolean determining if the formula contains the nutrient. 
+        - addIngredient: adds an ingredient to the __currentIngredients data structure if not in it already.
+        If it does exist, then adds to the amount already existing. Also refreshes the table in the formulaEditor page
+        - removeIngredient: removes the ingredient from the __currentIngredients data structure and updates the percentage by weight values in data structure. 
+        Updates the table in formulaEditor page. Returns true if successful, otherwise false
+        - refreshTablePercentages: refreshes the table weight percentages in the formulaEditor page
+        - getIngredientPercentWeight: takes in either an ingredient object or foodID. Returns the percent by weight value in the formula
+        - ingredientExists: takes in an ingredient object. Returns a boolean indicating if the ingredient is already in the __currentIngredients data structure
+        - setReplacementIngredient: takes in an ingredient object. Assuming ingredient is in the current ingredients, replaces the existing ingredient with the new one
+        in the __currentIngredients data structure. Updates the allNutritionals nutrient amounts, refreshes the ingredient percent weights. 
+        Updates the formulaEditor table 
+        - getNutrientQuantity: takes in a nutrientID. Returns a tuple contaning the amount of nutrient in grams and the native unit in case further conversion is necessary. 
+        - addToExistingIngredient: takes in a ingredient object. Adds the object input weight to the existing object input weight. 
+        Updates the allNutritionals nutrient amounts, as well as the amount in the ingredient. Refreshes the ingredient percent weights in data structure. 
+        Updates the table in formulaEditor page.
+        - refreshPercentByWeight: takes in a boolean, default is none. Refreshes the ingredient percent by weights in the __currentIngredients data structure. 
+        - setPercentByWeight: takes in a percent value, and either an ingredient object or foodID. Sets the percent by weight value equal to the argument value. 
+        - totalFormulaWeight: returns the total weight in grams of the formula as it has been entered by the user
+        - isNutrientIn Formula: takes in a nutrient id. Returns a boolean, indicating whether it is in the allNutritionals data structure
+            
+        Attributes:
+        - formulaName: formula name
+        - formulaID: unique formula ID. May not be useful since we don't get the formula id until after it is inputted into database. Could be useful for when the formula is reoped. 
+        Can add into the formSubmit method if formulaID is not none to preserve integrity
+        - versionNumber
+        - isRevision
+        - __totalWeightG: total formula weight
+        - categories 
+        - allergens
+        - claims
+        - servingSize
+        - servingWeight
+        - numberOfServings
+        - formulaTableRef: a reference to the FormulaEditor table that allows the class methods to interact with the table
+        - allNutritionals: a data structure that allows reference to the nutrients contained within the formula
+        - __currentIngredients: a data structure that stores the ingredients that are within the formula
+
+        '''
+    """
+
+    '''
+    DATA STRUCTURE
+    ----------------------------------
+
+        -----formula attributes-----
+        -formulaName: str 
+        -formulaID: int
+        -versionNumber: int 
+        -isRevision: bool
+        -prevRevisionID: int
+        -totalWeightG: float
+        -categories = str[]
+        -allergens = str[]
+        -claims = str[]
+        -servingSize
+        -servingWeight
+        -numberOfServings
+
+        -----formula ingredient dictionary-----
+        currentIngredients = {
+            foodID: {
+                'percentByWeight': 
+                'object': ingredientObject = 
+
+                    -----ingredient attributes------
+                    -desc
+                    -foodID
+                    -inputWeight
+                    -unit
+                    -supplierName 
+                    -supplierID
+                    -supplierItemCode
+                    -ingredientStatement 
+                    -inputWeightInGrams
+
+                    -----ingredient nutrient dictionary------
+                    nutrientDict = {
+
+                        nutrientID: {
+                            'amountInIngredientG': 
+
+                            'object': nutrientObject = {
+                                ---nutrient attributes---
+                                -nutrientID
+                                -nutrientName
+                                -dailyValueInG
+
+                                -unit = unitObject = {
+                                    -----unit attributes-----
+                                    unitID
+                                    unitName
+                                    conversionFactor
+                                    conversionOffset
+                                    symbol
+                                }
+                            }
+                        }
+                    }
+
+            },
+            ...
+        }
+
+        -----formula nutritionals dictionary-----
+        allNutritionals = {
+            nutrientID: {
+                'totalInG': 
+                'dailyValueInG': 
+                'unit': unitObject = {
+                    -----unit attributes-----
+                    unitID
+                    unitName
+                    conversionFactor
+                    conversionOffset
+                    symbol
+                }
+            }
+        }
+    
+    '''
+
+    def __init__(self, formulaName: str, formulaID: int=None, versionNumber = None, isRevision: bool = None, prevRevisionID = None, formulaTableRef: QTableWidget = None, mainWindow = None):
         self.formulaName = formulaName
         self.formulaID = formulaID
         self.versionNumber = versionNumber
@@ -256,8 +464,9 @@ class Formula(object):
         self.servingSize = None
         self.servingWeight = None
         self.numberOfServings = None
-        self.formulaTableRef = formulaTableRef
-
+        self.formulaTableRef = formulaTableRef # reference to the table in the formula editor page that needs to be edited 
+        self.mainWindow = mainWindow
+        self.ingStatement = None
         self.allNutritionals = {}  # {{}}#  stores the totals for each nutritional for faster lookup times 
         ''' 
         {
@@ -283,9 +492,7 @@ class Formula(object):
         }
         '''
 
-    # not sure if bad design
-    # updates the attribute allNutritionals
-
+    # returns the allNutritionals data structure that has been updated 
     def refreshNutritionals(self):
         keys = ['totalInG', 'unit', 'dailyValueInG']
         temp = {}
@@ -305,6 +512,7 @@ class Formula(object):
         self.allNutritionals = temp
         return self.allNutritionals
 
+
     def getNumberOfIngredients(self):
         return len(self.__currentIngredients)
     
@@ -320,7 +528,8 @@ class Formula(object):
         self.refreshNutritionals()
         return self.allNutritionals
         
-    
+
+    # takes in either a nutrientID or a nutrient object. Returns a boolean determining if the formula contains the nutrient by the allNutritionals data structure
     def nutrientExists(self, nutrientID: int = None, nutrient: Nutrient = None):
         if nutrientID is None and nutrient is None:
             return
@@ -331,11 +540,8 @@ class Formula(object):
             return True
         else: 
             return False
-    # TODO make an addIngredient that is formula 
 
 
-
-    # TODO need to add a percentByWeight refresh for the formulaTable
     # adds an ingredient object to the data structure
     def addIngredient(self, ingredient: Ingredient):
         # if the ingredient already exists in the formula
@@ -376,7 +582,7 @@ class Formula(object):
         self.formulaTableRef.insertRow(rowIndex)
         nameItem = QTableWidgetItem()
         nameItem.setData(Qt.UserRole, ingredient.foodID)
-        nameItem.setText(ingredient.desc.capitalize())
+        nameItem.setText(ingredient.desc.title())
         self.formulaTableRef.setItem(rowIndex, 0, nameItem) # ingredient name 
 
         percentByWeight = self.getIngredientPercentWeight(ingredient)
@@ -400,7 +606,7 @@ class Formula(object):
             self.formulaTableRef.setItem(rowIndex, 5, QTableWidgetItem(ingredient.supplierItemCode)) # supplier item number
         
         self.formulaTableRef.update()
-        
+        self.mainWindow.refresh()
         self.refreshTablePercentages()
     
 
@@ -440,7 +646,7 @@ class Formula(object):
                     self.formulaTableRef.update()
             self.refreshTablePercentages()
               
-            return False
+            return True
 
     # refreshes the percent weights of the 
     def refreshTablePercentages(self):
@@ -455,6 +661,7 @@ class Formula(object):
         self.refreshPercentByWeight()
         if ingredient is None and foodID is None:
             print('Parameter error in formula.getIngredietnPercentWeight()')
+            return
         else:
             if foodID is None:
                 foodID = ingredient.foodID
@@ -525,7 +732,7 @@ class Formula(object):
             # add the weights of the current and new ingredient to temporary ingredient object
             current.setInputWeightInGrams(current.getInputWeightInGrams + ingredient.getInputWeightInGrams)
             
-            # iterates through nutrient dictionary
+            # iterates through nutrient dictionary and updates the allNutritionals data structure
             for nutrientID, idDict in current.nutrientDict.items():
                 
                 try:
@@ -557,7 +764,7 @@ class Formula(object):
                 self.formulaTableRef.setItem(row, 2, QTableWidgetItem(str(quantityUnit[0]))) # quantity in origianl unit
                 self.formulaTableRef.setItem(row, 3 , QTableWidgetItem(quantityUnit[1].unitName))
 
-
+    # takes in a boolean, default is none. Refreshes the ingredient percent by weights in the __currentIngredients data structure. 
     def refreshPercentByWeight(self, refreshTable: bool = None):
         totalFormulaWeight = self.totalFormulaWeight()
         # refreshes data in self contained data structure
@@ -567,7 +774,7 @@ class Formula(object):
             self.setPercentByWeight(percent, foodID=id) 
         # refreshes data in the the table
 
-
+    #  takes in a percent value, and either an ingredient object or foodID. Sets the percent by weight value equal to the argument value. 
     def setPercentByWeight(self, percent, ingredient: Ingredient = None, foodID: int = None):
         if ingredient and foodID is None:
             print('No ingredient or foodID inputted in formulalsetPercentByWeight()')
@@ -575,8 +782,6 @@ class Formula(object):
         if foodID is None:
             foodID = ingredient.foodID
         self.__currentIngredients[foodID]['percentByWeight'] = percent
-        
-    
 
     # returns the total amount in grams of the formula
     def totalFormulaWeight(self):
@@ -590,4 +795,5 @@ class Formula(object):
         if nutrientID in self.allNutritionals:
             return True
         return False
+
 

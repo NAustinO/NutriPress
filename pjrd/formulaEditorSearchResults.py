@@ -10,14 +10,15 @@
 
 
 import sys
+
+sys.path.append('../pjrd')
+
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-sys.path.append('../pjrd')
-from helpers import test, dbConnection
+from pjrd.helpers import test, dbConnection
 from pjrd.helperClasses import Ingredient
-
-from confirmAddDialog import confirmationDialog
+from pjrd.confirmAddDialog import confirmationDialog
 
 class searchResults(QDialog):
     '''This class opens is called when searching from the formula editor. 
@@ -73,6 +74,7 @@ class searchResults(QDialog):
         self.searchResultsTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.searchResultsTable.setSortingEnabled(False)
         self.searchResultsTable.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.searchResultsTable.setColumnWidth(0, 175)
 
         self.verticalLayout_2.addWidget(self.searchResultsTable)
 
@@ -167,7 +169,7 @@ class searchResults(QDialog):
         if query is None:
             query = ''
         with dbConnection('FormulaSchema').cursor() as cursor:
-            rows = cursor.execute("SELECT food.food_desc, supplier_food.specific_name, supplier.supplier_id, supplier.supplier_name, supplier_food.supplier_ing_item_code, food.ing_statement, food.food_id FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
+            rows = cursor.execute("SELECT food.food_desc, food.user_inputted, supplier_food.specific_name, supplier.supplier_id, supplier.supplier_name, supplier_food.supplier_ing_item_code, food.ing_statement, food.food_id, food.is_ingredient, food.is_formula FROM food LEFT JOIN supplier_food ON food.food_id = supplier_food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food_desc LIKE %s OR specific_name LIKE %s OR supplier_name LIKE %s OR food.ing_statement LIKE %s OR supplier_food.supplier_ing_item_code LIKE %s ORDER BY CASE WHEN supplier_food.supplier_ing_item_code LIKE %s THEN 1 WHEN food.food_desc LIKE %s THEN 2 WHEN food.food_desc LIKE %s THEN 3 WHEN food.food_desc LIKE %s THEN 4 WHEN food.food_desc LIKE %s THEN 5 ELSE 6 END", ("%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", "%" + query + "%", query + "%", "%" + query, "% " + query, "%" + query + "%"))
             queryResults = cursor.fetchall()
 
             # updates the header
@@ -191,14 +193,34 @@ class searchResults(QDialog):
             # IMPORTANT: data for each ingredient is contained in column 0 in dictionary form within QTableWidgetItem. It is the Qt.UserRole
             ingredient = Ingredient(result['food_desc'], result['food_id'], specificName=result['specific_name'], supplierName=result['supplier_name'], supplierItemCode=result['supplier_ing_item_code'], ingredientStatement=result['ing_statement'], supplierID=result['supplier_id'])
 
+
             widgetItem = QTableWidgetItem(result['food_desc'])
             widgetItem.setData(Qt.UserRole, ingredient) # <------ ingredient holds all the data
             widgetItem.setText(ingredient.desc.capitalize())
+
+            specificName = QTableWidgetItem(result['specific_name'])
+            supplierName = QTableWidgetItem(result['supplier_name'])
+            itemCode = QTableWidgetItem(result['supplier_ing_item_code'])
+            ingStatement = QTableWidgetItem(result['ing_statement'])
+
+            if result['user_inputted'] == 1 and result['is_ingredient'] == 1:
+                widgetItem.setBackground(Qt.green)
+                specificName.setBackground(Qt.green)
+                supplierName.setBackground(Qt.green)
+                itemCode.setBackground(Qt.green)
+                ingStatement.setBackground(Qt.green)
+            elif result['user_inputted'] == 1 and result['is_formula'] == 1:
+                widgetItem.setBackground(Qt.darkGreen)
+                specificName.setBackground(Qt.darkGreen)
+                supplierName.setBackground(Qt.darkGreen)
+                itemCode.setBackground(Qt.darkGreen)
+                ingStatement.setBackground(Qt.darkGreen)
+        
             self.searchResultsTable.setItem(rowIndex, 0, widgetItem)
-            self.searchResultsTable.setItem(rowIndex, 1, QTableWidgetItem(result['specific_name']))
-            self.searchResultsTable.setItem(rowIndex, 2, QTableWidgetItem(result['supplier_name']))
-            self.searchResultsTable.setItem(rowIndex, 3, QTableWidgetItem(result['supplier_ing_item_code']))
-            self.searchResultsTable.setItem(rowIndex, 4, QTableWidgetItem(result['ing_statement']))
+            self.searchResultsTable.setItem(rowIndex, 1, specificName)
+            self.searchResultsTable.setItem(rowIndex, 2, supplierName)
+            self.searchResultsTable.setItem(rowIndex, 3, itemCode)
+            self.searchResultsTable.setItem(rowIndex, 4, ingStatement)
             self.searchResultsTable.update()
 
     # double click event filter TODO call the confirmAddUI passing in thek
@@ -211,6 +233,8 @@ class searchResults(QDialog):
         # continues when user double clicks within table viewport to choose an ingredient. Opens the confirmation window
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
             ingItem = self.searchResultsTable.itemAt(event.pos())
+            if ingItem is None:
+                return False
             ingredient = self.searchResultsTable.item(ingItem.row(), 0).data(Qt.UserRole)
             self.accept(foodToAdd=ingredient)
             return True

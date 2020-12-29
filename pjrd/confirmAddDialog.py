@@ -248,6 +248,8 @@ class confirmationDialog(QDialog):
     '''# event filter to listen for return button '''
     def eventFilter(self, source, event):
         if event.type() == QEvent.KeyPress and source == self and event.key() == Qt.Key_Return: 
+            if type(self) != confirmationDialog:
+                return False
             self.submit()
             return True
         return False

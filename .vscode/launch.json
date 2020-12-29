@@ -11,7 +11,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal", 
-            "justMyCode": true
+            "justMyCode": true,
+            "stopOnEntry": false
         },
         {
             "name": "Test file",
@@ -19,7 +20,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/pjrd/test/helpers.py",
             "console": "integratedTerminal", 
-            "justMyCode": true
+            "justMyCode": true, 
+            "stopOnEntry": false
         }
     ]
 }

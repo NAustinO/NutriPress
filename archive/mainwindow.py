@@ -7,15 +7,14 @@
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
-import sys
+import sys, os
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import QCoreApplication, Qt, QMetaObject, QSize, QRect
-from PyQt5.QtWidgets import QSizePolicy, QVBoxLayout, QGridLayout, QWidget, QFrame, QLabel, QCheckBox, QLineEdit, QSpinBox, QPushButton, QListView, QSpacerItem, QApplication, QMainWindow, QStatusBar, QTabWidget, QMessageBox, QDialog
-from MySQLdb import _mysql as mysql
-from addIngredient import addIngredientDialog
+sys.path.append('../pjrd')
+from PySide2.QtGui import *
+from PySide2.QtCore import *
+from PySide2.QtWidgets import *
 
+from pjrd.add_ingredient import addIngredientDialog
 
 class Ui_MainWindow(QMainWindow):
 
@@ -160,16 +159,16 @@ class Ui_MainWindow(QMainWindow):
         self.verticalSpacer = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.verticalLayout_3.addItem(self.verticalSpacer)
 
-        quickOpenHeader = QLabel(homeNavBarWidget)
-        quickOpenHeader.setText('Double-Tap to Open Formula')
-        quickOpenHeader.setObjectName(u'quickOpenHeader')
-        quickOpenHeader.setAlignment(Qt.AlignCenter)
-        self.verticalLayout_3.addWidget(quickOpenHeader)
+        self.quickOpenHeader = QLabel(homeNavBarWidget)
+        self.quickOpenHeader.setText('Double-Tap to Open Formula')
+        self.quickOpenHeader.setObjectName(u'quickOpenHeader')
+        self.quickOpenHeader.setAlignment(Qt.AlignCenter)
+        self.verticalLayout_3.addWidget(self.quickOpenHeader)
 
-        quickFormulaAccess = QListView(homeNavBarWidget)
-        quickFormulaAccess.setObjectName(u'quickFormulaAccess')
-        quickFormulaAccess.setMouseTracking(True)
-        self.verticalLayout_3.addWidget(quickFormulaAccess)
+        self.quickFormulaAccess = QListView(homeNavBarWidget)
+        self.quickFormulaAccess.setObjectName(u'quickFormulaAccess')
+        self.quickFormulaAccess.setMouseTracking(True)
+        self.verticalLayout_3.addWidget(self.quickFormulaAccess)
 
         self.gridLayout.addWidget(homeNavBarWidget, 0, 0, 2, 1)
 

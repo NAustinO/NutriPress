@@ -3,6 +3,9 @@ import pymysql
 import sys
 import os
 
+sys.path.append('/pjrd')
+sys.path.append('..')
+
 from PySide2 import QtWebEngineWidgets, QtWebChannel
 from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from PySide2.QtGui import *
@@ -11,9 +14,6 @@ from PySide2.QtCore import *
 import PySide2.QtQml
 
 
-
-sys.path.append('/pjrd')
-sys.path.append('..')
 
 ''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
 # returns a dictionary that maps the nutrient id to the which column in self.nutrientReportTableView 
@@ -266,7 +266,8 @@ def getIngredientStatement(foodID: int):
             subIngredients['parent'] = subfoods[0]['food_desc']
     
             for food in subfoods:
-                children.append(food['subfood_desc'])
+                if food['subfood_desc'] is not None:
+                    children.append(food['subfood_desc'])
         
 
         # if the food is a formula (composed of other foods),
@@ -291,7 +292,7 @@ def getIngredientStatement(foodID: int):
     return subIngredients
     
 
-def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
+'''def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
    
     if separator is None:  #separators = ['(', '[', '{']
         separator = ('(', ')')
@@ -318,4 +319,110 @@ def extractIngredientStatement(toExtract: dict, next = None, separator: str=None
             statement = separator[0] + statement.join(ingredients) + separator[1]
             return '<b>' + next['parent'] + '</b>' + ' ' + statement
     else: 
-        return str(next)
+        return str(next)'''
+
+'''
+def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
+
+    if separator is None:  #separators = ['(', '[', '{']
+        separator = ('(', ')')
+    elif separator == ('(', ')'):
+        separator = ('[', ']')
+    elif separator == ('[', ']'):
+        separator = ('{', '}')
+    elif separator == ('{', '}'):
+        separator = ('(', ')')
+
+    statement = ', '
+    ingredients = []
+    
+    if next is not None:
+        next = {}
+        next['parent'] = toExtract['parent']
+        next['children'] = toExtract['children']
+    else:
+        next = toExtract['parent']
+    if isinstance(next, dict):
+        if len(next['children']) == 0:
+            return str('<b>' + next['parent'] + '</b>')
+        else:
+            for child in next['children']:
+                ingredients.append(extractIngredientStatement(toExtract, child, separator)) 
+            statement = separator[0] + statement.join(ingredients) + separator[1]
+            return '<b>' + next['parent'] + '</b>' + ' ' + statement
+    #else: 
+        #return str(next)
+'''
+
+# modified 
+def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
+
+    if separator is None:  #separators = ['(', '[', '{']
+        separator = ('(', ')')
+    elif separator == ('(', ')'):
+        separator = ('[', ']')
+    elif separator == ('[', ']'):
+        separator = ('{', '}')
+    elif separator == ('{', '}'):
+        separator = ('(', ')')
+
+
+    statement = ', '
+    ingredients = []
+    
+    if next is None:
+        next = {}
+        next['parent'] = toExtract['parent']
+        next['children'] = toExtract['children']
+
+    if isinstance(next, dict):
+        if len(next['children']) == 0 or next['children'] is None:
+            return str('<b>' + next['parent'] + '</b>')
+        else:
+            for child in next['children']:
+                ingredients.append(extractIngredientStatement(toExtract, child, separator)) 
+            statement = separator[0] + statement.join(ingredients) + separator[1]
+            return '<b>' + next['parent'] + '</b>' + ' ' + statement
+
+    return next
+
+
+
+
+'''def extractIngredientStatement(toExtract: dict, statement: str = None, separator = None):
+    if separator is None:  #separators = ['(', '[', '{']
+        separator = ('(', ')')
+    elif separator == ('(', ')'):
+        separator = ('[', ']')
+    elif separator == ('[', ']'):
+        separator = ('{', '}')
+    elif separator == ('{', '}'):
+        separator = ('(', ')')
+
+    if statement is None:
+        statement = ''
+
+    parentIngredients = []
+
+    if not toExtract['parent']:
+        return statement
+    if not toExtract['children'] or len(toExtract['children'] == 0):
+        if statement == '':
+            return statement + toExtract['parent']
+        else:
+            return statement + ', ' + toExtract['parent']
+    for child in toExtract['children']:
+        if isinstance(child, dict):
+            parentIngredients.append(extractIngredientStatement(child, statement, separator))
+        else:
+            parentIngredients.append(child)
+    statement = separator[0] + statement.join(parentIngredients) + separator[1]
+    return '<b>' + next['parent'] + '</b>' + ' ' + statement'''
+        
+    
+
+
+   
+    
+
+   

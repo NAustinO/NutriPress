@@ -13,7 +13,7 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 class QuickTableView(QDialog):
 
-    def __init__(self, model: CustomTableModel = None, label: str = None, note : str = ''):
+    def __init__(self, model: CustomTableModel = None, label: str = None, note :str = ''):
         super(QuickTableView, self).__init__()
         self.setupUi(self, label, note)
         self.setupLogic()

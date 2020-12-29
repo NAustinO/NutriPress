@@ -1,12 +1,12 @@
-import sys 
-from PyQt5.QtWidgets import QApplication
-from mainWindow import Ui_MainWindow
+import sys, os
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
+sys.path.append('../pjrd')
 
+from pjrd.mainWindow import Ui_MainWindow
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 
-sys.path.append('../pjrd')
 
 def main():
     app = QApplication(sys.argv)
