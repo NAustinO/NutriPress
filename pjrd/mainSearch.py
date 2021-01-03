@@ -61,10 +61,24 @@ class MainSearch(QDialog):
 
     # connets any signals to slots and/or adds data to any relevant inputs upon initialization
     def setupLogic(self):
+        """
+        -----------------------------
+            Purpose: 
+                - event/signal setup
+        """
         self.resultsTable.doubleClicked.connect(self.open)
 
     # called on initialization. Fills the data into the table
     def search(self, query: str):
+        """
+        -----------------------------
+            Purpose:
+                - Called on initialization of new object. Fills the data QTableWidget
+            Arguments:
+                - query: The search string to search the databsae
+            Return Value:
+                - None
+        """
         if query is None:
             self.close()
         self.resultsTable.setRowCount(0)
@@ -177,6 +191,16 @@ class MainSearch(QDialog):
 
     # overrides the eventFilter method from QT
     def eventFilter(self, source, event):
+        """
+        -----------------------------
+            Purpose: Overwrites the event filter method 
+                - Sets up the double click event to open the formula or ingredient clicked on 
+            Arguments:
+                - source: the QWidget that triggers the event 
+                - event: the QEvent object that specifies what type of event to be listening for
+            Return Value:
+                - Returns True if successfully catches an event
+        """
         # calls the open method on a double click of the 
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.resultsTable.viewport()):
             rowPointer = self.resultsTable.itemAt(event.pos())
@@ -189,6 +213,15 @@ class MainSearch(QDialog):
         
     # opens the formula editor or ingredient dialog based on the parameters passed in 
     def open(self):
+        """
+        -----------------------------
+            Purpose:
+                - Opens the formula editor or ingredient dialog based on the selected item in the results table object
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         rowIndex = self.resultsTable.currentRow()
         ingItem = self.resultsTable.item(rowIndex, 0).data(Qt.UserRole)
         description = self.resultsTable.item(rowIndex, 0).text()

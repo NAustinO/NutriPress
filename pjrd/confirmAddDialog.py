@@ -16,7 +16,6 @@ sys.path.append(sys.path.append('../pjrd'))
 from helpers import dbConnection, TimedMessageBox
 from pjrd.helperClasses import Ingredient, UnitOfMeasure, Formula, Ingredient, Nutrient
 
-
 class confirmationDialog(QDialog):
 
     def __init__(self, root, ingredient: Ingredient):
@@ -27,9 +26,6 @@ class confirmationDialog(QDialog):
         self.setupFromSearchResultsDialog(ingredient)
         self.setupLogic()
 
-    '''
-    CALLED: called during setup of the dialog (__init__())
-    '''
     def setupUi(self, confirmationDialog):
         if not confirmationDialog.objectName():
             confirmationDialog.setObjectName(u"confirmationDialog")
@@ -169,9 +165,6 @@ class confirmationDialog(QDialog):
         self.weightLineEdit.setValidator(QRegExpValidator(QRegExp("[+-]?([0-9]*[.])?[0-9]+")))
     # setupUi
 
-    '''
-    CALLED: called during setup of the dialog (setupUi())
-    '''
     def retranslateUi(self, confirmationDialog):
         confirmationDialog.setWindowTitle(QCoreApplication.translate("confirmationDialog", u"Confirm", None))
         self.headerLabel.setText(QCoreApplication.translate("confirmationDialog", u"Please confirm the ingredient and specify the weight added to the formula", None))
@@ -189,11 +182,16 @@ class confirmationDialog(QDialog):
         self.okPushBtn.setText(QCoreApplication.translate("confirmationDialog", u"Ok", None))
     # retranslateUi
 
-    '''
-    CALLED: called during setup of the dialog (__init__())
-    PURPOSE: links the events and signal/slots
-    '''
     def setupLogic(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Signal setup, event setup, QModel data fill
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         # sets up signals
         self.okPushBtn.clicked.connect(self.submit)
         self.cancelPushBtn.clicked.connect(self.cancelEvent)
@@ -218,11 +216,17 @@ class confirmationDialog(QDialog):
             self.unitComboBox.setModel(model)
             self.unitComboBox.setCurrentIndex(-1)
 
-    '''
-    CALLED: called during setup of the dialog (__init__())
-    PURPOSE: Takes in the food dictionary data that is passed when creating the confirmationDialog. Inputs the relevant information to placeholder labels in order to remind user of their choice
-    '''
     def setupFromSearchResultsDialog(self, ingredient: Ingredient):
+        """
+        -----------------------------
+            Purpose:
+                -  Called during initialization of class object. 
+                - Takes in the Ingredient object data passed from confirmationDialog and inputs this into placeholder labels
+            Arguments:
+                -  ingredient: The Ingredient object 
+            Return Value:
+                -  None
+        """
 
         # ingredient name label
         self.namePlaceholderLabel.setText(ingredient.desc)
@@ -245,8 +249,16 @@ class confirmationDialog(QDialog):
         else:
             self.supplierCodePlaceholderLabel.setText(ingredient.supplierItemCode)
    
-    '''# event filter to listen for return button '''
     def eventFilter(self, source, event):
+        """
+        -----------------------------
+            Purpose:
+                -  Overloaded event handler
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         if event.type() == QEvent.KeyPress and source == self and event.key() == Qt.Key_Return: 
             if type(self) != confirmationDialog:
                 return False
@@ -254,18 +266,22 @@ class confirmationDialog(QDialog):
             return True
         return False
 
-    '''
-    PURPOSE: submits the form, adds the data and fills to the formula editor table.
-    CALLED: from eventFilter(), when okPushBtn.clicked (setupLogic()) 
-    ON SUCCESS: closes the confirmation dialog, allowing another addition
-    '''
     def submit(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Submits the form, adds the data to formula object and fills to the Formula Editor table.
+                -  On success, closes the confirmation dialog
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         # validates for float input and that is a unit from box is chosen
         if self.validatedInput() is False:
             return
 
-        # if validated
-        else:
+        else:  # if validated
             unit = self.unitComboBox.currentData(Qt.UserRole)
             if unit is None:
                 return
@@ -327,12 +343,18 @@ class confirmationDialog(QDialog):
             self.close()
             msg.exec_()
 
-    '''
-    PURPOSE: validates the user input
-    RETURN: Returns true if user input is validated, returns false if not valid
-    '''
     # returns true if the user input for this window is valid, otherwise returns false
     def validatedInput(self):
+
+        """
+        -----------------------------
+            Purpose:
+                -  Validates user input 
+            Arguments:
+                -  None
+            Return Value:
+                -  Returns True if user in put is validated. Returns False otherwise
+        """
         if not self.weightLineEdit.text():
             return False
         try:
@@ -350,12 +372,16 @@ class confirmationDialog(QDialog):
                 return False
             return True
         
-    
-    '''
-    PURPOSE: Event handler to confirm whether the user wants to exit the dialog without adding the ingredient to the formula
-    Calls a message box, allowing user to confirm before exiting
-    '''
     def cancelEvent(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Event handler to confirm whether the user wants to exit the dialog without adding the ingredient to the formula. Calls a message box, allowing user to confirm before exiting
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         confirm = QMessageBox().question(self, 'Confirm cancellation', 'Are you sure you want to cancel?', QMessageBox.Yes|QMessageBox.No)
         if confirm == QMessageBox.Yes:
             self.close()

@@ -10,7 +10,6 @@
 
 import sys
 import os
-import pymysql
 
 
 from PySide2.QtCore import *
@@ -236,9 +235,16 @@ class formulaSetupDialog(QDialog):
     # retranslateUi
 
     def setupLogic(self):
-        self.map = {}
-        #self.revisionCategoryComboBox.currentIndexChanged.connect(self.comboBoxUpdate)
-        #self.formulasToDateComboBox.currentIndexChanged.connect(self.updatePreviousVersionLabel)'''
+        """
+        -----------------------------
+            Purpose:
+                -  Event setup, QModel data fill
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+        # creates the item models for the category boxes
         categoryModel = QStandardItemModel()
         with dbConnection('FormulaSchema').cursor() as cursor:
             cursor.execute('SELECT DISTINCT category_name, category.category_id FROM formula INNER JOIN category ON formula.formula_category_id = category.category_id')
@@ -248,23 +254,26 @@ class formulaSetupDialog(QDialog):
                 categoryItem.setText(category['category_name'])
                 categoryItem.setData(category, Qt.UserRole)
                 categoryModel.appendRow(categoryItem)
-
-            #cursor.execute('SELECT formula.formula_id, formula_name, formula.version_number, category.category_name, category.category_id FROM formula LEFT JOIN formula_category ON formula.formula_id = formula_category.formula_id LEFT JOIN category ON formula_category.category_id = category.category_id')
-            #formulas = cursor.fetchall()
         self.newCategoryComboBox.setModel(categoryModel)
         self.revisionCategoryComboBox.setModel(categoryModel)
         self.revisionCategoryComboBox.setCurrentIndex(-1)
 
-
-
+        # signal setup
         self.revisionCategoryComboBox.currentIndexChanged.connect(self.comboBoxUpdate)
         self.formulasToDateComboBox.currentIndexChanged.connect(self.updatePlaceholderLabel)
 
-    
-
     def comboBoxUpdate(self):
-
+        """
+        -----------------------------
+            Purpose:
+                -  Signal setup 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         categoryID = self.revisionCategoryComboBox.itemData(self.revisionCategoryComboBox.currentIndex(), Qt.UserRole)['category_id']
+
         if categoryID is None:
             return
         prevFormulasModel = QStandardItemModel()
@@ -274,6 +283,8 @@ class formulaSetupDialog(QDialog):
         blankItem.setEditable(False)
         blankItem.setData(0, Qt.UserRole)
         prevFormulasModel.appendRow(blankItem)
+
+        # fills the data from 
         with dbConnection('FormulaSchema').cursor() as cursor:
             cursor.execute('SELECT formula.formula_id, formula_name, formula.version_number, formula.formula_category_id, formula.version_of_id, category.category_name, category.category_id FROM formula LEFT JOIN category ON category.category_id = formula.formula_category_id WHERE formula.formula_category_id = %s', (categoryID,))
             formulas = cursor.fetchall()
@@ -282,27 +293,41 @@ class formulaSetupDialog(QDialog):
                 formulaItem.setText(formula['formula_name'].title())
                 formulaItem.setData(formula, Qt.UserRole)
                 prevFormulasModel.appendRow(formulaItem)
-        self.formulasToDateComboBox.setModel(prevFormulasModel)
-        #self.formulasToDateComboBox.setCurrentIndex(-1)      
+        self.formulasToDateComboBox.setModel(prevFormulasModel)    
 
     # updates the version number label 
     def updatePlaceholderLabel(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Updates the version number label
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+        
         itemData = self.formulasToDateComboBox.itemData(self.formulasToDateComboBox.currentIndex(), Qt.UserRole)
-        if itemData == 0:
-            return
-        if itemData is None:
+        if itemData == 0 or itemData is None:
             return
         versionNumber = itemData['version_number']
-        #versionNumber = self.formulasToDateComboBox.currentData(Qt.UserRole)
         if versionNumber:
             self.previousVersionPlaceholderLabel.setText(str(versionNumber))
         else:
             self.previousVersionPlaceholderLabel.setText('None')
 
-
-
     # form accept
     def accept(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Method for calling the Formula Editor window 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+
         # if neither new formula or revision is indicated, throws an error message and returns
         if self.revisionRadioBtn.isChecked() is False and self.newFormulaRadioBtn.isChecked() is False:
             msg = QMessageBox()

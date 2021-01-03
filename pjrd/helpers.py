@@ -1,7 +1,6 @@
 
 import pymysql
 import sys
-import os
 
 sys.path.append('/pjrd')
 sys.path.append('..')
@@ -11,12 +10,23 @@ from PySide2.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
-import PySide2.QtQml
 
-''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
 # returns a dictionary that maps the nutrient id to the which column in self.nutrientReportTableView 
 # example (nutrientID) -> column index of nutrient in formualEditor.nutrientReportTableView
 def nutrientColMap():
+    """
+    -----------------------------
+        Purpose:
+            - Returns a dictionary that maps the nutrient ID to the respective column in the FormulaEditor.nutrientReportTableView
+            - {
+                nutrientID : column of table,
+                ...
+            }
+        Arguments:
+            -  None
+        Return Value:
+            -  Returns the dictionary object containing the nutrient ID key and column values
+    """
     map = {}
     # self.map[nutrient_id] = column_applicable
     map[1] = 11 #monosaccharides
@@ -102,10 +112,20 @@ def nutrientColMap():
     map[664] = 15 # total trans fat
     return map
 
-
-''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
-# returns a dictionary that maps the nutrient id to the row in formulaEditor.dvReportTableView
 def nutrientRowMap():
+    """
+    -----------------------------
+        Purpose:
+            - Returns a dictionary that maps the nutrient ID to the row in the FormulaEditor.dvReportTableView
+            - {
+                nutrientID : row of table,
+                ...
+            }
+        Arguments:
+            -  None
+        Return Value:
+            -  Returns the dictiionary object containing the nutrientID keys and the respective row values
+    """
     map = {}
     map[203] = 7 # protein
     map[204] = 1 # total fat 
@@ -140,8 +160,6 @@ def nutrientRowMap():
     map[658] = 12 # vitamin b5, panothenic acid 
     return map 
  
-
-''' ANY CHANGES TO TABLE MUST BE CHANGED HERE '''
 # returns a dictionary that maps the nutrient id to the row in formulaEditor -> compareTable(QuickTableView class)
 def compareTableRowMap():
     map = {}
@@ -193,28 +211,64 @@ def compareTableRowMap():
     map[309] = 43 # Zinc
     return map
 
-
 def dbConnection(database: str, cursorclass=pymysql.cursors.DictCursor):
+    """
+    -----------------------------
+        Purpose:
+            - Provide a wrapper function over the pymysql connect function to access the MySQL database that passes in the default arguments
+        Arguments:
+            -  database: The schema name to access 
+        Return Value:
+            - Returns a pymysql connection object
+    """
     connection = pymysql.connect(host='localhost', user='root', password='Pj@bW1!G1-4', database=database, cursorclass=cursorclass)
     return connection
 
-
 # returns a 2d array with each value set to value
 def initialize2DArray(rowCount: int, colCount: int, value=None):
+    """
+    -----------------------------
+        Purpose:
+            - Creates a 2D array with an initial value of 'value'
+            - Used for filling in data into the QTableView model
+        Arguments:
+            - rowCount: the number of rows desired
+            - colCount: the number of columns desired
+        Return Value:
+            -  returns the 2D array object
+    """
     array = [[value] * colCount for _ in range(rowCount)]
     return array
 
 # called to test if the window works
 def test(window):
+    """
+    -----------------------------
+        Purpose:
+            - Used for testing individual QDialog classes
+        Arguments:
+            -  window: The custom class from QDialog base class to test
+        Return Value:
+            -  None 
+            - Displays the dialog 
+    """
     app = QApplication(sys.argv)
     gui = window()
     gui.show()
     sys.exit(app.exec_())
 
-
 # returns a formatted string of a number with commas separating the thousands
 # example 2432532.12 -> 2,432,432.12
 def numberWithCommas(number):
+    """
+    -----------------------------
+        Purpose:
+            - Formats a numeric value into a string with comma separating thousands place
+        Arguments:
+            -  number: the numeric value to be formatted
+        Return Value:
+            -  Returns a formatted string 
+    """
     return f"{number:,.2f}"
 
 
@@ -288,71 +342,7 @@ def getIngredientStatement(foodID: int):
 
     subIngredients['children'] = children
     return subIngredients
-    
 
-'''def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
-   
-    if separator is None:  #separators = ['(', '[', '{']
-        separator = ('(', ')')
-    elif separator == ('(', ')'):
-        separator = ('[', ']')
-    elif separator == ('[', ']'):
-        separator = ('{', '}')
-    elif separator == ('{', '}'):
-        separator = ('(', ')')
-
-    statement = ', '
-    ingredients = []
-    
-    if next is None:
-        next = {}
-        next['parent'] = toExtract['parent']
-        next['children'] = toExtract['children']
-    if isinstance(next, dict):
-        if len(next['children']) == 0:
-            return str('<b>' + next['parent'] + '</b>')
-        else:
-            for child in next['children']:
-                ingredients.append(extractIngredientStatement(toExtract, child, separator)) 
-            statement = separator[0] + statement.join(ingredients) + separator[1]
-            return '<b>' + next['parent'] + '</b>' + ' ' + statement
-    else: 
-        return str(next)'''
-
-'''
-def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
-
-    if separator is None:  #separators = ['(', '[', '{']
-        separator = ('(', ')')
-    elif separator == ('(', ')'):
-        separator = ('[', ']')
-    elif separator == ('[', ']'):
-        separator = ('{', '}')
-    elif separator == ('{', '}'):
-        separator = ('(', ')')
-
-    statement = ', '
-    ingredients = []
-    
-    if next is not None:
-        next = {}
-        next['parent'] = toExtract['parent']
-        next['children'] = toExtract['children']
-    else:
-        next = toExtract['parent']
-    if isinstance(next, dict):
-        if len(next['children']) == 0:
-            return str('<b>' + next['parent'] + '</b>')
-        else:
-            for child in next['children']:
-                ingredients.append(extractIngredientStatement(toExtract, child, separator)) 
-            statement = separator[0] + statement.join(ingredients) + separator[1]
-            return '<b>' + next['parent'] + '</b>' + ' ' + statement
-    #else: 
-        #return str(next)
-'''
-
-# modified 
 def extractIngredientStatement(toExtract: dict, next = None, separator: str=None):
 
     if separator is None:  #separators = ['(', '[', '{']
@@ -384,43 +374,3 @@ def extractIngredientStatement(toExtract: dict, next = None, separator: str=None
 
     return next
 
-
-
-
-'''def extractIngredientStatement(toExtract: dict, statement: str = None, separator = None):
-    if separator is None:  #separators = ['(', '[', '{']
-        separator = ('(', ')')
-    elif separator == ('(', ')'):
-        separator = ('[', ']')
-    elif separator == ('[', ']'):
-        separator = ('{', '}')
-    elif separator == ('{', '}'):
-        separator = ('(', ')')
-
-    if statement is None:
-        statement = ''
-
-    parentIngredients = []
-
-    if not toExtract['parent']:
-        return statement
-    if not toExtract['children'] or len(toExtract['children'] == 0):
-        if statement == '':
-            return statement + toExtract['parent']
-        else:
-            return statement + ', ' + toExtract['parent']
-    for child in toExtract['children']:
-        if isinstance(child, dict):
-            parentIngredients.append(extractIngredientStatement(child, statement, separator))
-        else:
-            parentIngredients.append(child)
-    statement = separator[0] + statement.join(parentIngredients) + separator[1]
-    return '<b>' + next['parent'] + '</b>' + ' ' + statement'''
-        
-    
-
-
-   
-    
-
-   

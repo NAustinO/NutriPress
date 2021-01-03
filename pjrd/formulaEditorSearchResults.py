@@ -21,12 +21,14 @@ from pjrd.helperClasses import Ingredient
 from pjrd.confirmAddDialog import confirmationDialog
 
 class searchResults(QDialog):
-    '''This class opens is called when searching from the formula editor. 
-    
-    '''
-    # query: the search query passed in from the formulaEditor window
-    # root: reference to the formula editor window in order to access 
-    def __init__(self, query, root=None):
+
+    def __init__(self, query: str, root=None):
+        """
+        -----------------------------
+            Arguments:
+                -  query: The string for what will be searched
+                -  root: A reference to the Formula Editor to call methods 
+        """
         super(searchResults, self).__init__()
         self.setupUi(self)
         self.searchEvent(query)
@@ -153,17 +155,34 @@ class searchResults(QDialog):
     # retranslateUi
 
     def setupLogic(self):
-        # sets up signals
+        """
+        -----------------------------
+            Purpose:
+                -  Signal setup 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         self.goBtn.clicked.connect(self.searchEvent)
         self.searchLineEdit.returnPressed.connect(self.searchEvent)
         self.addSelectedBtn.clicked.connect(self.accept)
         self.exitPushBtn.clicked.connect(self.cancel)
-
-        #sets up events
         self.searchResultsTable.viewport().installEventFilter(self)
 
     # called by return/enter or pressing search button and on startup
-    def searchEvent(self, query=False): # TODO needs error handling
+    def searchEvent(self, query=False): 
+        #TODO error handling
+        """
+        -----------------------------
+            Purpose:
+                -  Handles the search event
+                -  Updates the QTableWidget view 
+            Arguments:
+                -  query: The search query. Defaults to False if none exists 
+            Return Value:
+                -  None
+        """
         if query is False:
             query = self.searchLineEdit.text()
         if query is None:
@@ -190,9 +209,8 @@ class searchResults(QDialog):
                 rowIndex = rowCount - 1
             self.searchResultsTable.insertRow(rowIndex)
 
-            # IMPORTANT: data for each ingredient is contained in column 0 in dictionary form within QTableWidgetItem. It is the Qt.UserRole
+            # IMPORTANT: data for each ingredient is contained in column 0 in dictionary form within QTableWidgetItem as Qt.UserRole
             ingredient = Ingredient(result['food_desc'], result['food_id'], specificName=result['specific_name'], supplierName=result['supplier_name'], supplierItemCode=result['supplier_ing_item_code'], ingredientStatement=result['ing_statement'], supplierID=result['supplier_id'])
-
 
             widgetItem = QTableWidgetItem(result['food_desc'])
             widgetItem.setData(Qt.UserRole, ingredient) # <------ ingredient holds all the data
@@ -222,14 +240,17 @@ class searchResults(QDialog):
             self.searchResultsTable.setItem(rowIndex, 3, itemCode)
             self.searchResultsTable.setItem(rowIndex, 4, ingStatement)
             self.searchResultsTable.update()
-
-    # double click event filter TODO call the confirmAddUI passing in thek
     
     def eventFilter(self, source, event):
-        '''This function handles all the events for the window
-        Events include:
-        1. Double clicking within search table to choose ingredient
-        '''
+        """
+        -----------------------------
+            Purpose:
+                -  Event handling for double clicking within serach table and Return pressed while typing a search query 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         # continues when user double clicks within table viewport to choose an ingredient. Opens the confirmation window
         if (event.type() == QEvent.MouseButtonDblClick and event.buttons() == Qt.LeftButton and source is self.searchResultsTable.viewport()):
             ingItem = self.searchResultsTable.itemAt(event.pos())
@@ -247,7 +268,16 @@ class searchResults(QDialog):
         return super(searchResults, self).eventFilter(source, event)
 
     # ingredient is chosen, brings up confirmation window where user inputs the amount and unit
-    def accept(self, foodToAdd=None): #TODO
+    def accept(self, foodToAdd=None): 
+        """
+        -----------------------------
+            Purpose:
+                -  Called during the confirmation event
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
 
         # continues if the user uses the button to confirm selected ingredient
         if foodToAdd is None:
@@ -278,4 +308,9 @@ class searchResults(QDialog):
 
 
     def cancel(self):
+        """
+        -----------------------------
+            Purpose:
+                -  closes the window 
+        """
         self.close()

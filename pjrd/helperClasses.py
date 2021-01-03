@@ -25,22 +25,28 @@ Class Docstring Template
          
     '''
 """
+#Class Method/Function Template 
+
+
 """
-Class Method/Function Template 
 ----------------------------
 
-    '''
+    
     Purpose:
         
     Arguments:
         
     Returns:
         
-    '''
-
 
 """
 
+"""
+-----------------------------
+    Purpose:
+    Arguments: 
+    Returns:
+"""
 
 
 class CustomTableModel(QAbstractTableModel):
@@ -64,19 +70,47 @@ class CustomTableModel(QAbstractTableModel):
         - vertHeaders: vertical header row data (if any)
         '''
     """
+
     def __init__(self, horizHeaders: list = None, tableData=None, vertHeaders: list=None):
+        """
+        -----------------------------
+            Purpose:
+            Arguments: 
+            Returns:
+        """
         super(CustomTableModel, self).__init__()
         self.tableData = tableData
         self.horizHeaders = horizHeaders
+        if horizHeaders is not None:
+            self.setHeaderLabels(horizHeaders, Qt.Horizontal)
         self.vertHeaders = vertHeaders
+        if vertHeaders is not None:
+            self.setHeaderLabels(vertHeaders, Qt.Vertical)
 
+    # returns the number of rows 
     def rowCount(self, parent: QModelIndex):
+        """
+        -----------------------------
+            Purpose: overloaded method for implementation of QTableModel
+            Arguments: QModelIndex
+            Return Value: 
+                -Returns the number of rows in the table. If there is no table data, returns 0
+        """
         if self.tableData is None:
             return 0
         else:
             return len(self.tableData)
-    
+
+    # returns the number of columns 
     def columnCount(self, parent: QModelIndex):
+        """
+        -----------------------------
+            Purpose: overloaded method for implementation of QTableModel
+            Arguments: QModelIndex
+            Return Value:
+                - Returns the number of columns in the table.
+                - If there is no table data, uses the length of the horizontal headers if the table contains any. Otherwise it returns 0
+        """
         if self.tableData is None:
             if self.horizHeaders is None:
                 return 0
@@ -86,11 +120,28 @@ class CustomTableModel(QAbstractTableModel):
             return len(self.tableData[0])
 
     def inputTableData(self, tableData):
+        """
+        -----------------------------
+            Purpose: Allows user to input a 2d dataframe to the table. Emits a signal to update the viewport for the QTableView that represents the data
+            Arguments:
+                - tableData: 2D array of data
+            Return Value: None
+        """
         self.emit(SIGNAL("layoutAboutToBeChanged()"))
         self.tableData = tableData
         self.emit(SIGNAL("layoutChanged()"))
     
+    # overwrite of se
     def setHeaderLabels(self, headerList: list, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+        """
+        -----------------------------
+            Purpose: Allows addition of headers that will be displayed in the QTableView that represents this model
+            Arguments: 
+                - headerList: a list of strings containing the designated headers. The index of the headerList corresponds to the column index of the QTableView
+                - orientation: A Qt Namespace designated to indicate whether the headers should display as columns, or as rows
+                - role: Indicates to the QTableView how to interpret and display the data
+            Return Value: None
+        """
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             self.vertHeaders = headerList
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -100,14 +151,35 @@ class CustomTableModel(QAbstractTableModel):
         self.emit(SIGNAL("headerDataChanged()"))
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+        """
+        -----------------------------
+            Purpose:
+                - Overloaded method for QTableView implementation. Indicates how the QTableView should interact with the dataframe
+            Arguments: 
+                - index: object used to navigate the data in model
+                - role: Used by the QTableView to indicate to the model which type of data it needs
+            Return Value:
+                - varies by role passed in
+        """
         if role == Qt.DisplayRole:
             return self.tableData[index.row()][index.column()]
         if role == Qt.TextAlignmentRole:
             return Qt.AlignCenter
         else:
-            return 
+            return
 
     def headerData(self, section, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+        """
+        -----------------------------
+            Purpose:
+                -
+            Arguments: 
+                - section: the index for the header value to return
+                - orientation: A Qt Namespace designated to indicate whether the headers should return the vertical or horizontal header
+                - role: Used by the QTableView to indicate to the model which type of data it needs
+            Return Value:
+                - returns the value given in the header list indicated by the section index
+        """
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             if self.horizHeaders is None:
                 return
@@ -119,6 +191,17 @@ class CustomTableModel(QAbstractTableModel):
         return QAbstractTableModel.headerData(self, section, orientation, role)
 
     def sort(self, nCol: int, order: Qt.SortOrder):
+        """
+        -----------------------------
+            Purpose:
+                - Overloaded method to allow basic sorting of the QTableView 
+                - Only allows sorting based on columns
+            Arguments: 
+                - nCol: the index for the column to sort by 
+                - order: Indicates how the sort order should be. Either Qt.Ascending or Qt.Descending
+            Return Value:
+                - None
+        """
         try:
             self.emit(SIGNAL("layoutAboutToBeChanged()"))
             self.tableData = sorted(self.tableData, key=itemgetter(nCol))
@@ -127,8 +210,6 @@ class CustomTableModel(QAbstractTableModel):
             self.emit(SIGNAL("layoutChanged()"))
         except Exception:
             return
-
-
 
 
 class UnitOfMeasure(QStandardItem):
@@ -159,13 +240,21 @@ class UnitOfMeasure(QStandardItem):
 
     @staticmethod
     def convertToGrams(value: Union[float, int], unitFrom):
+        """
+        -----------------------------
+            Purpose:
+                - Static method to convert a given number into a gram equivalent
+            Arguments: 
+                - value: the weight quantity to be converted 
+                - unitFrom: the Unit object the value is currently in 
+            Return Value:
+                - Returns a float or integer containing that represents the gram value
+        """
         factor = unitFrom.conversionFactor
         offset = unitFrom.conversionOffset
         value = (value + offset) * factor
         return value
     
-
-
 class Nutrient(object):
 
     """
@@ -188,14 +277,22 @@ class Nutrient(object):
         '''
     """
 
-    def __init__(self, nutrientID: int, nutrientName: str, unit: UnitOfMeasure=None, dailyValueInGrams: float = None,):  #removed amountInIngredientG
+    def __init__(self, nutrientID: int, nutrientName: str, unit: UnitOfMeasure=None, dailyValueInGrams: float = None,): 
         self.nutrientID = nutrientID
         self.nutrientName = nutrientName
         self.dailyValueInGrams = dailyValueInGrams
         self.unit = unit
 
-    # returns a tuple of the amount and unit in its standard form
     def getStdUnitWeightFromG(self, gramWeight):
+        """
+        -----------------------------
+            Purpose:
+                - This method converts a numeric value in grams of the nutrient and converts it to the value in the nutrients native unit  
+            Arguments: 
+                - gramWeight: the weight quantity given in grams of the nutrient to be converted
+            Return Value:
+                - Returns a tuple containing the converted value and the unit object of the new value
+        """
         factor = self.unit.conversionFactor
         offset = self.unit.conversionOffset
         value = gramWeight/factor - offset
@@ -205,7 +302,14 @@ class Nutrient(object):
     # returns the inputted gram weight into nutrients typical measuring unit 
     def getStdUnitWeight(gramWeight: Union[float, int], unit: UnitOfMeasure):
         """
-        returns a tuple containing the standard weight given the unit passed in
+        -----------------------------
+            Purpose:
+                - Similar to getSTdUnitWeightFromG. A static method that takes in the gram weight of the nutrient and converts it to the value specified by the unit object passed in 
+            Arguments: 
+                - gramWeight: the quantity of a given nutrient to be converted 
+                - unit: the unit object to convert to 
+            Return Value:
+                - Returns  atuple containing the converted value and the unit object passed in 
         """
         factor = unit.conversionFactor
         offset = unit.conversionOffset
@@ -260,24 +364,26 @@ class Ingredient(object):
         self.__inputWeightInGrams = None
         self.nutrientDict = {} # maps the nutrient id to a nutrient object, which contains data to display information
         '''
+        ------self.nutrientDict item example--------
         {
             nutrient_id: {
                 'object': Nutrient Object
                 'amountInIngredientG': amount of the nutrient that is contained within the ingredient measured in grams
-            }
-        
+            }     
         }
         '''
-        
-        #self.nutrientTotalsG = {} # maps id to the total amount in grams of each nutrient <--- pretty sure I dont need
-        '''
-        {
-            nutrientID: total in grams
-            
-        }
-        '''
-
+    
     def addNutrient(self, nutrient: Nutrient, amountInGrams):
+        """
+        -----------------------------
+            Purpose:
+                - For the ingredient object, allows a nutrient object to be stored within. Saves the nutrient and its quantity in a dictionary data structure as long as the nutrient does not already exist in the data structure
+            Arguments: 
+                - nutrient: The nutrient object which contains accessible information from the database, including the nutrient ID, nutrient name, Recommended daily value (if any), and the unit object which encapsulates unit information for how the nutrient is typically measured
+                - amountInGrams: The amount of nutrient in grams that is contained within the ingredient
+            Return Value:
+                - None
+        """
         if nutrient.nutrientID in self.nutrientDict:
             print('Nutrient already exists in ingredient')
             return
@@ -287,8 +393,17 @@ class Ingredient(object):
             self.nutrientDict[nutrient.nutrientID]['object'] = nutrient
             self.nutrientDict[nutrient.nutrientID]['amountInIngredientG'] = amountInGrams
     
-    
+
     def setNutrientAmountG(self, nutrient: Nutrient, amountInGrams: Union[float, int]):
+        """
+        -----------------------------
+            Purpose:
+                - Allows modification of the nutrient dictionary data structure. If the nutrient is not in the ingredient object data structure already, it becomes the same as the addNutrient method. If the nutrient does exist, it will update the amount in the ingredient with the new amountInGrams parameter
+            Arguments:
+                - nutrient: The nutrient object 
+            Return Value:
+                - None
+        """
         if nutrient.nutrientID not in self.nutrientDict:
             keys = ['object', 'amountInIngredientG']
             self.nutrientDict[nutrient.nutrientID] = dict.fromkeys(keys)
@@ -299,6 +414,15 @@ class Ingredient(object):
 
     # returns a tuple of the quantity and unit the user inputted originally
     def getInputtedQuantity(self):
+        """
+        -----------------------------
+            Purpose:
+                - The ingredient object stores the user inputs for amount of the ingredient in the formula and the unit. Allows access to this data by returning a tuple contaning the numeric value inputted and the unit object 
+            Arguments: 
+                - None
+            Return Value:
+                - Returns a tuple containing the inputs for the numeric value and the unit object
+        """
         factor = self.unit.conversionFactor
         offset = self.unit.conversionOffset
         inputWeightInGrams = self.getInputWeightInGrams
@@ -307,10 +431,28 @@ class Ingredient(object):
 
     @property
     def getInputWeightInGrams(self):
+        """
+        -----------------------------
+            Purpose:
+                - Allows access to the weight in grams of the ingredient in the formula
+            Arguments: 
+                - None
+            Return Value:
+                - Returns the value for the weight in grams of the ingredient in the formula
+        """
         return self.__inputWeightInGrams
 
     # sets attribute
-    def setInputWeightInGrams(self, weight):
+    def setInputWeightInGrams(self, weight: Union[float, int]):
+        """
+        -----------------------------
+            Purpose:
+                - Allows modification of the weight in grams of the ingredient in the formula
+            Arguments: 
+                - weight: the new weight to be set
+            Return Value:
+                - None
+        """
         self.__inputWeightInGrams = weight
 
 
@@ -469,6 +611,7 @@ class Formula(object):
         self.ingStatement = None
         self.allNutritionals = {}  # {{}}#  stores the totals for each nutritional for faster lookup times 
         ''' 
+        ------allNutritionals data structure item example-----
         {
             nutrient_id: {
                 'totalInG': 
@@ -482,9 +625,10 @@ class Formula(object):
         self.__currentIngredients = {} # {{}} # holds the ingredients, maybe map by ingredientID?
 
         '''
+        ------currentIngredients data structure item example-------
         {
             foodID: {
-                'object': Ingredient
+                'object': Ingredient 
                 'percentByWeight': the percent by weight of the ingredient in the formula
                 
             },
@@ -494,6 +638,17 @@ class Formula(object):
 
     # returns the allNutritionals data structure that has been updated 
     def refreshNutritionals(self):
+        """
+        -----------------------------
+            Purpose: 
+                - Ensures that the allNutritionals data structure is updated
+                - For each ingredient in the formula, iterates through each nutrient contained in the ingredient and adds its value to the total nutrient content for the formula, as well as applies the daily value and unit object
+                - Uses a nested for loop with O(n * m). n = # of ingredients, m ≈ 80 nutrients(max). Called on each addition of a new ingredient to formula
+            Arguments: 
+                - None
+            Return Value:
+                - Returns a reference to the newly updated allNutritionals data structure
+        """
         keys = ['totalInG', 'unit', 'dailyValueInG']
         temp = {}
         for ingDict in self.__currentIngredients.values():
@@ -512,29 +667,69 @@ class Formula(object):
         self.allNutritionals = temp
         return self.allNutritionals
 
-
     def getNumberOfIngredients(self):
+        """
+        -----------------------------
+            Purpose: 
+                - Returns the number of ingredients contained within the currentIngredients data structure
+            Arguments: 
+                - None  
+            Return Value:
+                - Returns the number of ingredients
+        """
         return len(self.__currentIngredients)
+        
     
         
     # returns the dictionary containing all the current ingredients with the percentByWeight
     def getCurrentIngredients(self):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows access to the currentIngredients dictionary
+            Arguments: 
+                - None
+            Return Value:
+                - Returns the currentIngredients dictionary containing all the current ingredients and their percentByWeight values
+        """
         self.refreshPercentByWeight()
         return self.__currentIngredients
 
 
     # returns the dictinoary containing the nutrient information for the formula
     def getAllNutritionals(self):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows access to the allNutritionals dictionary data structure containing the nutrient information for the formula
+            Arguments: 
+                - None
+            Return Value:
+                - Returns the reference to the allNutritionals dictionary
+        """
         self.refreshNutritionals()
         return self.allNutritionals
         
 
     # takes in either a nutrientID or a nutrient object. Returns a boolean determining if the formula contains the nutrient by the allNutritionals data structure
     def nutrientExists(self, nutrientID: int = None, nutrient: Nutrient = None):
+        """
+        -----------------------------
+            Purpose: 
+                - Determines whether a nutrient exists in the formula.
+            Arguments: 2 options to use this method 
+                - nutrientID: The id for the nutrient in the database
+                - nutrient: The nutrient object
+            Return Value:
+                - Returns None if no nutrientID or nutrient is given
+                - Returns a boolean if the nutrient exists in the formula
+        """
         if nutrientID is None and nutrient is None:
-            return
+            return None
             
         if nutrientID is None:
+            if nutrient.nutrientID is None:
+                return None
             nutrientID = nutrient.nutrientID
         if nutrientID in self.allNutritionals:
             return True
@@ -544,6 +739,18 @@ class Formula(object):
 
     # adds an ingredient object to the data structure
     def addIngredient(self, ingredient: Ingredient):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows an ingredient to be added to the data structure. 
+                - If the ingredient already exists in the formula, adds the amount(stored within the object) to the existing object and refreshes each ingredients % of formula. Calls the addToExistingIngredient method
+                - if the ingredient does not currently exist in the formula, adds it to the ingredient data structure
+                - Once the ingredient has been created or updated, updates the formula table on the FormulaEditor window. Calls FormulaEditor.refresh() to refresh the different widgets on the FormulaEditor window
+            Arguments: 
+                - ingredient: the Ingredient object to add
+            Return Value:
+                - None
+        """
         # if the ingredient already exists in the formula
         if ingredient.foodID in self.__currentIngredients:
             self.addToExistingIngredient(ingredient)
@@ -612,56 +819,95 @@ class Formula(object):
 
     # returns true if succesfully removed ingredient from data structure else false
     def removeIngredient(self, ingredient: Ingredient=None, foodID:int=None):
-        
+        """
+        -----------------------------
+            Purpose: 
+                - Removes the ingredient from the data structure. 
+            Arguments: 
+                - 
+            Return Value:
+                - Returns True if successfully deleted. Otherwise returns False
+        """
+        # Error Handling
         # if neither ingredient nor foodID is inputted
         if ingredient is None and foodID is None: 
             print('No ingredient specified in formula.removeIngredient()')
             return False
-        # if both ingredient and foodID are inputted
+        # if both ingredient and foodID are inputted but don't match on ID number
         if ingredient is not None and foodID is not None:
-            
-            # if the ingredients don't match up
             if ingredient.foodID != foodID:
                 print('Inconsistent ingredient to remove in formula.removeIngredient(). Ingredient does not match id to remove')
                 return False
-        # gets common value
+        
+        # assigns ingredient and ID variabels if no errors so far
         if ingredient is None and foodID is not None:
             ingredient = self.__currentIngredients[foodID]['object']
             foodID = ingredient.foodID
 
+        # Error Handling
         if foodID not in self.__currentIngredients:
             print('Ingredient not in currentIngredients for formula.removeIngredient()')
             return False
         else:
+            # deducts the ingredient nutrients from the formula nutrient totals
             for key, value in ingredient.nutrientDict:
                 self.allNutritionals[key]['totalInG'] -= value['amountInIngredientG']
-            self.__currentIngredients.remove(ingredient.foodID)
-            self.refreshPercentByWeight()
+            self.__currentIngredients.remove(ingredient.foodID) # removes from data structure
+            self.refreshPercentByWeight() # refreshes the percent weights ingredient data structure
 
-            # updates the table
+            # updates the FormulaEditor formula table widget 
             for row in range(self.formulaTableRef.rowCount()):
                 self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[foodID]['percentByWeight']))
                 if self.formulaTableRef.item(row, 0).data(Qt.UserRole) == foodID:
                     self.formulaTableRef.removeRow(row)
                     self.formulaTableRef.update()
             self.refreshTablePercentages()
-              
             return True
 
-    # refreshes the percent weights of the 
     def refreshTablePercentages(self):
+        """
+        -----------------------------
+            Purpose: 
+                - Refreshes the FormulaEditor table widget '% of formula' column only. 
+                - This method is called usually upon adding or removing an ingredient, where the % of formula would change for all the ingredients 
+                - IMPORTANT: To ensure accurate information, this method should be called following refreshPercentByWeight method. It is not called within this method to allow for flexibility 
+            Arguments: 
+                - None
+            Return Value:
+                - None
+        """
         for row in range(self.formulaTableRef.rowCount()):
             id = self.formulaTableRef.item(row, 0).data(Qt.UserRole) # id of the ingredient in the table
             percentWeight = self.getIngredientPercentWeight(foodID=id)
             self.formulaTableRef.setItem(row, 1, QTableWidgetItem(str(round(percentWeight, 3))))
+
     
-    
-    # gets the percent by weight in the formula given the ingredient object or ingredient id number
+    # gets the percent by weight in the formula given the ingredient object or ingredient id \\
+
     def getIngredientPercentWeight(self, ingredient: Ingredient = None, foodID: int=None):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows access of what percent of the formula is a certain ingredient given either the Ingredient object or the foodID from the dtabase
+                - The ingredient object passed in is only used for its foodID attribute. The ingredient is mapped by reference, only foodID
+            Arguments: 
+                - ingredient: The ingreident object to find percent by weight
+                - foodID: the ingredient ID to find percent by weight
+            Return Value:
+                - Returns the percent of formula value if ingredient is in formula
+                - Returns 0 if the ingredient is not in formula
+                - Returns False if there was an error in the parameters passed
+        """
         self.refreshPercentByWeight()
+        # Error Handling
         if ingredient is None and foodID is None:
             print('Parameter error in formula.getIngredietnPercentWeight()')
-            return
+            return False
+        elif ingredient is not None and foodID is not None:
+            if ingredient.foodID != foodID:
+                print('')
+                return False
+        # /Error Handling
         else:
             if foodID is None:
                 foodID = ingredient.foodID
@@ -670,64 +916,117 @@ class Formula(object):
             else:
                 return self.__currentIngredients[foodID]['percentByWeight']
 
-    # returns a boolean on whether the ingredient is in the currentIngredient dictionary 
     def ingredientExists(self, ingredient: Ingredient):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows determination on whether the ingredient is in the formula
+            Arguments: 
+                - ingredient: Ingredient object to look for, based on the foodID attribute
+            Return Value:
+                - Returns True if the ingredient foodID attribute is in the data structure 
+                - NOTE: Even if the ingredientObject has a inputWeightInGrams attribute of 0, it will still return true. 
+                - Returns False if it is not in the data structure
+        """
         if ingredient.foodID in self.__currentIngredients:
             return True
         return False
 
-    # replaces ingredient in current ingredient with the same ingredientID
     def setReplacementIngredient(self, ingredient: Ingredient):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows modification of the ingredient data structure by passing in a replacement ingredient, which replaces the ingredient with the same foodID attribute value 
+            Arguments: 
+                - ingredient: The ingredient object to replace
+            Return Value:
+                - Returns True if successfully replaces ingredient in data structure
+                - Returns False if not successful
+        """
+        if not ingredient.foodID:
+            return False
+
         if ingredient.foodID not in self.__currentIngredients:
             print('The ingredient is not the current ingredient to replace')
+            return False
+        
         else:
-            # updates the allNutritionals totals with the replacement ingredient
-            for key, value in ingredient.nutrientDict.items():
-                difference = self.allNutritionals[key]['totalInG'] - value['amountInIngredientG']
+            try: 
+                # updates the formula nutrient totals with the replacement ingredient nutrients
+                for key, value in ingredient.nutrientDict.items():
+                    difference = self.allNutritionals[key]['totalInG'] - value
+                    ['amountInIngredientG']
+                    # NOTE: what to do if key(nutrientID) is not a nutrient in formula nutrients
 
-                # if difference is negative (the replacing ingredient is more than the current)
-                if difference < 0:
-                    self.allNutritionals[key]['totalInG'] += difference
-                # if difference is positive (the current ingredient amount is more than the replacing ingredient)
-                elif difference > 0: 
-                    self.allNutritionals[key]['totalInG'] -= difference 
-                
-            
-            self.__currentIngredients[ingredient.foodID]['object'] = ingredient
+                    # if difference is negative (the replacing ingredient is more than the current)
+                    if difference < 0:
+                        self.allNutritionals[key]['totalInG'] += difference
+                    # if difference is positive (the current ingredient amount is more than the replacing ingredient)
+                    elif difference > 0: 
+                        self.allNutritionals[key]['totalInG'] -= difference 
+                    
+                self.__currentIngredients[ingredient.foodID]['object'] = ingredient
+                self.refreshPercentByWeight()
 
-            self.refreshPercentByWeight()
-
-            # updates the table
-            for row in range(self.formulaTableRef.rowCount()):
-                id = self.formulaTableRef.item(row, 0).data(Qt.UserRole) # id of the ingredient in the table
-                percentWeight = self.getIngredientPercentWeight(foodID = id)
-                self.formulaTableRef.setItem(row, 1, QTableWidgetItem(str(round(percentWeight, 3))))  
-                #self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[id]['percentByWeight']))    
-                if id == ingredient.foodID:  # if the ingredient in the table is the same as the ingredient replacing
-                    #self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[id]['percentByWeight']))  # inputs the new percentage by weight
-                    quantityUnit = ingredient.getInputtedQuantity()
-                    self.formulaTableRef.setItem(row, 2, QTableWidgetItem(str(quantityUnit[0]))) # quantity in origianl unit
-                    self.formulaTableRef.setItem(row, 3 , QTableWidgetItem(quantityUnit[1].unitName))
-
+                # updates the table
+                for row in range(self.formulaTableRef.rowCount()):
+                    id = self.formulaTableRef.item(row, 0).data(Qt.UserRole) # id of the ingredient in the table
+                    percentWeight = self.getIngredientPercentWeight(foodID = id)
+                    self.formulaTableRef.setItem(row, 1, QTableWidgetItem(str(round(percentWeight, 3))))  
+                    #self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[id]['percentByWeight']))    
+                    if id == ingredient.foodID:  # if the ingredient in the table is the same as the ingredient replacing
+                        #self.formulaTableRef.setItem(row, 1, QTableWidgetItem(self.__currentIngredients[id]['percentByWeight']))  # inputs the new percentage by weight
+                        quantityUnit = ingredient.getInputtedQuantity()
+                        self.formulaTableRef.setItem(row, 2, QTableWidgetItem(str(quantityUnit[0]))) # quantity in origianl unit
+                        self.formulaTableRef.setItem(row, 3 , QTableWidgetItem(quantityUnit[1].unitName))
+            except Exception:
+                return False
+            else:
+                return True
             
     # returns the nutrient amount in g, along with its native unit 
     def getNutritientQuantity(self, nutrientID: int):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows reference to the total nutrient quantity contained in the formula
+            Arguments: 
+                - nutrientID: the ID number for the nutrient to return
+            Return Value:
+                - Returns a tuple containing the nutrient amount (in grams) along with its native unit object to allow for conversion if needed
+                - Returns False if error
+        """
         try:
             quantity = self.allNutritionals[nutrientID]['totalInG']
-            unit = self.allNutritionals[nutrientID]['unit']
-            return (quantity, unit)
+            unit = cast(UnitOfMeasure, self.allNutritionals[nutrientID]['unit'])
+            if not quantity or not unit:
+                return False
+            
         except Exception:
             print('something went wrong in formula.getNutrientQuantity()')
-            return None
+            return False
+        else:
+            return (quantity, unit)
             
 
     # adds weight to an ingredient that exists in the formula already
     def addToExistingIngredient(self, ingredient: Ingredient):
+        """
+        -----------------------------
+            Purpose: 
+                - Allows reference to the total nutrient quantity contained in the formula
+            Arguments: 
+                - nutrientID: the ID number for the nutrient to return
+            Return Value:
+                - Returns a tuple containing the nutrient amount (in grams) along with its native unit object to allow for conversion if needed
+                - Returns False if error
+        """
+
         if ingredient.foodID not in self.__currentIngredients:
             print('The ingredient is not an existing ingredient to be added to')
         else:
             # get temporary current ingredient object
-            current = cast(Ingredient, self.__currentIngredients.get(ingredient.foodID)['object']) # <----- not sure if thats how to use cast function
+            current = cast(Ingredient, self.__currentIngredients.get(ingredient.foodID)['object']) 
 
             # add the weights of the current and new ingredient to temporary ingredient object
             current.setInputWeightInGrams(current.getInputWeightInGrams + ingredient.getInputWeightInGrams)
@@ -764,34 +1063,81 @@ class Formula(object):
                 self.formulaTableRef.setItem(row, 2, QTableWidgetItem(str(quantityUnit[0]))) # quantity in origianl unit
                 self.formulaTableRef.setItem(row, 3 , QTableWidgetItem(quantityUnit[1].unitName))
 
-    # takes in a boolean, default is none. Refreshes the ingredient percent by weights in the __currentIngredients data structure. 
     def refreshPercentByWeight(self, refreshTable: bool = None):
+        """
+        -----------------------------
+            Purpose: 
+                - Called to update the ingredient data structure so that each ingredient item has the correct percentage
+            Arguments: 
+                - refreshTable: A boolean argument. If the boolean is true, will also refresh the FormulaEditor formula table #TODO
+            Return Value:
+                - Returns True if successful, otherwise False
+        """
+    
         totalFormulaWeight = self.totalFormulaWeight()
+        
         # refreshes data in self contained data structure
         for ingredient in self.__currentIngredients.values():
             percent = (ingredient['object'].getInputWeightInGrams/totalFormulaWeight) * 100
             id = ingredient['object'].foodID
             self.setPercentByWeight(percent, foodID=id) 
-        # refreshes data in the the table
+        return True
+        # refreshes data in the the table TODO
 
     #  takes in a percent value, and either an ingredient object or foodID. Sets the percent by weight value equal to the argument value. 
     def setPercentByWeight(self, percent, ingredient: Ingredient = None, foodID: int = None):
+        """
+        -----------------------------
+            Purpose: 
+                - Designed to be a private method 
+                - Alters the ingredient data structure to set the percent weight to a new value, given as percent
+            Arguments: 
+                - percent: The new percent value to replace
+                - ingredient: An ingredient object to change. Uses the foodID attribute 
+                - foodID:: An ID to identify the ingredient to change
+            Return Value:
+                - 
+        """
         if ingredient and foodID is None:
             print('No ingredient or foodID inputted in formulalsetPercentByWeight()')
-            return
-        if foodID is None:
-            foodID = ingredient.foodID
-        self.__currentIngredients[foodID]['percentByWeight'] = percent
+            return False
+        try:
+            if foodID is None:
+                foodID = ingredient.foodID
+            self.__currentIngredients[foodID]['percentByWeight'] = percent
+        except:
+            return False
+        else:
+            return True
 
-    # returns the total amount in grams of the formula
     def totalFormulaWeight(self):
+        """
+        -----------------------------
+            Purpose: 
+                - To get the total weight of the formula
+            Arguments: 
+                - None
+            Return Value:
+                - Returns the sum (in grams) of the ingredients in the formula
+        """
         self.__totalWeightG = 0
         for ingredient in self.__currentIngredients.values():
             self.__totalWeightG += ingredient['object'].getInputWeightInGrams
         return self.__totalWeightG
     
     # checks whether the inptuted nutrientID is in the d
+
     def isNutrientInFormula(self, nutrientID: int):
+        """
+        -----------------------------
+            Purpose: 
+                - To check whether a given nutrient is in the formula
+                - Realistically, checks whether any of the ingredients in the formula had an input for the nutrient, even 0 
+            Arguments: 
+                - nutrientID: the ID of the nutrient to check for
+            Return Value:
+                - Returns a boolean indicating whether the nutrientID has a key in the nutrients data structure
+        """
         if nutrientID in self.allNutritionals:
             return True
         return False

@@ -27,7 +27,7 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 class addIngredientDialog(QDialog):
 
-    def __init__(self, mainWindow, openIngredientID: int=None):
+    def __init__(self, mainWindow, openIngredientID: int = None):
         super(addIngredientDialog, self).__init__()
         self.mainWindow = mainWindow
         self.setupUi(self)
@@ -313,12 +313,22 @@ class addIngredientDialog(QDialog):
             self.id = openIngredientID
         else:
             self.isEdit = False
-
+ 
     # opens the ingredient dialog with the 
     def openFromExisting(self, id):
+        """
+        -----------------------------
+            Purpose:
+                - Retrieves all the information related to the id passed in as an argument from the database and fills in the respective QWidgets with the saved values 
+            Arguments:
+                - id: the unique foodID to open
+            Return Value:
+                - None
+        """
 
         with dbConnection('FormulaSchema').cursor() as cursor:
             cursor.execute('SELECT food.food_desc, food.food_notes, food.ing_statement, food.percent_yield, supplier_food.specific_name, supplier_food.supplier_ing_item_code, supplier.supplier_id, supplier.supplier_name FROM food LEFT JOIN supplier_food ON supplier_food.food_id = food.food_id LEFT JOIN supplier ON supplier.supplier_id = supplier_food.supplier_id WHERE food.food_id = %s', (id,))
+            
             result = cursor.fetchone()
 
             # sets the general information
@@ -366,7 +376,6 @@ class addIngredientDialog(QDialog):
                 lineEdit.setText(str(nutrient['nutrient_weight_g_per_100g']))
 
         self.ingDescLineEdit.clearFocus()
-
 
     def setupUi(self, addIngredientDialog):
         if not addIngredientDialog.objectName():
@@ -1503,7 +1512,18 @@ class addIngredientDialog(QDialog):
         QMetaObject.connectSlotsByName(addIngredientDialog)
         # setupUi
     
+
     def setupLogic(self):
+        """
+        -----------------------------
+            Purpose:
+                - Signal setup
+                - Initializes models and fills data for the combobox widgets
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
 
         # sets up signals
         self.browseForFileBtn.clicked.connect(lambda: self.browseFiles()) 
@@ -1539,15 +1559,39 @@ class addIngredientDialog(QDialog):
 
     # clears all files from table
     def clearContentsWrapper(self): 
+        """
+        -----------------------------
+            Purpose:
+                - A wrapper function to clear files from the upload table widget
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         self.filesToBeUploadedTableWidget.clearContents()
 
     # called when OK button pushed
     def accepted(self):
+        """
+        -----------------------------
+            Purpose:
+                - Overloaded slot called when the QDialog is confirmed to move forward
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         submit = QMessageBox.question(self, 'Confirm Submission', 'Are you ready to submit?', QMessageBox.Yes|QMessageBox.No)
         if submit == QMessageBox.Yes:
             self.formSubmit()
 
     def rejected(self):
+        """
+        -----------------------------
+            Purpose:
+                - Overloaded slot called when the QDialog confirmation is rejected
+                - Closes the window after getting confirmation from user input from a popup window
+        """
         toClose = QMessageBox.question(self, "Confirm Cancellation", "Are you sure you would like to cancel?", QMessageBox.Yes | QMessageBox.No)
         if toClose == QMessageBox.Yes:
             self.rejected.connect(addIngredientDialog.rejected)
@@ -1556,6 +1600,16 @@ class addIngredientDialog(QDialog):
 
     # opens file browsing dialog. Adds selected to upload table
     def browseFiles(self):
+        """
+        -----------------------------
+            Purpose:
+                - Opens a file browsing dialog to select a file to be uploaded
+                - Once files are selected, adds the file information to the files table widget
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         self.fileNavigator = QFileDialog()
         self.fileNavigator.setFileMode(QFileDialog.AnyFile)
         self.fileNavigator.setFilter(QDir.Files)
@@ -1573,9 +1627,28 @@ class addIngredientDialog(QDialog):
             pass
 
     def autofillNutritionals(self):
+        """
+        -----------------------------
+            Purpose:
+                - Designed to scan over the text in a QTextEdit and if matches with the text values in a QLineEdit, autofills for the nutrient
+                - TODO
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         pass
     # called when submitting the form 
     def formSubmit(self):
+        """
+        -----------------------------
+            Purpose:
+                - Submits the information to the database
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         submit = QMessageBox.question(self, 'Confirm Submission', 'Are you ready to submit?', QMessageBox.Yes|QMessageBox.No)
         if submit != QMessageBox.Yes:
             return
@@ -1701,6 +1774,16 @@ class addIngredientDialog(QDialog):
      
     # ensures user does not input more than one measure for vitamin A
     def toggleVitA(self):
+        """
+        -----------------------------
+            Purpose:
+                - Ensures that user doe snot input more than one measure for the vitamin A inputs
+                - Toggles the disabled methods of the QObject inputs for vitamin A
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         if self.vitaminAIUIULineEdit.text() != '':
             self.vitaminARAEMcgLineEdit.setEnabled(False)
             self.vitaminARAEMcgLineEdit.setPlaceholderText('Disabled')
@@ -1726,6 +1809,15 @@ class addIngredientDialog(QDialog):
     
     # ensures user does not input more than one measure for folate
     def toggleFolate(self):
+        """
+        -----------------------------
+            Purpose:
+                - Ensures that user doe snot input more than one measure for folate
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         if self.folateDFEMcgDFELineEdit.text() != '':
             self.folateMcgLineEdit.setEnabled(False)
             self.folateMcgLineEdit.setPlaceholderText('Disabled')
@@ -1740,6 +1832,17 @@ class addIngredientDialog(QDialog):
 
     def validateNutrients(self, requested: bool=None):
         # required inputs are calories, total fat, total protein, total carbs 
+        """
+        -----------------------------
+            Purpose:
+                - Called before form submission. Validates the following information
+                - Inputs for calories, total fat, total protein and total carbs are inputted
+                - Ensure that there are no logical inconsistencies between the inputs (ie. sum of fats is greater than total fat)
+            Arguments:
+                -  requested: Not used
+            Return Value:
+                -  None
+        """
 
         # NOTE
         # omega3 + omega6 is a polyunsat fat 
@@ -2058,16 +2161,21 @@ class addIngredientDialog(QDialog):
 
     # validates all the user input before committing to database
     def validatedInput(self):
+        """
+        -----------------------------
+            Purpose:
+                - Further validates other inputs before form submission
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         if self.ingDescLineEdit.text() is None:
             msg = QMessageBox()
             msg.setText('Must input an ingredient description on tab 1')
             msg.exec_()
             return False
         
-        
-
-
-
 
 '''app = QApplication(sys.argv)
 gui = addIngredientDialog()

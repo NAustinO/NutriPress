@@ -34,7 +34,6 @@ from pjrd.quickTableView import QuickTableView
 # Fixes compatibility bug with mac big sur and pyqt
 os.environ['QT_MAC_WANTS_LAYER'] = '1' 
 
-# TODO update the ingredient version number
 class formulaEditorDialog(QDialog):
     
     # mainWindow is reference to the main window to call methods from that window
@@ -54,14 +53,24 @@ class formulaEditorDialog(QDialog):
             self.editID = openFormulaID
             self.foodID = corrFoodID
             self.loadFromExistingFormula(openFormulaID)
-        else: 
+        else:
             # new formula
             self.isEdit = False
             self.foodID = None
             self.fromSetupDialog(revision=revision, formulaName=formulaName, revisionID=prevRevisionID, differences=differences, category=category)
         
     # loads the formula editor according to the old
-    def loadFromExistingFormula(self, formulaID):
+    def loadFromExistingFormula(self, formulaID: int):
+        """
+        -----------------------------
+            Purpose:
+                -  Fills the formula editor in with the saved information from the database
+            Arguments:
+                -  formulaID: the unique identifier for the formula from the database
+            Return Value:
+                -  None
+        """
+
         with dbConnection('FormulaSchema').cursor() as cursor:
             rows = cursor.execute('SELECT formula_name, date_inputted, version_of_id, version_number, food_id, serving_weight_g, number_servings, is_weight_scaled, is_serving_scaled, serving_weight_unit_id, formula_category_id FROM formula WHERE formula_id = %s', (formulaID,))
             if rows == 0:
@@ -79,7 +88,7 @@ class formulaEditorDialog(QDialog):
             else:
                 self.revisionCheckBox.setChecked(False)
                 self.revisionCheckBox.setDisabled(True)
-                #self.revisionCheckBox.setCheckable(False)
+       
                 self.notRevisionCheckBox.setChecked(True)
                 self.notRevisionCheckBox.setDisabled(True)
 
@@ -170,7 +179,7 @@ class formulaEditorDialog(QDialog):
                     self.formula.ingStatement = foodInfo['ing_statement']
                     self.ingStatementTextBox.setText(self.formula.ingStatement)
                     
-            # category 
+            # category
             index = self.categoryComboBox.findData(categoryID, Qt.UserRole + 1)
             if index > 0:
                 self.categoryComboBox.setCurrentIndex(index)
@@ -189,7 +198,7 @@ class formulaEditorDialog(QDialog):
                         self.qualityAttributeTableWidget.setItem(rowIndex, 0, QTableWidgetItem(quality['quality_attribute']))
                     if quality['quality_attribute_value'] is not None:
                         self.qualityAttributeTableWidget.setItem(rowIndex, 1, QTableWidgetItem(str(quality['quality_attribute_value'])))
-                    if quality['quality_attribute_unit'] is not None: 
+                    if quality['quality_attribute_unit'] is not None:
                         self.qualityAttributeTableWidget.setItem(rowIndex, 2, QTableWidgetItem(str(quality['quality_attribute_unit'])))
                     if quality['description'] is not None:
                         self.qualityAttributeTableWidget.setItem(rowIndex, 3, QTableWidgetItem(str(quality['description'])))
@@ -922,7 +931,7 @@ class formulaEditorDialog(QDialog):
         self.servingsPerWidget.setSizePolicy(sizePolicy)
         self.horizontalLayout_2 = QHBoxLayout(self.servingsPerWidget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.servingsPerSpinbox = QSpinBox(self.servingsPerWidget)
+        self.servingsPerSpinbox = QDoubleSpinBox(self.servingsPerWidget)
         self.servingsPerSpinbox.setObjectName(u"servingsPerSpinbox")
         self.servingsPerSpinbox.setValue(1)
 
@@ -971,13 +980,6 @@ class formulaEditorDialog(QDialog):
         self.labelScrollArea.setWidget(self.labelScrollAreaContents)
 
         self.verticalLayout_3.addWidget(self.labelScrollArea)
-
-        '''self.displayNutritionalLabelBtn = QPushButton(self.labelTab)
-        self.displayNutritionalLabelBtn.setObjectName(u"displayNutritionalLabelBtn")
-        self.displayNutritionalLabelBtn.setMaximumSize(QSize(300, 16777215))
-
-        self.verticalLayout_3.addWidget(self.displayNutritionalLabelBtn, 0, Qt.AlignHCenter)'''
-
 
         self.formulaEditorTabWidget.addTab(self.labelTab, "")
         self.nutrientReportTab = QWidget()
@@ -1128,6 +1130,15 @@ class formulaEditorDialog(QDialog):
     # setupUi
 
     def setupLogic(self):
+        """
+        -----------------------------
+            Purpose:
+                - Signal/slot setup, QModel filling from database
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         # signal setup
         self.submitBtn.clicked.connect(self.formSubmit)
         self.formulaIngredientSearchBtn.clicked.connect(self.search)
@@ -1136,17 +1147,14 @@ class formulaEditorDialog(QDialog):
         self.scaleCombobox.currentIndexChanged.connect(self.toggleFocus)
         self.dvToggleBtn.clicked.connect(self.openDVTableViewer)
         self.showComparisonBtn.clicked.connect(self.openComparisonTableViewer)
-        
         self.editIngStatementBtn.clicked.connect(self.toggleReadOnly)
         self.copyIngStatementBtn.clicked.connect(self.copy)
         self.addQAttributeBtn.clicked.connect(self.insertRow)
         self.ingStatementPrintBtn.clicked.connect(self.printPreview)
-        
         self.scaleCombobox.currentIndexChanged.connect(self.updateFormulaServings)
         self.numServingsSpinbox.valueChanged.connect(self.updateFormulaServings)
         self.servingWeightSpinBox.valueChanged.connect(self.updateFormulaServings)
         self.unitWeightCombobox.currentIndexChanged.connect(self.updateFormulaServings)
-
         self.servingWeightSpinBox.valueChanged.connect(self.refresh) 
         self.unitWeightCombobox.currentIndexChanged.connect(self.refresh)
         self.numServingsSpinbox.valueChanged.connect(self.refresh)
@@ -1171,7 +1179,6 @@ class formulaEditorDialog(QDialog):
             self.categoryComboBox.setModel(categoryModel)
             self.categoryComboBox.setCurrentIndex(-1)
 
-
             # sets up the completer for the formula combobox
             unitModel = QStandardItemModel()
             unitCompleter = QCompleter()
@@ -1189,10 +1196,10 @@ class formulaEditorDialog(QDialog):
 
             # sets up the model for the comparison combobox
             compareModel = QStandardItemModel() 
-
-            # starts by adding the formulas to the comparisons
             cursor.execute('SELECT formula.formula_id, formula.food_id, formula.formula_name, food.food_desc FROM formula LEFT JOIN food ON formula.food_id = food.food_id ORDER BY formula.formula_name ASC')
+
             compareFoods = cursor.fetchall()
+            # adds the formulas to the model 
             for cFood in compareFoods:
                 compareItem = QStandardItem()
                 compareItem.setText(cFood['food_desc'].capitalize() + ' (Formula)')
@@ -1229,12 +1236,20 @@ class formulaEditorDialog(QDialog):
             self.nutrientReportCombobox.setModel(nutModel)
             self.nutrientReportCombobox.setCurrentIndex(-1)
 
-
         self.nutrientReportCombobox.currentIndexChanged.connect(self.nutrComparisonChosen)
         #####
 
-    # Opens a separate QDialog containing the tableview with the nutrient report broken down by daily recommended value, per 100 gram, per serving and % Daily Value per serving    
+    # Opens a separate QDialog containing the tableview with the nutrient report broken down by daily recommended value, per 100 gram, per serving and % Daily Value per serving  
     def openDVTableViewer(self):
+        """
+        -----------------------------
+            Purpose:
+                - Opens the custom QTableView class used for displaying the reports the daily recommended value report 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
 
         # for the daily value report 
         totalWeightG = self.formula.totalFormulaWeight()
@@ -1270,7 +1285,6 @@ class formulaEditorDialog(QDialog):
             numberServings = 1
             servingWeight = totalWeightG
 
-
         for nutrientID in nutrientIDList:
             nutrientDict = self.formula.allNutritionals.get(nutrientID)
             rowIndex = rowMap.get(nutrientID)
@@ -1304,11 +1318,22 @@ class formulaEditorDialog(QDialog):
         view = QuickTableView(model, label="Comparison by Daily Value and 100 g", note='One serving weighs {} grams'.format(round(servingWeight, 1)))
         view.setSubheaderLabel('Percent daily values are based on a 2,000 calorie diet for healthy adults. Daily values last updated in 2016.')
         view.exec_()
+        return
 
-    # Opens a separate QDialog containing the tableview for a comparison per 100g of current recipe vs recipe chosen
     def openComparisonTableViewer(self):
+        """
+        -----------------------------
+            Purpose:
+                - Opens the custom QTableView for a comparison per 100g of current recipe vs recipe chosen
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+        # error handling
         if len(self.formula.getCurrentIngredients()) == 0: 
             return
+        
         if self.comboBox.currentIndex() == -1:
             comparedTo = None
         else:
@@ -1317,7 +1342,8 @@ class formulaEditorDialog(QDialog):
         compareToName = 'No comparison chosen'
 
         rowMap = compareTableRowMap()
-        # header information for the table
+
+        # header lists for the table
         horizHeaders = ['Current (per 100g)', 'Comparison (per 100g)', '% Difference']
         vertHeaders = ['Calories (kCal)', 'Total Fat (g)', 'Saturated Fat (g)', 'Trans Fat (g)', 'Mono Unsat Fat (g)', 'Poly Unsat Fat (g)', 'Total Unsat Fat (g)','Omega-3 FA (g)', 'Omega-6 FA (g)', 'Cholestrol (mg)', 'Total Carbohydrates (g)', 'Total Dietary Fiber (g)', 'Total Sugar (g)', 'Added Sugar (g)', 'Monosaccharides (g)', 'Disaccharides (g)', 'Protein (g)', 'Vitamin A (Retinols)(IU)', 'Vitamin A (Retinols) - RE (µg)', 'Vitamin A (Retinols) - RAE (µg)', 'Vitamin B1/Thiamin (mg)', 'Vitamin B2/Riboflavin (mg)', 'Vitamin B3/Niacin (mg)', 'Vitamin B3/Niac. Eq (mg)', 'Vitamin B5/Panothenic Acid (mg)', 'Vitamin B6 (µg)', 'Vitamin B9/Folic Acid (mg)', 'Vitamin B12 (mg)', 'Vitamin C (mg)', 'Vitamin D (µg)', 'Vitamin D (IU)', 'Vitamin E/Alpha-tocopherol (mg)', 'Vitamin K/Phylloquinone (µg)', 'Choline (mg)', 'Calcium (mg)', 'Copper (mg)', 'Iron (mg)', 'Magnesium (mg)', 'Manganese (mg)', 'Phosphorus (mg)', 'Potassium (mg)', 'Selenium (µg)', 'Sodium (mg)', 'Zinc (mg)'] 
 
@@ -1325,7 +1351,8 @@ class formulaEditorDialog(QDialog):
         model = CustomTableModel()
         model.setHeaderLabels(horizHeaders, Qt.Horizontal, Qt.DisplayRole)
         model.setHeaderLabels(vertHeaders, Qt.Vertical, Qt.DisplayRole)
-        # temporary
+
+        # initializes temporary dataframe to be passed into th emodel
         data = initialize2DArray(len(vertHeaders), len(horizHeaders), '-')
 
         # fill sin the data for the current formula
@@ -1367,11 +1394,11 @@ class formulaEditorDialog(QDialog):
                     per100g = amountStdUnit * (100/totalWeightG)
                     data[rows][0] = round(per100g, 3)
 
+        
         if comparedTo is not None:
 
             # sets data for nutritionals for the comparison
             with dbConnection('FormulaSchema').cursor() as cursor:
-                
                 # pulls the g per 100g of ingredient value from database, along with unit conversion values to convert to its standard unit
                 cursor.execute('SELECT nutrient.nutrient_id, food_nutrient.nutrient_weight_g_per_100g, unit.conversion_factor, unit.conversion_offset FROM nutrient LEFT JOIN food_nutrient ON nutrient.nutrient_id = food_nutrient.nutrient_id LEFT JOIN unit ON nutrient.unit_id = unit.unit_id WHERE food_nutrient.food_id = %s',  (comparedTo,))
                 results = cursor.fetchall()
@@ -1382,8 +1409,7 @@ class formulaEditorDialog(QDialog):
                         continue
                     rowIndex = rowMap.get(nutrientID)
                     if rowIndex is None: continue
-                    # vitamin A RAE ID --> [vitamin A IU, vitamin A RE, Vitamin A RAE] (17, 18, 19)
-                    if nutrientID == 320:
+                    if nutrientID == 320:  # vitamin A RAE ID --> [vitamin A IU, vitamin A RE, Vitamin A RAE] (17, 18, 19)
                         for specialNutrient in rowIndex:
                             if specialNutrient == 17:
                                 per100g = result['nutrient_weight_g_per_100g'] * (100000/0.3)
@@ -1391,15 +1417,13 @@ class formulaEditorDialog(QDialog):
                             else:
                                 per100g = result['nutrient_weight_g_per_100g'] * 100000
                                 data[specialNutrient][1] = round(per100g, 3)
-                    # Niacin ID --> [Niacin, Niacin Equivalents] (22, 23)
-                    elif nutrientID == 406: 
+                    elif nutrientID == 406:  # Niacin ID --> [Niacin, Niacin Equivalents] (22, 23)
                         for specialNutrient in rowIndex:
                             per100g = result['nutrient_weight_g_per_100g']/result['conversion_factor'] - result['conversion_offset']
                             data[specialNutrient][1] = round(per100g, 3)
                     else:
                         per100g = result['nutrient_weight_g_per_100g']/result['conversion_factor'] - result['conversion_offset']
                         data[rowIndex][1] = round(per100g, 3)
-            
         model.inputTableData(data)
         view = QuickTableView(model, note=compareToName)
         view.setHeaderLabel('Comparison of the current formula and the chosen item, each scaled to 100 g')
@@ -1407,9 +1431,20 @@ class formulaEditorDialog(QDialog):
 
     # toggles the focus of the scale formula portion 
     def toggleFocus(self):
-        if self.scaleCombobox.currentIndex() == -1:
+        """
+        -----------------------------
+            Purpose:
+                -  Toggles the scale widgets disabling affect to direct the user on how to input the information and prevent duplicate inputs
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+
+        if self.scaleCombobox.currentIndex() == -1: # if the scaleCombobox has not been changed
             return
-        else:
+        
+        else: # if scaleCombobox has been changed
             var = self.scaleCombobox.currentData(Qt.UserRole)
             # scale by weight
             if var == 'weight':
@@ -1422,13 +1457,23 @@ class formulaEditorDialog(QDialog):
     
     # toggles the widget disabling affect 
     def toggleReadOnly(self):
-        # if the box is not editable, make editable and change button to done editing
+        """
+        -----------------------------
+            Purpose:
+                -  Toggles the ingredient statement textbox to hint to the user when the box is editable or disabled
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+
+        # if the box is not editable, make editable and change button to 'Finalize Edits'
         if self.ingStatementTextBox.isReadOnly():
             self.ingStatementTextBox.setStyleSheet("background-color: rgb(255, 255, 255);")
             self.ingStatementTextBox.setReadOnly(False)
             self.editIngStatementBtn.setText('Finalize Edits')
  
-        # if the box is editable
+        # if the box is editable, make the box uneditable and change the button to 'Edit'
         else:
             self.ingStatementTextBox.setStyleSheet("background-color: rgb(169, 169, 169);")
             self.ingStatementTextBox.setReadOnly(True)
@@ -1436,12 +1481,32 @@ class formulaEditorDialog(QDialog):
 
     # opens print preview for ingredient statement
     def printPreview(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Opens the print preview dialog for the ingredient statement
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+
         dialog = QPrintPreviewDialog()
         dialog.paintRequested.connect(self.ingStatementTextBox.print_)
         dialog.exec_()
     
     # copies ingredient statement to user clipboard
     def copy(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Copies the ingredient statement to the user clipboard 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+        
         text = self.ingStatementTextBox.toPlainText()
         text = text.replace("<b>", "")
         text = text.replace("</b>", "")
@@ -1454,6 +1519,16 @@ class formulaEditorDialog(QDialog):
 
     # autofills the placeholder labels in the general nutritional frame 
     def refreshGeneralNutritionals(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Called upon the refresh method, generally during adding or removing an ingredient or changing the serving size information
+                - Sets the General Nutritionals frame (The quick look for the most important nutrients) placeholders to their respective nutrient values
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         if len(self.formula.getCurrentIngredients()) == 0:
             return
 
@@ -1549,6 +1624,15 @@ class formulaEditorDialog(QDialog):
 
     # main function that calls other refresh functions 
     def refresh(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Wraps the the separate methods tha refresh the data displayed on the page
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         if len(self.formula.getCurrentIngredients()) != 0:
             self.refreshGeneralNutritionals()
             self.refreshIngStatement()
@@ -1556,6 +1640,15 @@ class formulaEditorDialog(QDialog):
 
     # clears the highlighted rows from the ingredients table widget 
     def removeSelected(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Allows user to interface with the FormulaEditor formula table by removing the selected ingredients from the formula data structure and view
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         rowIndeces = self.ingTabFormulaTableWidget.selectionModel().selectedRows(0)
         toRemove = []
         toRemoveDesc = ''
@@ -1572,20 +1665,40 @@ class formulaEditorDialog(QDialog):
 
     # inserts row into qtablewidget 
     def insertRow(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Inserts a new row to the table widget
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         rowCount = self.qualityAttributeTableWidget.rowCount()
         self.qualityAttributeTableWidget.insertRow(rowCount)
         
     # refrhes the nutrient report tab
     def refreshReport(self):  
+        """
+        -----------------------------
+            Purpose:
+                -  One of the refresh methods called upon modification to the formulas serving or ingredients 
+                -  Refreshes all the displayed data on the Nutrient Report Tab  
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         totalWeightG = self.formula.totalFormulaWeight()
-        # sets scaling to default 
+
+        # sets scaling to default if no input
         # number of servings is 1 
         # serving weight is the total formula weight
         if self.formula.numberOfServings is None or self.formula.servingWeight is None:
             self.formula.numberOfServings = 1
             self.formula.servingWeight = self.totalFormulaWeight()
-            
-
+        
+        # updates the header labels 
         if self.formula.numberOfServings == 1:
             self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} grams). The total inputted weight is {} grams'.format(numberWithCommas(round(totalWeightG)), numberWithCommas(round(totalWeightG))))
         else:
@@ -1598,10 +1711,9 @@ class formulaEditorDialog(QDialog):
             else:
                 self.spreadSheetBasedOnLabel.setText('Nutritionals in spreadsheet are based on 1 serving ({} g). There are approximately {} serving(s) inputted'.format(numberWithCommas(round(self.formula.servingWeight)), round(self.formula.numberOfServings, 3)))
 
-
-        ##### updates nutrient spreadsheet
-        map = nutrientColMap()
-        data = [] # maintains the dataframe
+        # updates the nutrient spreadsheet 
+        map = nutrientColMap() 
+        data = [] # dataframe 
         totals = [0 for i in range(57)] # list for the totals of each nutrient, 57 is the number of columns in the self.nutrientReportTableView
         totals[0] = 'TOTAL'
         totals[1] = '-'
@@ -1610,7 +1722,6 @@ class formulaEditorDialog(QDialog):
         for ingredientDict in currentIngredients.values():
             ingredient = ingredientDict['object']
             dataframeRow = [0 for i in range(57)]
-
             # foodDesc
             dataframeRow[0] = ingredient.desc
             dataframeRow[1] = ingredient.getInputtedQuantity()[0]
@@ -1634,6 +1745,16 @@ class formulaEditorDialog(QDialog):
             
     # refreshes the ingredient statement part of the quality tab
     def refreshIngStatement(self, foodList: list=None): 
+        """
+        -----------------------------
+            Purpose:
+                -  One of the refresh methods called upon modification to the formula serving or ingredients 
+                -  Refreshes the data displayed on the Quality Tab ingredient statement table and textedit 
+            Arguments:
+                -  foodList: Not used
+            Return Value:
+                -  None
+        """
         # if no ingredients, return
         if len(self.formula.getCurrentIngredients()) == 0:
             return
@@ -1672,10 +1793,6 @@ class formulaEditorDialog(QDialog):
             nestedStatement = getIngredientStatement(ingredient.foodID) 
             extracted = extractIngredientStatement(nestedStatement)
             tableItem = extracted.split('</b>')[1].replace('(', '').replace(')', '')
-
-            #tableInsert = extracted.replace('<b>', '').replace('</b>', '')
-            #tempInsert = tableInsert.replace('(', ' ').replace(')', ' ')
-            #splittableInsert = tableInsert.split('(')
             self.ingStatementTable.setItem(rowIndex, 2, QTableWidgetItem(str(tableItem)))
 
             mainStatement.append(extracted)
@@ -1688,6 +1805,15 @@ class formulaEditorDialog(QDialog):
     # updates the chartview to display a barchart 
     # The barchart shows what percentage of the total nutrient amount is attributed to the given ingredient
     def nutrComparisonChosen(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Updates the chart view on the Nutrient Report tab to display the percentage of a total nutrient amount attributed to the user chosen ingredient
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
 
         self.singleNutrientChartView.resetCachedContent() # not sure if needed
         if self.formula.getNumberOfIngredients() == 0:
@@ -1755,7 +1881,7 @@ class formulaEditorDialog(QDialog):
         series.append(barset)
         xAxis = QtCharts.QBarCategoryAxis()
         xAxis.append(ingredientSeriesList)
-        #xAxis.setLabelsAngle(-45)
+        xAxis.setLabelsAngle(-45) # test with more ingredients 
         font = QFont()
         font.setPointSize(10)
         font.setHintingPreference(QFont.PreferFullHinting)
@@ -1776,7 +1902,22 @@ class formulaEditorDialog(QDialog):
         self.singleNutrientChartView.setChart(chart)
     
     # parameters taken from previous setup window to create the UI for this window
-    def fromSetupDialog(self, revision=None, formulaName=None, revisionID=None, differences=None, category = None):
+    def fromSetupDialog(self, revision:bool=None, formulaName: str=None, revisionID=None, differences=None, category = None):
+        """
+        -----------------------------
+            Purpose:
+                -  Called when initializing the class object. Takes parameters taken from the FormulaEditorSetupDialog and autofills the information 
+            Arguments:
+                -  revision: A boolean indicating whether the new formula is an iteration from a previous
+                    - if an iteration: is True
+                    - if an entirely new formula, is False
+                - formulaName: The name of the formula 
+                - revisionID: the version (iteration number) of the formula, if it is an iteration 
+                - differences: The differences between indicated between the previous iteration and this new one
+                - category: the type of formula (category name) for which the formula belongs to 
+            Return Value:
+                -  None
+        """
         self.formulaNameLineEdit.setText(formulaName)
         self.formulaNameLineEdit.setReadOnly(True)
         self.revisionNumberPlaceholder.setText(str(revisionID))
@@ -1796,6 +1937,15 @@ class formulaEditorDialog(QDialog):
 
     # opens the search results window with user query
     def search(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Opens the search window for adding a new ingredient to the formula 
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         query = self.formulaIngredientSearchLineEdit.text()
         root = self
         dialog = searchResults(query, root)
@@ -1804,6 +1954,15 @@ class formulaEditorDialog(QDialog):
 
     # opens a dialog box confirming exit from the editor. 
     def exitEditor(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Opens dialog to confirm exit from the editor
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
         confirm = QMessageBox.question(self, 'Confirm Exit', 'Are you sure you would like to exit?', QMessageBox.Yes|QMessageBox.No)
         if confirm == QMessageBox.Yes:
             self.close()
@@ -1811,17 +1970,26 @@ class formulaEditorDialog(QDialog):
 
     # submits the form to the database
     def formSubmit(self):
+        """
+        -----------------------------
+            Purpose:
+                -  Submits the formula to the database
+            Arguments:
+                -  None
+            Return Value:
+                -  None
+        """
+        msg = QMessageBox() 
 
-        msg = QMessageBox()    
-
+        # Error Handling
         if len(self.formula.getCurrentIngredients()) <= 1:
             return 
-       
         if self.categoryComboBox.currentText() == '':
             msg.setText('Please choose a category for this formula')
             msg.exec_()
             return
-                    
+        ####
+
         if self.scaleCombobox.currentData(Qt.UserRole) == 'weight':
             scaleByWeightBool = True
             scaleByServingsBool = False
@@ -1834,8 +2002,6 @@ class formulaEditorDialog(QDialog):
 
         db = dbConnection('FormulaSchema')
         with db.cursor() as cursor:
-
-
             if self.unitWeightCombobox.currentData(Qt.UserRole) is None:
                 servingUnitID = 1
             else:
@@ -1850,9 +2016,7 @@ class formulaEditorDialog(QDialog):
             elif categoryID is not None:
                 categoryID = categoryID['category_id']
 
-            # if formula is a new formula submission
-            if self.isEdit is False: 
-
+            if self.isEdit is False:  # if formula is a new formula submission
                 # gets confirmation that user wishes to submit the formula
                 confirm = QMessageBox.question(self, 'Confirm Submission', 'Are you sure you would like to submit to database?', QMessageBox.Yes|QMessageBox.No)
 
@@ -1931,16 +2095,14 @@ class formulaEditorDialog(QDialog):
                     msg.exec_()
                     return
                 else:
-                    print('committing to database')
+                    print('Committing to database')
                     db.commit()
                     msg.setText('Successfully saved formula to database')
                     msg.exec_()
                     return
-
-            # if self.isEdit is True, the user changed information from an existing formula
-            else:
+            else:  # if self.isEdit is True, the user changed information from an existing formula
                 try:
-                    confirmEdits =QMessageBox.question(self, 'Confirm Changes To Formula', 'Would you like to overwrite the changes to the formula in the database?', QMessageBox.Yes|QMessageBox.No)
+                    confirmEdits = QMessageBox.question(self, 'Confirm Changes To Formula', 'Would you like to overwrite the changes to the formula in the database?', QMessageBox.Yes|QMessageBox.No)
                     if confirmEdits != QMessageBox.Yes:
                         return
                     ingredientStatement = self.ingStatementTextBox.toPlainText().replace('<b>', '').replace('</b>', '')
@@ -2135,14 +2297,9 @@ class formulaEditorDialog(QDialog):
         self.hidePerContainerCheckBox.setText(QCoreApplication.translate("Dialog", u"Hide on Label", None))
         self.scalingHeaderLabel.setText(QCoreApplication.translate("Dialog", u"Scale Formula", None))
         self.servingsLabel.setText(QCoreApplication.translate("Dialog", u"Serving(s)", None))
-
-
-
         #if QT_CONFIG(whatsthis)
         #endif // QT_CONFIG(whatsthis)
-
         self.formulaEditorTabWidget.setTabText(self.formulaEditorTabWidget.indexOf(self.labelTab), QCoreApplication.translate("Dialog", u"Label", None))
-
         self.nutrientSpreadsheetLabel.setText(QCoreApplication.translate("Dialog", u"Nutrient Spreadsheet", None))
         self.singleNutrientLabel.setText(QCoreApplication.translate("Dialog", u"Single Nutrient ", None))
         self.dailyValueLabel.setText(QCoreApplication.translate("Dialog", u"Daily Value and Per 100g", None))

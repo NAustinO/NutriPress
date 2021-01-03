@@ -40,6 +40,15 @@ class Ui_MainWindow(QMainWindow):
         self.refreshListWidget()
         
     def setupLogic(self):
+        """
+        -----------------------------
+            Purpose:
+                - Event/signal setup
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         self.quickAddFormulaBtn.clicked.connect(self.addFormula)
         self.searchBtn.clicked.connect(self.search)
         self.searchLine.installEventFilter(self)
@@ -48,18 +57,48 @@ class Ui_MainWindow(QMainWindow):
   
     # when called, opens the new ingredient dialog
     def addIngEvent(self):
+        """
+        -----------------------------
+            Purpose:
+                - Opens the new ingredient dialog when called
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         widget = addIngredientDialog(self)
         widget.show()
         widget.exec_()
     
     # opens the new new formula setup dialog
     def addFormula(self):
+        """
+        -----------------------------
+            Purpose:
+                - Opens the new formula editor when called
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         widget = formulaSetupDialog(self)
         widget.show()
         widget.exec_()
 
     # overrides standard event filter
     def eventFilter(self, source, event):
+        """
+        -----------------------------
+            Purpose:
+                - Overloads eventFilter method for QDialog
+                - Listens for the return key to be pressed to call the open method
+            Arguments:
+                - source: the QWidget in focus when the event is handled
+                - event: the QEvent object that specifies the type of event
+            Return Value:
+                - Returns True if successfully handles the event
+                - Returns False if unsuccessful
+        """
         # search event
         if (event.type() == QEvent.KeyPress and source is self.searchLine and event.key() == Qt.Key_Return):
             if self.searchLine.text() is None:
@@ -71,6 +110,15 @@ class Ui_MainWindow(QMainWindow):
 
     # slot that listens for a double click on the listwidget
     def listItemClicked(self):
+        """
+        -----------------------------
+            Purpose:
+                - The method is called to open the item
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         toOpen = self.quickFormulaAccess.currentItem().data(Qt.UserRole)
         description = self.quickFormulaAccess.currentItem().text()
         id = toOpen['foodID']
@@ -89,6 +137,15 @@ class Ui_MainWindow(QMainWindow):
 
     # refreshes the list widget. Called when a new ingredient or formula is added
     def refreshListWidget(self):
+        """
+        -----------------------------
+            Purpose:
+                - Autofills the list widget with items. Mostly called after adding an ingredient or formula to the database
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         self.quickFormulaAccess.clear()
         with dbConnection('FormulaSchema').cursor() as cursor:
             results = cursor.execute('SELECT food.food_id, food.food_desc, food.input_date FROM food WHERE food.user_inputted = %s and food.food_id NOT IN (SELECT food_id FROM formula) ORDER BY food_desc ASC', (True,))
@@ -121,6 +178,15 @@ class Ui_MainWindow(QMainWindow):
 
     # slot for opening the search window
     def search(self):
+        """ 
+        -----------------------------
+            Purpose:
+                - Slot for opening the search window upon the signal 
+            Arguments:
+                - None
+            Return Value:
+                - None
+        """
         if self.searchLine.text() == '':
             return
         widget = MainSearch(self, self.searchLine.text())
@@ -129,6 +195,18 @@ class Ui_MainWindow(QMainWindow):
 
     # opens the formula editor or ingredient dialog based on the type of item selected
     def open(self, description, foodIdToOpen: int=None, formulaIdToOpen: int=None, type: str=None):
+        """
+        -----------------------------
+            Purpose:
+                - Opens the formula editor/ingredient dialog of an existing item based on the params passed in 
+            Arguments:
+                - description: The name of the item (formula name or ingredient name)
+                - foodIdToOpen: The unique foodID of the item to open
+                - formulaIdToOpen: The unique formulaId to open
+                - type: string that indicates what type of item it is to open (Can be either "formula" or "ingredient") 
+            Return Value:
+                - None
+        """
         if foodIdToOpen is None:
             return
         if type == 'ingredient':
@@ -144,11 +222,20 @@ class Ui_MainWindow(QMainWindow):
 
     # event handler that validates the users input to close the window and exit the program
     def closeEvent(self, event):
+        """
+        -----------------------------
+            Purpose:
+                - Event handler that validates the users input before closing the window and exiting the program
+            Arguments:
+                - event: the QEvent object passed
+            Return Value:
+                - None
+        """
         toClose = QMessageBox.question(self, 'Confirm Exit', 'Exit Program?', QMessageBox.Yes | QMessageBox.No)
         if toClose == QMessageBox.Yes:
-            event.accept()
+            self.close()
         else:
-            event.ignore()
+            return
 
     def setupUi(self):
         if not self.objectName():
@@ -156,22 +243,23 @@ class Ui_MainWindow(QMainWindow):
         self.resize(1114, 985)
         self.setMinimumSize(QSize(500, 500))
         icon = QIcon()
-        icon.addFile(u"pjrd/static/media/pjgraphiclogo.png", QSize(), QIcon.Normal, QIcon.On)
+        icon.addFile(u"pjrd/static/media/hpMyPlate.png", QSize(), QIcon.Normal, QIcon.On)
         self.setWindowIcon(icon)
     
         self.actionExit = QAction(self)
         self.actionExit.setObjectName(u"actionExit")
         self.actionAddRecipe = QAction(self)
         self.actionAddRecipe.setObjectName(u"actionAddRecipe")
-        self.actionAddIngredient = QAction(self)
-        self.actionAddIngredient.setObjectName(u"actionAddIngredient")
+        self.actionAddRecipe.triggered.connect(self.addFormula)
 
+        self.actionAddIngredient = QAction(self)
+        self.actionAddIngredient.triggered.connect(self.addIngEvent)
+        self.actionAddIngredient.setObjectName(u"actionAddIngredient")
+    
         self.actionOpen = QAction(self)
         self.actionOpen.setObjectName(u"actionOpen")
-        self.actionSave = QAction(self)
-        self.actionSave.setObjectName(u"actionSave")
-        self.actionLogout = QAction(self)
-        self.actionLogout.setObjectName(u"actionLogout")
+        #self.actionOpen.triggered.connect(self.search)
+
         self.mainWindowWidget = QWidget(self)
         self.mainWindowWidget.setObjectName(u"mainWindowWidget")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -190,10 +278,6 @@ class Ui_MainWindow(QMainWindow):
 
         self.tabTableView = QTableView(self.tab)
         self.verticalLayout.addWidget(self.tabTableView)
-        #self.mdiArea = QMdiArea(self.tab)
-        #self.mdiArea.setObjectName(u"mdiArea")
-
-        #self.verticalLayout.addWidget(self.mdiArea)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -224,17 +308,16 @@ class Ui_MainWindow(QMainWindow):
         self.pjLogoHeader.setObjectName(u'pjLogoLoginHeader')
         self.pjLogoHeader.setMinimumSize(QSize(0, 16))
         self.pjLogoHeader.setMaximumSize(QSize(100, 100))
-        self.pjLogoHeader.setPixmap(QPixmap(u'pjrd/static/media/pjgraphiclogo.png'))
+        self.pjLogoHeader.setPixmap(QPixmap(u'pjrd/static/media/icon.png'))
         self.pjLogoHeader.setScaledContents(True)
         self.verticalLayout_3.addWidget(self.pjLogoHeader, 0, Qt.AlignHCenter|Qt.AlignVCenter)
 
         self.loginHeader = QLabel(self.leftNavBarWidget)
-        #self.loginHeader.setText(u'Welcome to the Pressed Juicery Formula Database')
         self.loginHeader.setWordWrap(True)
         self.loginHeader.setObjectName(u"loginHeader")
         self.loginHeader.setMinimumSize(QSize(0, 16))
         self.loginHeader.setMaximumSize(QSize(100, 100))
-        self.loginHeader.setPixmap(QPixmap(u"../pjrd/static/media/pjgraphiclogo.png"))
+        self.loginHeader.setPixmap(QPixmap(u"../pjrd/static/media/icon.png"))
         self.loginHeader.setScaledContents(True)
 
         self.verticalLayout_3.addWidget(self.loginHeader, 0, Qt.AlignHCenter|Qt.AlignVCenter)
@@ -317,9 +400,7 @@ class Ui_MainWindow(QMainWindow):
 
         self.menubar.setNativeMenuBar(False)
         self.menuFile.addAction(self.actionOpen)
-        self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.menuAdd.menuAction())
-        self.menuFile.addAction(self.actionLogout)
         self.menuFile.addAction(self.actionExit)
         self.actionExit.triggered.connect(self.closeEvent)  ####### <----------------- Does not work properly
         self.menuFile.addSeparator()
@@ -327,7 +408,6 @@ class Ui_MainWindow(QMainWindow):
         self.menuAdd.addAction(self.actionAddIngredient)
 
         # adds shortcuts
-        self.actionSave.setShortcut('Ctrl+S')
         self.actionOpen.setShortcut('Ctrl+O')
         self.actionExit.setShortcut('Ctrl+Q')
 
@@ -339,7 +419,7 @@ class Ui_MainWindow(QMainWindow):
     # setupUi
 
     def retranslateUi(self):
-        self.setWindowTitle(QCoreApplication.translate("self", u"Pressed Juicery R&D", None))
+        self.setWindowTitle(QCoreApplication.translate("self", u"Nutrition Assistant", None))
         self.actionExit.setText(QCoreApplication.translate("self", u"Quit", None))
         #if QT_CONFIG(shortcut)
         self.actionExit.setShortcut(QCoreApplication.translate("self", u"Meta+Q", None))
@@ -347,8 +427,6 @@ class Ui_MainWindow(QMainWindow):
         self.actionAddRecipe.setText(QCoreApplication.translate("self", u"Recipe", None))
         self.actionAddIngredient.setText(QCoreApplication.translate("self", u"Ingredient", None))
         self.actionOpen.setText(QCoreApplication.translate("self", u"Open", None))
-        self.actionSave.setText(QCoreApplication.translate("self", u"Save", None))
-        self.actionLogout.setText(QCoreApplication.translate("self", u"Logout", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("self", u"Tab 1", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("self", u"Tab 2", None))
         self.loginHeader.setText("")
