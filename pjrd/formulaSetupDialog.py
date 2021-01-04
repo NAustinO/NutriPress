@@ -204,8 +204,14 @@ class formulaSetupDialog(QDialog):
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(formulaSetupDialog)
-        self.buttonBox.accepted.connect(formulaSetupDialog.accept)
-        self.buttonBox.rejected.connect(formulaSetupDialog.close)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.close)
+
+
+
+
+        #self.buttonBox.accepted.connect(formulaSetupDialog.accept)
+        #self.buttonBox.rejected.connect(formulaSetupDialog.close)
 
         ##
         self.revisionContainerFrame.setDisabled(True)
@@ -272,8 +278,12 @@ class formulaSetupDialog(QDialog):
             Return Value:
                 -  None
         """
-        categoryID = self.revisionCategoryComboBox.itemData(self.revisionCategoryComboBox.currentIndex(), Qt.UserRole)['category_id']
-
+        
+        revisionComboboxSelection = self.revisionCategoryComboBox.itemData(self.revisionCategoryComboBox.currentIndex(), Qt.UserRole)
+        if revisionComboboxSelection is None:
+            return
+        else:
+            categoryID = revisionComboboxSelection['category_id']
         if categoryID is None:
             return
         prevFormulasModel = QStandardItemModel()

@@ -82,10 +82,10 @@ class CustomTableModel(QAbstractTableModel):
         self.tableData = tableData
         self.horizHeaders = horizHeaders
         if horizHeaders is not None:
-            self.setHeaderLabels(horizHeaders, Qt.Horizontal)
+            self.setHeaderLabels(horizHeaders, Qt.Horizontal, Qt.DisplayRole)
         self.vertHeaders = vertHeaders
         if vertHeaders is not None:
-            self.setHeaderLabels(vertHeaders, Qt.Vertical)
+            self.setHeaderLabels(vertHeaders, Qt.Vertical, Qt.DisplayRole)
 
     # returns the number of rows 
     def rowCount(self, parent: QModelIndex):

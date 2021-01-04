@@ -276,8 +276,42 @@ class Ui_MainWindow(QMainWindow):
         self.verticalLayout = QVBoxLayout(self.tab)
         self.verticalLayout.setObjectName(u"verticalLayout")
 
-        self.tabTableView = QTableView(self.tab)
-        self.verticalLayout.addWidget(self.tabTableView)
+        self.welcomeFrame = QFrame(self.tab)
+        
+        self.verticalLayout2 = QVBoxLayout(self.welcomeFrame)
+        self.welcomeFrame.setLayout(self.verticalLayout2)
+        self.welcomeFrame.setMaximumHeight(150)
+        
+        self.welcomeHeader = QLabel(self.tab)
+        self.welcomeHeader.setText('Welcome to my Nutrition Database and Assistant Program')
+        self.welcomeHeader.setAlignment(Qt.AlignCenter)
+        self.welcomeHeaderFont = QFont()
+        self.welcomeHeaderFont.setPointSize(22)
+        self.welcomeHeaderFont.setBold(True)
+        self.welcomeHeader.setFont(self.welcomeHeaderFont)
+        self.welcomeHeader.setStyleSheet("QLabel { background-color: white}")
+        self.verticalLayout2.addWidget(self.welcomeHeader)
+
+        self.verticalLayout.addWidget(self.welcomeFrame)
+
+        self.welcomeBody = QFrame(self.tab)
+        self.bodyLayout = QVBoxLayout(self.welcomeBody)
+        self.welcomeBody.setLayout(self.bodyLayout)
+
+        self.welcomeBodyLabel = QLabel(self.welcomeBody)
+        self.welcomeBodyLabel.setText('This program is designed as a tool to assist with recipe development.  It allows: <ul> <li>Storage of ingredient ratios and helps document different versions of recipes that are improved upon</li> <li>Estimate the nutritional information of their recipe, without outsourcing to a lab for analytical testing</li> <li>Upload custom or supplier specific ingredients to ensure more accurate nutrition estimations</li> </ul> Finally, formulas stored in this program can be used as components of entire meals or diets simply by using the component as an ingredient in another formula. <br><br> To begin, click on the buttons to the left.')
+        self.welcomeBodyLabel.setStyleSheet("QLabel { background-color: white}")
+        self.welcomeBodyLabel.setContentsMargins(20, 10, 20, 10)
+        self.bodyFont = QFont()
+        self.bodyFont.setPointSize(16)
+        self.welcomeBodyLabel.setFont(self.bodyFont)
+        self.welcomeBodyLabel.setWordWrap(True)
+        self.bodyLayout.addWidget(self.welcomeBodyLabel)
+        self.verticalLayout.addWidget(self.welcomeBody)
+
+
+        #self.tabTableView = QTableView(self.tab)
+        #self.verticalLayout.addWidget(self.tabTableView)
 
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
@@ -427,7 +461,7 @@ class Ui_MainWindow(QMainWindow):
         self.actionAddRecipe.setText(QCoreApplication.translate("self", u"Recipe", None))
         self.actionAddIngredient.setText(QCoreApplication.translate("self", u"Ingredient", None))
         self.actionOpen.setText(QCoreApplication.translate("self", u"Open", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("self", u"Tab 1", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("self", u"Welcome", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("self", u"Tab 2", None))
         self.loginHeader.setText("")
         self.searchLine.setPlaceholderText(QCoreApplication.translate("self", u"Search", None))

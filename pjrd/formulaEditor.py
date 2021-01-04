@@ -1277,6 +1277,7 @@ class formulaEditorDialog(QDialog):
 
             conversionFactor = unit.conversionFactor
             conversionOffset = unit.conversionOffset
+
             # converts to gram weight
             servingWeight = (servingWeight + conversionOffset) * conversionFactor
 
@@ -1556,7 +1557,8 @@ class formulaEditorDialog(QDialog):
             self.totalWeightPlaceholderLabel.setText(str(round(totalWeightG, 2)))
             self.numberServingsPlaceholderLabel.setText(str(round(self.formula.numberOfServings, 2)))
             self.servingWeightPlaceholder.setText(str(round(self.formula.servingWeight, 2)))
-            scalingFactor = self.formula.servingWeight/(100 * len(self.formula.getCurrentIngredients()))
+            #scalingFactor = self.formula.servingWeight/(100 * len(self.formula.getCurrentIngredients()))
+            scalingFactor = 1/self.formula.numberOfServings
         except:
             self.totalWeightPlaceholderLabel.setText(f'{self.formula.totalFormulaWeight():,}')
             self.servingSizeLineEdit.setText() != '-'
@@ -2020,6 +2022,8 @@ class formulaEditorDialog(QDialog):
                 # gets confirmation that user wishes to submit the formula
                 confirm = QMessageBox.question(self, 'Confirm Submission', 'Are you sure you would like to submit to database?', QMessageBox.Yes|QMessageBox.No)
 
+
+
                 if confirm != QMessageBox.Yes:
                     return
                 try:
@@ -2030,6 +2034,7 @@ class formulaEditorDialog(QDialog):
                     confirmStatement.setInformativeText(self.ingStatementTextBox.toPlainText().replace('<b>', '').replace('</b>', '').capitalize())
                     yesBtn = confirmStatement.addButton('Yes', QMessageBox.AcceptRole)
                     noBtn = confirmStatement.addButton('No', QMessageBox.RejectRole)
+                    cancelBtn = confirmStatement.addButton('Cancel', QMessageBox.ResetRole)
                     confirmStatement.exec_()
 
                     if confirmStatement.clickedButton() == yesBtn:
@@ -2040,10 +2045,14 @@ class formulaEditorDialog(QDialog):
                         return
 
                     # food table
-                    cursor.execute('INSERT INTO food (food_desc, user_inputted, ing_statement, input_date, percent_yield, food_notes, is_ingredient, is_formula) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (self.formula.formulaName, True, ingredientStatement, datetime.today(), self.percentYieldDoubleSpinBox.value(), self.notesBox.toPlainText(), False, True))
+                    if ingredientStatement is None:
+                        cursor.execute('INSERT INTO food (food_desc, user_inputted, input_date, percent_yield, food_notes, is_ingredient, is_formula) VALUES (%s, %s, %s, %s, %s, %s, %s)', (self.formula.formulaName, 1, datetime.today(), self.percentYieldDoubleSpinBox.value(), self.notesBox.toPlainText(), 0, 1))
+                    else:
+                        cursor.execute('INSERT INTO food (food_desc, user_inputted, ing_statement, input_date, percent_yield, food_notes, is_ingredient, is_formula) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (self.formula.formulaName, 1, ingredientStatement, datetime.today(), self.percentYieldDoubleSpinBox.value(), self.notesBox.toPlainText(), 0, 1))
+                    #cursor.execute('INSERT INTO food (food_desc, user_inputted, ing_statement, input_date, percent_yield, food_notes, is_ingredient, is_formula) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (self.formula.formulaName, 1, ingredientStatement, datetime.today(), self.percentYieldDoubleSpinBox.value(), self.notesBox.toPlainText(), 0, 1))
+                    #cursor.execute('INSERT INTO food (food_desc, user_inputted, ing_statement, input_date, percent_yield, food_notes, is_ingredient, is_formula) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (self.formula.formulaName, True, ingredientStatement, datetime.today(), self.percentYieldDoubleSpinBox.value(), self.notesBox.toPlainText(), False, True))
                     foodID = db.insert_id() 
 
-                    
                     # formula table
                     cursor.execute('INSERT INTO formula (formula_name, date_inputted, food_id, last_modified, serving_weight_g, number_servings, is_weight_scaled, is_serving_scaled, serving_weight_unit_id, formula_category_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (self.formula.formulaName, datetime.today(), foodID, datetime.today(), self.formula.servingWeight, self.formula.numberOfServings, scaleByWeightBool, scaleByServingsBool, servingUnitID, categoryID))
                     formulaID = db.insert_id()
@@ -2058,7 +2067,6 @@ class formulaEditorDialog(QDialog):
                         versionNumber = 1
                     # formula table cont
                     cursor.execute('UPDATE formula SET version_of_id = %s, version_number = %s WHERE formula_id = %s', (versionOfID, versionNumber, formulaID))
-
 
                     # formula food table
                     currentIngredients = self.formula.getCurrentIngredients()
@@ -2079,11 +2087,31 @@ class formulaEditorDialog(QDialog):
                         cursor.execute('INSERT INTO food_nutrient (food_id, nutrient_id, nutrient_weight_g_per_100g) VALUES (%s, %s, %s)', (foodID, nutrientID, gPer100G))
 
                     # formula quality   
-                    for row in self.qualityAttributeTableWidget.rowCount():
-                        quality = self.qualityAttributeTableWidget.item(row, 0).text()
-                        unit = self.qualityAttributeTableWidget.item(row, 1).text()
-                        qualityValue = self.qualityAttributeTableWidget.item(row, 2).text()
-                        description = self.qualityAttributeTableWidget.item(row, 3).text()
+                    for row in range(self.qualityAttributeTableWidget.rowCount()):
+                        if self.qualityAttributeTableWidget.item(row, 0):
+                            quality = self.qualityAttributeTableWidget.item(row, 0).text()
+                        else:
+                            quality = ''
+
+                        if self.qualityAttributeTableWidget.item(row, 1):
+                            unit = self.qualityAttributeTableWidget.item(row, 1).text()
+                        else:
+                            unit = ''
+                        
+                        if self.qualityAttributeTableWidget.item(row, 2):
+                            qualityValue = self.qualityAttributeTableWidget.item(row, 2).text()
+                        else:
+                            qualityValue = ''
+                        
+                        if self.qualityAttributeTableWidget.item(row, 3):
+                            description = self.qualityAttributeTableWidget.item(row, 3).text()
+                        else:
+                            description = ''
+
+                        #quality = self.qualityAttributeTableWidget.item(row, 0).text()
+                        #unit = self.qualityAttributeTableWidget.item(row, 1).text()
+                        #qualityValue = self.qualityAttributeTableWidget.item(row, 2).text()
+                        #description = self.qualityAttributeTableWidget.item(row, 3).text()
 
                         if quality == '' and unit == '' and qualityValue == '' and description == '':
                             continue
@@ -2168,6 +2196,7 @@ class formulaEditorDialog(QDialog):
                     msg.setText('Successfully edited the formula')
                     msg.exec_()
                     self.mainWindow.refreshListWidget()
+                    self.close()
                     return
 
     # called upon any action that would scale the formula differently. Updates the formula object to ensure serving weight and number of serivngs are updated   

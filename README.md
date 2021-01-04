@@ -1,21 +1,10 @@
-# PJRDInterface
-
-
-LEARNING OBJECTIVES
-- introduction to model-view-controller programming and architecture
-- practice relational database modeling using principles of normalization forms (BCNF, 1NF, 2NF, 3NF)
-- callback functions (signal/slots in QT)
-- practice sql queries
-- experience rolling out project from IDE to application
-- gain familiarity with function decorators and python syntax overall
-- 
+# Nutrition Assistant
 
 FRAMEWORKS/TOOLS
-- PYSIDE/QT as framework
+- PYSIDE/QT
 - QT Designer for UI development
 - PyMySQL for SQL client 
-- MySQL Workbench for relational database modeling 
-- 
+- MySQL Workbench
 
 RESOURCE ACKNOWLEDGEMENTS
 - Nutrition Label jQuery Plugin courtesy of Nutrionix 
