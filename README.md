@@ -1,13 +1,20 @@
 # Nutrition Assistant
 
+DEMOS
+https://youtu.be/7RdvEvMmKS0
+https://youtu.be/r32Fz2kW1Sw
+https://youtu.be/SckZJl_-Ysc
+
 FRAMEWORKS/TOOLS
 - PYSIDE/QT
 - QT Designer for UI development
 - PyMySQL for SQL client 
 - MySQL Workbench
 
+
 SCHEMA
 ![Database Schema Model](https://github.com/NAustinO/Nutrition-Assistant/blob/main/db/schema.png?raw=true)
+
 
 RESOURCE ACKNOWLEDGEMENTS
 - Nutrition Label jQuery Plugin courtesy of Nutrionix 
