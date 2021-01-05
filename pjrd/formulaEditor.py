@@ -203,6 +203,7 @@ class formulaEditorDialog(QDialog):
                     if quality['description'] is not None:
                         self.qualityAttributeTableWidget.setItem(rowIndex, 3, QTableWidgetItem(str(quality['description'])))
                     rowIndex += 1
+        self.refreshGeneralNutritionals()
         
     def setupUi(self, Dialog):
         if not Dialog.objectName():

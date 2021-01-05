@@ -27,6 +27,8 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 class Ui_MainWindow(QMainWindow):
 
+
+    #TODO WHEN OPENING AN EXISTING, THE NUTRITIONALS ARE OFF. APPEARS TO BE WHEN YOU USE ADD TO AN EXISTING INGREDIENT
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
         self.setupUi()
