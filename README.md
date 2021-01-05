@@ -7,9 +7,6 @@ DEMOS
 [![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/SckZJl_-Ysc)
 
 
-
-
-
 FRAMEWORKS/TOOLS
 - PYSIDE/QT
 - QT Designer for UI development
