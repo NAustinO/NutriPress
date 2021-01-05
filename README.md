@@ -7,9 +7,7 @@ FRAMEWORKS/TOOLS
 - MySQL Workbench
 
 SCHEMA
-![Database Schema Model](https://github.com/NAustinO/Nutrition-Assistant/db/schema.png?raw=true)
-
-
+![Database Schema Model](https://github.com/NAustinO/Nutrition-Assistant/blob/main/db/schema.png?raw=true)
 
 RESOURCE ACKNOWLEDGEMENTS
 - Nutrition Label jQuery Plugin courtesy of Nutrionix 
