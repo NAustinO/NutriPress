@@ -2,9 +2,10 @@
 
 DEMOS
 
-[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/7RdvEvMmKS0)
-[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/r32Fz2kW1Sw)
-[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/SckZJl_-Ysc)
+[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Ingredient%20Demo%20Intro.png)](https://youtu.be/7RdvEvMmKS0)
+[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Formula%20Demo%20Intro.png)](https://youtu.be/r32Fz2kW1Sw)
+[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Meal%20Plan%20Demo%20Intro.png)](https://youtu.be/SckZJl_-Ysc)
+
 
 
 FRAMEWORKS/TOOLS
