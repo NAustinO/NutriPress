@@ -1,6 +1,7 @@
 # Nutrition Assistant
 
 DEMOS
+<br>
 Click the gifs below to see a demonstration video. 
 <br><br><br>
 <b>Adding A Custom Ingredient</b><br>
