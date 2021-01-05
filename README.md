@@ -1,9 +1,14 @@
 # Nutrition Assistant
 
 DEMOS
-https://youtu.be/7RdvEvMmKS0
-https://youtu.be/r32Fz2kW1Sw
-https://youtu.be/SckZJl_-Ysc
+
+[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/7RdvEvMmKS0)
+[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/r32Fz2kW1Sw)
+[![Alt text for your video](https://img.youtube.com/vi/VIDEO-ID/0.jpg)](https://youtu.be/SckZJl_-Ysc)
+
+
+
+
 
 FRAMEWORKS/TOOLS
 - PYSIDE/QT
