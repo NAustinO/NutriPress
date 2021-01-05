@@ -6,6 +6,11 @@ FRAMEWORKS/TOOLS
 - PyMySQL for SQL client 
 - MySQL Workbench
 
+SCHEMA
+![Database Schema Model](https://github.com/NAustinO/Nutrition-Assistant/db/schema.png?raw=true)
+
+
+
 RESOURCE ACKNOWLEDGEMENTS
 - Nutrition Label jQuery Plugin courtesy of Nutrionix 
 Copyright (c) 2010-2017 Nutritionix, LLC. http://www.nutritionix.com
