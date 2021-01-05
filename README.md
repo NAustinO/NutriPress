@@ -1,10 +1,10 @@
 # Nutrition Assistant
 
 DEMOS
-
-[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Ingredient%20Demo%20Intro.png)](https://youtu.be/7RdvEvMmKS0)
-[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Formula%20Demo%20Intro.png)](https://youtu.be/r32Fz2kW1Sw)
-[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Meal%20Plan%20Demo%20Intro.png)](https://youtu.be/SckZJl_-Ysc)
+Click below to 
+[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Ingredient%20Demo.gif)](https://youtu.be/7RdvEvMmKS0)
+[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Formula%20Demo.gif)](https://youtu.be/r32Fz2kW1Sw)
+[![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Meal%20Plan%20Demo.gif)](https://youtu.be/SckZJl_-Ysc)
 
 
 
