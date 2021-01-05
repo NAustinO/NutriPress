@@ -1,9 +1,14 @@
 # Nutrition Assistant
 
 DEMOS
-Click below to 
+Click the gifs below to see a demonstration video. 
+<b>Adding A Custom Ingredient</b>
 [![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Ingredient%20Demo.gif)](https://youtu.be/7RdvEvMmKS0)
+
+<b>Adding A Formula</b>
 [![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Formula%20Demo.gif)](https://youtu.be/r32Fz2kW1Sw)
+
+<b>Use For Meal Planning</b>
 [![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Meal%20Plan%20Demo.gif)](https://youtu.be/SckZJl_-Ysc)
 
 
