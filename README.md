@@ -33,7 +33,7 @@ Click the gifs below to see a demonstration video.
 <b>Adding A Formula</b>(Click Me)<br>
 [![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Formula%20Demo.gif)](https://youtu.be/r32Fz2kW1Sw)
 <br><br><br>
-<b>Use For Meal Planning</b>(Click Me)<br>
+<b>Meal Planning-Eating In-N-Out for Every Meal</b>(Click Me)<br>
 [![Alt text for your video](https://github.com/NAustinO/Nutrition-Assistant/blob/main/pjrd/static/media/Meal%20Plan%20Demo.gif)](https://youtu.be/SckZJl_-Ysc)
 
 
