@@ -1,4 +1,4 @@
-# Nutrition Assistant
+# NutriPress
 PURPOSE 
 - Background: This program seeks to replicate the nutritional and database aspects of ESHA Genesis R&D software. Genesis R&D is a food formulation & labeling software that is used widely among consumer food product manufacturers, restaurants, dietitians, and other nutrition conscious professionals. At its core, Genesis R&D's functionality includes enabling users to create Nutrition Facts panels, virtually formulate foods, analyze the nutrition content of recipes, and adjust ingredeints over without sending samples of the recipe to a lab on each change. At the current time, the Nutrition Assistnat is not able ot generate a formatted Nutrition Facts Panel. 
 
