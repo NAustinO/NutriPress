@@ -22,7 +22,7 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![LinkedIn][linkedin-shield]][https://www.linkedin.com/in/nick-ozawa/]
 
 
 
@@ -38,14 +38,14 @@
   <p align="center">
     NutriPress allows real-time, molecular-level nutritional data for any food, beverage or meal by understanding that all foods are built on a ratio-based formulation of commodity subingredients. 
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/github_username/NutriPress"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://github.com/github_username/NutriPress">View Demo</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/github_username/NutriPress/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+    <a href="https://github.com/github_username/NutriPress/issues">Request Feature</a>
   </p>
 </div>
 
@@ -85,7 +85,7 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `NutriPress`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -142,7 +142,7 @@ Click the gifs below to see longer version demonstration videos.
 - [ ] Feature 3
     - [ ] Nested Feature
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/github_username/NutriPress/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -208,16 +208,16 @@ Project Link: [https://github.com/NAustinO/NutriPress](https://github.com/NAusti
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/NAustinO/NutriPress.svg?style=for-the-badge
+[contributors-url]: https://github.com/NAustinO/NutriPress/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/NAustinO/NutriPress.svg?style=for-the-badge
+[forks-url]: https://github.com/NAustinO/NutriPress/network/members
+[stars-shield]: https://img.shields.io/github/stars/NAustinO/NutriPress.svg?style=for-the-badge
+[stars-url]: https://github.com/NAustinO/NutriPress/stargazers
+[issues-shield]: https://img.shields.io/github/issues/NAustinO/NutriPress.svg?style=for-the-badge
+[issues-url]: https://github.com/NAustinO/NutriPress/issues
+[license-shield]: https://img.shields.io/github/license/NAustinO/NutriPress.svg?style=for-the-badge
+[license-url]: https://github.com/NAustinO/NutriPress/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://www.linkedin.com/in/nick-ozawa/
 [product-screenshot]: images/screenshot.png
