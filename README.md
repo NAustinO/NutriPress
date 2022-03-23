@@ -55,6 +55,9 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+        <li><a href="#the-problem-with-laboratory-nutritional-analysis">The Problem</a></li>
+        <li><a href="#the-problem-with-other-web-based-nutrition-calculators">The Disadvantages of Other Web-Based Nutrition Calculators</a></li>
+        <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
     <li>
@@ -95,6 +98,37 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 * [PyMySQL](https://pypi.org/project/PyMySQL/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+
+
+### The Problem With Laboratory Nutritional Analysis
+
+* Currently, a laboratory analysis of a recipe at NutriData.com costs $900, which does not include the additional $250 to input the information into an FDA compliant nutrition label format. This can be very pricey for quick tweaks 
+*  The turnaround time from receiving a lab sample can be 25 business days or more, interrupting workflows tremendously. 
+* Often, the level of precision for a lab analysis is overkill, especially for restaurants who just want to display a rough calorie count on their menu or people who just want to get a good idea of how they are eating each day/meal
+
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+### The Problem With Other Web-Based Nutrition Calculators
+
+
+* Lack of modularity with custom foods items. If the ingredient you are looking to add is not in its database, you would need to use the next closest ingredient. With a database-centric software like Nutrition Assistant, a user can store specific food items, and use those food items in other food items seamlessly. This unlocks potential for using as a longer term nutrition planning application, since you can add a meal as a food item and get day, week or even month nutrition counts. 
+* Lack of specificity. Nutrition usually measure their ingredient amounts in error-prone and sometimes density-dependent volume measurements, like cups, or relative terms like '1 medium-sized apple'. For a ballpark analysis, this would be adequate. However, the quantity of a medium-sized apple is ambiguous and lacks the specificity of what type of apple, each likely having a slightly different nutritional profile. Entering the nutritional profile of a specific apple into the Nutrition Assistant becomes a one-time time investment that pays itself in accurate reporting each time the ingredient is used. 
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+### The NutriPress Solution
+
+* Modularity. Each ingredient is inputted to build a formula, which builds up to make up a meal. 
+* Specifity. Formulas calculations are insulated by inconsistencies because ingredients allow for tightly controllled and normalized nutritional information. 
+* Version controls of recipes allows you to trace back to recipes to see what fails, or what was succcessful
+* Simultaneous development and nutrition knowledge. For example, users can instantenously see the nutritional impact of substituting a heavy cream with a skim milk, while they are in the kitchen tasting it.
+
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
 
 
 
