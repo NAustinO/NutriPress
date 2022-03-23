@@ -22,30 +22,26 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][https://www.linkedin.com/in/nick-ozawa/]
+[![LinkedIn][linkedin-shield]][linkedin-url]
 
 
 
 <!-- PROJECT LOGO -->
 <br />
-<div align="center">
-  <a href="https://github.com/NAustinO/NutriPress">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
 
 <h3 align="center">NutriPress</h3>
 
   <p align="center">
     NutriPress allows real-time, molecular-level nutritional data for any food, beverage or meal by understanding that all foods are built on a ratio-based formulation of commodity subingredients. 
     <br />
-    <a href="https://github.com/github_username/NutriPress"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/NAustinO/NutriPress"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/NutriPress">View Demo</a>
+    <a href="#demos">View Demo</a>
     ·
-    <a href="https://github.com/github_username/NutriPress/issues">Report Bug</a>
+    <a href="https://github.com/NAustinO/NutriPress/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/NutriPress/issues">Request Feature</a>
+    <a href="https://github.com/NAustinO/NutriPress/issues">Request Feature</a>
   </p>
 </div>
 
@@ -70,7 +66,6 @@
       </ul>
     </li>
     <li><a href="#database-model">Database Model</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -134,18 +129,6 @@ Click the gifs below to see longer version demonstration videos.
 
 
 
-<!-- ROADMAP -->
-## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
-
-See the [open issues](https://github.com/github_username/NutriPress/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -199,10 +182,8 @@ Project Link: [https://github.com/NAustinO/NutriPress](https://github.com/NAusti
 
 * [Nutrionix](https://github.com/nutritionix/nutrition-label)
 * [USDA Food and Nutrient Database for Dietary Studies](https://www.ars.usda.gov/ARSUserFiles/80400530/apps/FNDDS_2017-2018_ACCESS.EXE)
-* [USDA Food and Nutrient Database for Dietary Studies 2017-2018](http://www.ars.usda.gov/nea/bhnrc/fsrg)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 
